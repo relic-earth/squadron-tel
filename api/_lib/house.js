@@ -14,6 +14,15 @@ export const HOUSE_EMAIL = 'house@squadron.tel';
 const ORIGIN = process.env.PUBLIC_ORIGIN || 'https://www.squadron.tel';
 const DEFAULT_CAP_CENTS = 5000;
 
+// Phone voices beyond the OpenAI Realtime voices. The bridge speaks these with
+// Deepgram Aura text-to-speech (8 kHz mu-law, straight into the phone line).
+export const TTS_VOICES = { 'deepgram:aura-2-pandora-en': 'Pandora, British female (Deepgram Aura 2), the House Legal podcast voice' };
+
+export const HOUSE_LEGAL_RULES = `- House Legal is AI software for legal information and document analysis. It is not a law firm, and nobody on this line is a lawyer.
+- Answer questions about House Legal itself: what it does, how reports work, plans and prices, accounts, billing and privacy, using only KNOWLEDGE.
+- Never give legal advice, never apply the law to the caller's own situation, never predict an outcome, and never recommend what the caller should do legally. If the caller describes their own legal problem, say that you cannot advise on it, that they can ask their question in writing at houselegal.org for an AI-generated legal information report, and that for advice they should speak with a licensed attorney.
+- If the caller mentions an emergency, a threat to safety, or a deadline today, tell them to call 911 for an emergency or to contact a licensed attorney right away, and do not continue the legal discussion.`;
+
 export async function houseAccount() {
   await ensureAuthSchema();
   await ensureLedgerSchema();
@@ -51,7 +60,7 @@ export async function renewHouse() {
 
 // Builds (or resumes building) a house business from its website, turns chat
 // on, and makes sure a house period is active. Safe to call again.
-export async function houseInstall({ website, capCents, notifyEmail, onCallName, rebuild }) {
+export async function houseInstall({ website, capCents, notifyEmail, onCallName, rebuild, ttsVoice, extraRules }) {
   const accountId = await houseAccount();
   const url = normalizeUrl(website);
   if (!url) throw new Error('A website address is required.');
@@ -94,13 +103,16 @@ export async function houseInstall({ website, capCents, notifyEmail, onCallName,
   if (notifyEmail) settings.notify_email = String(notifyEmail).trim().toLowerCase();
   if (onCallName) settings.on_call_name = String(onCallName).slice(0, 80);
   if (!settings.human_mode) settings.human_mode = 'ai_first';
+  if (typeof ttsVoice === 'string') settings.tts_voice = TTS_VOICES[ttsVoice] ? ttsVoice : '';
+  if (typeof extraRules === 'string') settings.extra_rules = extraRules.trim().slice(0, 2000);
+  else if (!settings.extra_rules && /houselegal\.org/i.test(url)) settings.extra_rules = HOUSE_LEGAL_RULES;
   const channels = { ...(biz.channels || {}), chat: { enabled: true, changed_at: new Date().toISOString() } };
   if (biz.phone_number) channels.phone = { enabled: true, changed_at: new Date().toISOString() };
   await sql().query("UPDATE businesses SET status = 'team', settings = $2, channels = $3, updated_at = now() WHERE id = $1", [biz.id, JSON.stringify(settings), JSON.stringify(channels)]);
   const ledger = await ensureHousePeriod(accountId, capCents);
   const name = prow.profile?.company?.name?.value || url;
   return {
-    ok: true, businessId: biz.id, token: biz.token, name, phone: biz.phone_number || null, log,
+    ok: true, businessId: biz.id, token: biz.token, name, phone: biz.phone_number || null, log, ttsVoice: settings.tts_voice || null,
     snippet: `<script src="${ORIGIN}/widget.js" data-business="${biz.id}" async></script>`,
     ledger: { active: ledger.active, budgetCents: ledger.budgetCents, spentCents: ledger.spentCents, periodEnd: ledger.periodEnd },
   };

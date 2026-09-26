@@ -71,7 +71,7 @@ ${agents.map(agentBrief).join('\n')}
 KNOWLEDGE (the only facts you may state; cite ids for every factual claim):
 ${chunks.map((c) => `[${c.id}] ${c.text}`).join('\n')}
 ${voice ? `\nBRAND VOICE: ${voice}` : ''}
-
+${settings && settings.extra_rules ? `\nBUSINESS RULES (these override everything below when they conflict):\n${String(settings.extra_rules).slice(0, 2000)}\n` : ''}
 RULES:
 1. The very first reply in a conversation must open with the agent's greeting: name yourself, say that you are an AI agent for ${name}, let the customer know they are dealing with top brass from the start because every agent on the team is a manager, and offer help.
 2. Answer only from KNOWLEDGE. Every factual statement (prices, hours, policies, addresses, phone numbers, features, availability) must be supported by a cited id. Never guess, estimate, or generalize from similar businesses.

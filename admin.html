@@ -131,6 +131,7 @@ dialog::backdrop{background:rgba(11,30,69,0.4)}
       <h2>House account</h2>
       <p class="note" style="margin:0 0 14px">Put Squadron on Island Global Co's own sites. There is no invoice: the team runs on a monthly spend cap that the ledger enforces like a prepaid plan, and it renews every 30 days at the same cap.</p>
       <div class="row"><input class="grow" id="hw" value="https://houselegal.org" placeholder="https://yoursite.com"><input id="hc" style="width:150px" value="50" placeholder="Cap, dollars"><input class="grow" id="hn" value="staff@houselegal.org" placeholder="Email for person requests"><button class="btn" id="hBtn" onclick="houseInstall()">Install team</button></div>
+      <div class="row" style="margin-top:10px"><label class="note" for="hvoice">Phone voice</label><select id="hvoice" class="grow"><option value="deepgram:aura-2-pandora-en" selected>Pandora, British female (the House Legal podcast voice)</option><option value="">The team's own Squadron voices</option></select></div>
       <div id="hOut" class="note" style="margin-top:14px"></div>
       <div id="hNum" style="margin-top:14px;display:none">
         <div class="row"><input id="ha" style="width:150px" placeholder="Area code"><input class="grow" id="hv" placeholder="Bridge voice webhook, ending in /twilio/voice"><button class="btn ghost" onclick="houseNums()">Find numbers</button></div>
@@ -305,7 +306,7 @@ async function houseInstall() {
   const b = $('hBtn'); b.disabled = true; b.textContent = 'Building, up to 3 minutes';
   $('hOut').textContent = 'Reading the site, building the profile and the team.';
   try {
-    const r = await api({ action: 'house_install', website: $('hw').value, capCents: Math.round(Number($('hc').value) * 100), notifyEmail: $('hn').value });
+    const r = await api({ action: 'house_install', website: $('hw').value, capCents: Math.round(Number($('hc').value) * 100), notifyEmail: $('hn').value, ttsVoice: $('hvoice').value });
     houseBiz = r.businessId;
     $('hOut').innerHTML = `<b>${esc(r.name)}</b> is installed on the house account. Chat is on${r.phone ? `, and the phone line is ${esc(r.phone)}` : ''}. Budget this period: $${(r.ledger.budgetCents / 100).toFixed(2)}, spent $${(r.ledger.spentCents / 100).toFixed(2)}.<br>Snippet: <code>${esc(r.snippet)}</code>`;
     $('hNum').style.display = r.phone ? 'none' : '';

@@ -105,6 +105,23 @@ export class CallSession {
     let lastAssistantItem = null, responseStartTs = null, latestMediaTs = 0;
     const sendTw = (o) => { try { tw.send(JSON.stringify(o)); } catch {} };
     const sendOai = (o) => { if (oai && oaiReady) try { oai.send(JSON.stringify(o)); } catch {} };
+    // Deepgram Aura voice (optional, per business): Realtime answers in text,
+    // and Deepgram speaks it as 8 kHz mu-law straight into the phone line.
+    let dg = null, ttsChars = 0, ttsModel = null;
+    const sendDg = (o) => { if (dg) try { dg.send(JSON.stringify(o)); } catch {} };
+    const openDeepgram = async (tts) => {
+      const r = await fetch(`https://api.deepgram.com/v1/speak?model=${encodeURIComponent(tts.model)}&encoding=mulaw&sample_rate=8000&container=none`, { headers: { Upgrade: 'websocket', Authorization: `Bearer ${tts.token}` } });
+      const s = r.webSocket;
+      if (!s) throw new Error(`Deepgram did not accept the WebSocket (${r.status})`);
+      s.accept();
+      s.addEventListener('message', (m) => {
+        if (typeof m.data === 'string') return;
+        if (streamSid) { sendTw({ event: 'media', streamSid, media: { payload: b64(m.data) } }); if (responseStartTs == null) responseStartTs = latestMediaTs; }
+      });
+      s.addEventListener('close', () => { if (dg === s) dg = null; });
+      ttsModel = tts.model;
+      return s;
+    };
 
     // Opens an OpenAI Realtime session for the call. as = 'front' starts the
     // team at the Front Desk; as = 'manager' hands the live call to Overwatch,
@@ -122,7 +139,13 @@ export class CallSession {
       if (old) { try { old.close(); } catch {} }
       if (ctx) { next.from = ctx.from; next.to = ctx.to; }
       ctx = next;
-      sendOai({ type: 'session.update', session: { type: 'realtime', instructions: ctx.session.instructions, tools: ctx.session.tools, tool_choice: 'auto', audio: { input: { format: { type: 'audio/pcmu' }, transcription: { model: 'gpt-4o-mini-transcribe' }, turn_detection: { type: 'semantic_vad', eagerness: 'auto', interrupt_response: true } }, output: { format: { type: 'audio/pcmu' }, voice: ctx.session.audio.output.voice } } } });
+      if (!dg && ctx.tts && ctx.tts.provider === 'deepgram' && ctx.tts.token) {
+        try { dg = await openDeepgram(ctx.tts); } catch (e) { console.log('deepgram failed, using the Realtime voice', e.message); dg = null; }
+      }
+      const input = { format: { type: 'audio/pcmu' }, transcription: { model: 'gpt-4o-mini-transcribe' }, turn_detection: { type: 'semantic_vad', eagerness: 'auto', interrupt_response: true } };
+      sendOai({ type: 'session.update', session: dg
+        ? { type: 'realtime', instructions: ctx.session.instructions, tools: ctx.session.tools, tool_choice: 'auto', output_modalities: ['text'], audio: { input } }
+        : { type: 'realtime', instructions: ctx.session.instructions, tools: ctx.session.tools, tool_choice: 'auto', audio: { input, output: { format: { type: 'audio/pcmu' }, voice: ctx.session.audio.output.voice } } } });
       if (handoff) {
         const history = transcript.slice(-16).map((t) => `${t.role === 'customer' ? 'Caller' : (t.agent_name || 'Agent')}: ${t.text}`).join('\n');
         sendOai({ type: 'conversation.item.create', item: { type: 'message', role: 'system', content: [{ type: 'input_text', text: `Escalation to you, Overwatch. Reason: ${handoff}\nThe call so far:\n${history || '(no transcript yet)'}` }] } });
@@ -135,6 +158,13 @@ export class CallSession {
           case 'response.output_audio.delta':
             if (streamSid) { sendTw({ event: 'media', streamSid, media: { payload: ev.delta } }); if (responseStartTs == null) responseStartTs = latestMediaTs; if (ev.item_id) lastAssistantItem = ev.item_id; }
             break;
+          case 'response.output_text.delta':
+            if (dg && ev.delta) { sendDg({ type: 'Speak', text: ev.delta }); ttsChars += ev.delta.length; }
+            break;
+          case 'response.output_text.done':
+            if (dg) sendDg({ type: 'Flush' });
+            if (ev.text) transcript.push({ role: 'agent', text: ev.text, agent_id: ctx.agent.id, agent_name: `${ctx.agent.persona} · ${ctx.agent.title}`, at: new Date().toISOString() });
+            break;
           case 'response.done':
             addUsage(ev.response && ev.response.usage);
             break;
@@ -145,6 +175,7 @@ export class CallSession {
             if (ev.transcript && ev.transcript.trim()) transcript.push({ role: 'customer', text: ev.transcript.trim(), at: new Date().toISOString() });
             break;
           case 'input_audio_buffer.speech_started':
+            if (dg) { sendOai({ type: 'response.cancel' }); sendDg({ type: 'Clear' }); }
             if (lastAssistantItem && responseStartTs != null) sendOai({ type: 'conversation.item.truncate', item_id: lastAssistantItem, content_index: 0, audio_end_ms: Math.max(0, latestMediaTs - responseStartTs) });
             if (streamSid) sendTw({ event: 'clear', streamSid });
             lastAssistantItem = null; responseStartTs = null;
@@ -205,9 +236,10 @@ export class CallSession {
       if (closed) return; closed = true;
       if (limitTimer) clearTimeout(limitTimer);
       try { if (oai) oai.close(); } catch {}
+      try { if (dg) { dg.send(JSON.stringify({ type: 'Close' })); dg.close(); } } catch {}
       if (!verified) return;
       try {
-        await vercel(env, '/api/bridge/call-ended', { businessId, callSid, from: ctx && ctx.from, demo, transcript, gaps, messages, transferRequested, durationS: Math.round((Date.now() - startedAt) / 1000), holdRef, model, usage, agentId: ctx && ctx.agent.id, agentName: ctx && `${ctx.agent.persona} · ${ctx.agent.title}` });
+        await vercel(env, '/api/bridge/call-ended', { businessId, callSid, from: ctx && ctx.from, demo, transcript, gaps, messages, transferRequested, durationS: Math.round((Date.now() - startedAt) / 1000), holdRef, model, usage, ttsChars, ttsModel, agentId: ctx && ctx.agent.id, agentName: ctx && `${ctx.agent.persona} · ${ctx.agent.title}` });
       } catch (e) { console.log('call-ended failed', e.message); }
     };
 

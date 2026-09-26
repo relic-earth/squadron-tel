@@ -3,6 +3,9 @@
 import { sql, bad, newId, readJson } from '../_lib/db.js';
 import { checkSecret, ensureBridgeSchema } from '../_lib/bridge.js';
 import { settleHold, realtimeCostCents, PER_MINUTE, HOLD } from '../_lib/ledger.js';
+
+// Deepgram Aura-2 text-to-speech, $0.030 per 1,000 characters (published pay-as-you-go price).
+const TTS_CENTS_PER_CHAR = 0.003;
 import { notifyOwner } from '../_lib/email.js';
 
 export default async function handler(req, res) {
@@ -33,7 +36,9 @@ export default async function handler(req, res) {
       const seconds = Math.max(1, Number(b.durationS) || 0);
       const minutes = Math.ceil(seconds / 60);
       const perMin = PER_MINUTE.transcribe + PER_MINUTE.twilioInbound + PER_MINUTE.twilioRecording;
-      const measured = b.usage && typeof b.usage === 'object' ? realtimeCostCents(String(b.model || ''), b.usage) + minutes * perMin : (seconds / 60) * HOLD.voicePerMinute;
+      const ttsCents = Math.max(0, Number(b.ttsChars) || 0) * TTS_CENTS_PER_CHAR;
+      const measured0 = b.usage && typeof b.usage === 'object' ? realtimeCostCents(String(b.model || ''), b.usage) + minutes * perMin : (seconds / 60) * HOLD.voicePerMinute;
+      const measured = measured0 + ttsCents;
       await settleHold(String(b.holdRef), { cents: measured, seconds });
     }
     const msgs = (b.messages || []).filter((m) => m && m.message).slice(0, 10);
