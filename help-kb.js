@@ -5,6 +5,7 @@
 
 export const CATEGORIES = [
   { id: 'start', title: 'Getting started' },
+  { id: 'train', title: 'Training your team' },
   { id: 'test', title: 'Testing your team' },
   { id: 'deploy', title: 'Going live' },
   { id: 'agents', title: 'Your agents' },
@@ -27,12 +28,55 @@ export const ARTICLES = [
   { id: 'how-long-setup', cat: 'start', q: 'How long does setup take?',
     keys: 'how long time minutes fast quick setup duration',
     a: `Reading your site takes about a minute. Building the profile and the team starts as soon as your plan is paid, and your review and testing take as long as you want them to. Nothing goes live until you turn it on.` },
-  { id: 'app-store', cat: 'start', q: 'Can Squadron learn from my App Store listing?',
+  { id: 'app-store', cat: 'start', q: 'Can Squadron read my App Store listing?',
     keys: 'app store ios iphone app listing apple',
     a: `Yes. Paste your iOS App Store link. Squadron reads the listing, then the support and seller sites the listing points to, because those usually hold the support details.` },
   { id: 'no-website', cat: 'start', q: 'I do not have a website. Can I still use Squadron?',
     keys: 'no website without website documents only paste text',
     a: `Yes. Choose Documents at squadron.tel/start and add .txt, .md, .csv or .html files, or paste text such as your price list, hours, policies and common questions.` },
+
+  // ---- Training ----
+  { id: 'train-team', cat: 'train', q: 'How do I train my team?',
+    keys: 'train training teach learn learns learning improve knowledge customize answers resolve matters make it smarter',
+    a: `You train your team in plain English, with no prompts or code:\n1. Squadron reads your website, App Store listing or documents and builds your Business Profile, with the source of every fact.\n2. You correct any fact or add what your site does not say, on the profile page.\n3. When a customer asks something the profile does not cover, the question lands in your knowledge queue in Squadron HQ. Answer it once and approve it, and the whole team uses that answer from the next conversation.\n4. On the team page you set what each agent handles, when it passes a customer to a person, and its greeting.` },
+  { id: 'learns-automatically', cat: 'train', q: 'Does the AI learn from conversations on its own?',
+    keys: 'learn automatically self learning from calls conversations over time on its own memory',
+    a: `No, on purpose. Your team only knows what is in your Business Profile and the answers you approve. It never teaches itself from conversations, so it cannot pick up something wrong from a customer. Every question it could not answer goes to your knowledge queue, so you decide what it learns.` },
+  { id: 'update-website', cat: 'train', q: 'I changed my website. How does my team find out?',
+    keys: 'website changed updated new prices re-read refresh resync crawl again',
+    a: `Correct the changed facts on your profile page, where every fact shows the page it came from. Your team uses the corrected facts from the next conversation.` },
+  { id: 'resolve-issues', cat: 'train', q: 'How does my team resolve a customer problem?',
+    keys: 'resolve problem issue complaint refund request handle matter solve fix case',
+    a: `Your team resolves what your published policies and your approved answers cover, such as explaining a return, a price, an order process or your hours. For anything that needs a decision from you, like an exception, a refund outside your policy or an account change, it takes the details and passes the customer to a person, following the human layer and escalation rules you set.` },
+  { id: 'agent-rules', cat: 'train', q: 'Can I set rules, like passing big refunds to me?',
+    keys: 'rules escalation rule scope handle refund over limit pass to owner manager',
+    a: `Yes. Each agent has an escalation rule you can edit on the team page, written in plain English, such as passing any refund over $500 to the owner. You also edit what each agent handles and what it hands to someone else.` },
+
+  // ---- More about Squadron ----
+  { id: 'install-platforms', cat: 'deploy', q: 'How do I install the chat on Shopify, WordPress, Squarespace, Wix or Webflow?',
+    keys: 'install shopify wordpress squarespace wix webflow html site code embed paste footer theme',
+    a: `Copy your line from the Deploy screen, then:\n1. Shopify: Online Store, Themes, Edit code, and paste it into theme.liquid just before </body>.\n2. WordPress: paste it into your theme footer, or use any header and footer code plugin.\n3. Squarespace: paste it into Code Injection, in the Footer box.\n4. Wix: Settings, Custom Code, and add it to the end of the body on all pages.\n5. Webflow: Site settings, Custom code, and paste it into the Footer code box.\n6. Any other site: paste it just before the closing </body> tag.` },
+  { id: 'who-makes', cat: 'account', q: 'Who is behind Squadron?',
+    keys: 'company who makes owns behind squadron island global legal entity delaware founder',
+    a: `Squadron is made by Island Global Co, doing business as Squadron, under Delaware law. You can reach a person at info@squadron.tel.` },
+  { id: 'ai-models', cat: 'account', q: 'Which AI does Squadron use?',
+    keys: 'which ai model openai gpt llm voice model technology powered by',
+    a: `Squadron uses OpenAI models for reading your business, for chat and for real-time voice, and Twilio for phone lines.` },
+  { id: 'not-chatbot', cat: 'start', q: 'How is Squadron different from a chatbot?',
+    keys: 'different chatbot bot vs better than intercom zendesk retell compare why squadron',
+    a: `A chatbot answers from a script you write. Squadron builds a team of AI agents from your own website, each managing one area, answers only from facts with a source, escalates to a higher manager or a person when needed, and works on chat and phone with voices you can hear before you buy. You do not write prompts or build flows, and it is one prepaid price with no contract.` },
+  { id: 'can-book', cat: 'agents', q: 'Can my team book appointments or take payments?',
+    keys: 'book appointments booking schedule calendar take payments orders checkout reservations',
+    a: `Not directly. Your team can give customers your booking link and explain how booking or paying works, from your profile, but it does not connect to calendars or payment systems yet.` },
+  { id: 'outbound', cat: 'agents', q: 'Can my team make outbound calls?',
+    keys: 'outbound calls call customers dial out cold call sales calls',
+    a: `No. Squadron answers inbound conversations only and never places outbound AI calls.` },
+  { id: 'own-voice', cat: 'agents', q: 'Can I use my own voice or rename the agents?',
+    keys: 'own voice clone custom voice rename agent name change voice',
+    a: `You choose from the 24 Squadron voices and can reassign any agent. You can change each agent's title and greeting on the team page. Cloning your own voice is not available.` },
+  { id: 'many-calls', cat: 'agents', q: 'Can my team handle several customers at once?',
+    keys: 'concurrent simultaneous several many customers at once same time busy volume',
+    a: `Yes, on chat: every chat runs as its own conversation, so several customers can be helped at the same time.` },
 
   // ---- Testing ----
   { id: 'test-chat', cat: 'test', q: 'How do I test my team by chat?',
@@ -59,10 +103,10 @@ export const ARTICLES = [
     keys: 'chat widget embed install snippet script code website add chat wordpress shopify squarespace wix',
     a: `On the Deploy screen, turn chat on and copy the one-line snippet. Paste it into your site just before the closing </body> tag, or into your site builder's custom code area (Shopify theme.liquid, WordPress footer, Squarespace code injection, or Wix custom code). The chat button appears on every page that includes the snippet.` },
   { id: 'phone-lines', cat: 'deploy', q: 'When can my team answer my phone?',
-    keys: 'phone line number calls answer my phone forward porting twilio inbound',
+    keys: 'phone line lines number calls answer my phone forward porting twilio inbound ready when available soon launch',
     a: `Phone lines are opening soon. When they do, the Deploy screen will show your number, which you can publish or forward your existing business line to. Until then you can test by phone with a fifteen-minute demo number.` },
   { id: 'email-sms', cat: 'deploy', q: 'Can my team answer email and text messages?',
-    keys: 'email sms text messages channels inbox',
+    keys: 'email sms text texts texting send messages channels inbox',
     a: `Not yet. The Deploy screen shows email and SMS as not yet available, and each will get its own status there when it opens. Web chat is live today.` },
   { id: 'human-layer', cat: 'deploy', q: 'Can customers choose a person instead of the AI?',
     keys: 'human layer person or ai choice talk to a person option ai only person first receptionist escalate to a person only straight ai mode',
@@ -111,7 +155,7 @@ export const ARTICLES = [
     keys: 'cancel cancellation quit stop subscription contract end leave',
     a: `There is nothing to cancel. Squadron has no contract and nothing renews automatically. If you do not pay for another 30 days, your team stops at the end of the current period.` },
   { id: 'refunds', cat: 'billing', q: 'Do you give refunds?',
-    keys: 'refund money back return chargeback',
+    keys: 'refund refunds policy money back return chargeback',
     a: `Payments are not refunded, which is why Squadron never takes more than 30 days at a time and never renews automatically. You can see every voice and read the full Terms before you pay.` },
   { id: 'free-trial', cat: 'billing', q: 'Is there a free trial?',
     keys: 'free trial try for free demo no cost',
@@ -148,7 +192,7 @@ export const ARTICLES = [
     keys: 'transcripts recordings history conversations export csv json download hq',
     a: `Squadron HQ keeps every conversation, with transcripts, recordings and the sources each answer used. The Export tab downloads everything as a CSV, or as JSON with full transcripts.` },
   { id: 'data-use', cat: 'account', q: 'What does Squadron do with my data?',
-    keys: 'data privacy security what happens with my data train sell',
+    keys: 'data privacy security safe secure safety what happens with my data train sell',
     a: `Squadron uses your sources to build your profile and answer your customers. The Privacy Policy at squadron.tel/privacy explains what is kept and why. For any other data question, write to info@squadron.tel.` },
   { id: 'integrations', cat: 'account', q: 'Does Squadron integrate with my CRM or booking system?',
     keys: 'integration crm hubspot salesforce zapier api booking calendar webhook',
@@ -165,14 +209,16 @@ function words(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9 ]+/g,
 function stem(w) { return w.replace(/(ing|ed|es|s)$/, ''); }
 
 export function search(query, limit = 3) {
-  const q = words(query).map(stem);
+  const q = [...new Set(words(query).map(stem))];
   if (!q.length) return [];
-  const scored = ARTICLES.map((a) => {
-    const keys = new Set(words(a.keys + ' ' + a.q).map(stem));
-    const body = new Set(words(a.a).map(stem));
+  const docs = ARTICLES.map((a) => ({ a, keys: new Set(words(a.keys + ' ' + a.q).map(stem)), body: new Set(words(a.a).map(stem)) }));
+  const N = docs.length;
+  const idf = {};
+  for (const w of q) { const df = docs.filter((d) => d.keys.has(w) || d.body.has(w)).length; idf[w] = df ? Math.log(1 + N / df) : 0; }
+  const scored = docs.map((d) => {
     let s = 0;
-    for (const w of q) { if (keys.has(w)) s += 3; else if (body.has(w)) s += 1; }
-    return { a, s: s / Math.sqrt(q.length) };
+    for (const w of q) { if (d.keys.has(w)) s += 3 * idf[w]; else if (d.body.has(w)) s += idf[w]; }
+    return { a: d.a, s: s / Math.sqrt(q.length) };
   }).filter((x) => x.s > 0).sort((x, y) => y.s - x.s);
   return scored.slice(0, limit).map((x) => ({ ...x.a, score: x.s }));
 }

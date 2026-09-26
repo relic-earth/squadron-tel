@@ -36,7 +36,7 @@ export default function handler(req, res) {
   if (/^(thanks|thank you|thx|ty|great|perfect|ok|okay|cool)[!. ]*$/i.test(text)) {
     return res.status(200).json({ ...base, reply: `You're welcome. I'm here whenever you need me, and the full Help Center is at squadron.tel/help.` });
   }
-  if (/\b(human|real person|a person|someone real|talk to (someone|a person|support)|speak (to|with) (someone|a person)|agent please|representative|support ticket|contact (you|support|squadron))\b/i.test(text) || /^talk to a person$/i.test(text)) {
+  if (/\b(talk|speak|chat|connect)( to| with)? (a |an )?(real )?(human|person|someone|representative|rep)\b|^(human|person|representative|agent)[?.!]*$|support ticket|contact (you|support|squadron)|^talk to a person$/i.test(text)) {
     return res.status(200).json({ ...base, reply: `I'm escalating you to a person at Squadron. Send your question with the contact form linked here, and you get a reference number right away; a person replies by email. You can also write to info@squadron.tel.`, link: '/help#contact', handoff: true });
   }
   const hits = search(text, 4);

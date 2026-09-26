@@ -864,6 +864,69 @@ details[open] .faq-q{color:var(--signal);}
   #sqChatBtn{right:16px;bottom:16px;}
 }
 
+
+/* Training + Install sections */
+.tr-section,.in-section{padding:120px 48px;background:#F5F7FA;color:#0B1E45}
+.in-section{background:#fff;border-top:1px solid #DCE4EF;border-bottom:1px solid #DCE4EF}
+.tr-inner,.in-inner{max-width:1320px;margin:0 auto}
+.tr-sub{font-size:21px;line-height:1.55;color:#3D4C68;max-width:780px;margin:20px 0 0}
+.tr-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin-top:48px}
+@media(max-width:1200px){.tr-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){.tr-grid{grid-template-columns:1fr}.tr-section,.in-section{padding:80px 20px}}
+.tr-card{background:#fff;border:1px solid #DCE4EF;border-radius:22px;padding:18px 18px 26px;display:flex;flex-direction:column}
+.tr-ill{background:#EAF2FC;border-radius:16px;padding:18px 14px;min-height:230px;display:flex;align-items:center;margin-bottom:20px}
+.tr-num{font-family:'Inter Tight',Inter,sans-serif;font-size:15px;font-weight:700;color:#1F5FD1;margin:0 6px 6px}
+.tr-card h3{font-family:'Inter Tight',Inter,sans-serif;font-size:26px;font-weight:700;letter-spacing:-0.02em;line-height:1.1;margin:0 6px 10px;color:#0B1E45}
+.tr-card p{font-size:17px;line-height:1.55;color:#3D4C68;margin:0 6px}
+.tr-note{margin-top:32px;font-size:19px;line-height:1.55;color:#0B1E45;font-weight:600;max-width:900px}
+/* mock UI */
+.mk{width:100%;background:#fff;border:1px solid #DCE4EF;border-radius:12px;box-shadow:0 12px 30px rgba(11,30,69,0.08);overflow:hidden;font-size:13px}
+.mk-bar{display:flex;align-items:center;gap:5px;padding:9px 12px;border-bottom:1px solid #E6ECF4;background:#F8FAFD}
+.mk-bar i{width:7px;height:7px;border-radius:50%;background:#C9D3E1;display:block}
+.mk-bar span{margin-left:8px;font-weight:700;font-size:13px;color:#0B1E45}
+.mk-row{display:grid;grid-template-columns:56px 1fr;gap:2px 8px;padding:9px 12px;border-bottom:1px solid #EEF2F7;align-items:start}
+.mk-k{font-weight:700;color:#56647E;font-size:12px;text-transform:uppercase;letter-spacing:0.04em}
+.mk-v{color:#0B1E45;font-weight:600}
+.mk-v s{color:#8391A8}
+.mk-miss{color:#8A5A00}
+.mk-chip{grid-column:2;justify-self:start;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px}
+.mk-chip.ok{background:#E3F4E9;color:#127A3A}
+.mk-chip.warn{background:#FFF4DB;color:#8A5A00}
+.mk-chip.you{background:#EAF2FC;color:#1F5FD1}
+.mk-edit{margin:8px 12px;padding:8px 10px;border:2px solid #1F5FD1;border-radius:8px;color:#0B1E45;font-weight:600;line-height:1.35}
+.mk-actions{display:flex;align-items:center;gap:8px;padding:0 12px 12px}
+.mk-btn{background:#0B1E45;color:#fff;font-weight:700;font-size:12px;padding:6px 12px;border-radius:999px}
+.mk-q{margin:10px 12px 0;font-weight:700;color:#0B1E45;font-size:14px}
+.mk-q small{display:block;font-weight:500;color:#56647E;font-size:11px;margin-top:2px}
+.mk-lbl{margin:8px 12px 4px;font-size:11px;font-weight:700;color:#56647E;text-transform:uppercase;letter-spacing:0.04em}
+.mk-tags{display:flex;flex-wrap:wrap;gap:4px;padding:0 12px}
+.mk-tags span{font-size:11px;font-weight:700;background:#EAF2FC;color:#1F5FD1;padding:3px 8px;border-radius:999px}
+.mk-sel{margin:0 12px 12px;padding:7px 10px;border:1px solid #DCE4EF;border-radius:8px;font-weight:600;color:#0B1E45}
+/* install */
+.in-inner{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,520px);gap:56px;align-items:center}
+@media(max-width:1000px){.in-inner{grid-template-columns:1fr}}
+.in-code{margin-top:28px;background:#0B1E45;border-radius:14px;padding:18px 20px;overflow-x:auto}
+.in-code code{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:16px;color:#EAF2FC;white-space:nowrap}
+.in-hint{font-size:16px;color:#3D4C68;margin-top:10px;line-height:1.5}
+.in-steps{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:24px}
+@media(max-width:680px){.in-steps{grid-template-columns:1fr}}
+.in-steps div{background:#F5F7FA;border:1px solid #DCE4EF;border-radius:14px;padding:14px 16px}
+.in-steps b{display:block;font-size:17px;color:#0B1E45;margin-bottom:4px}
+.in-steps span{font-size:15px;line-height:1.5;color:#3D4C68}
+.in-ill{background:#EAF2FC;border-radius:24px;padding:26px}
+.site{position:relative;background:#fff;border:1px solid #DCE4EF;border-radius:14px;overflow:hidden;min-height:430px;box-shadow:0 20px 50px rgba(11,30,69,0.10)}
+.site-hero{padding:22px}
+.site-l{height:14px;border-radius:6px;background:#DCE4EF;margin-bottom:10px}
+.site-l.thin{height:9px;background:#EEF2F7}
+.w60{width:60%}.w40{width:40%}.w80{width:80%}.w70{width:70%}
+.site-blk{height:110px;border-radius:10px;background:#F1F5FA;margin-top:14px;width:62%}
+.site-chat{position:absolute;right:14px;bottom:74px;width:64%;background:#fff;border:1px solid #DCE4EF;border-radius:14px;box-shadow:0 16px 40px rgba(11,30,69,0.16);overflow:hidden;font-size:12.5px}
+.sc-head{display:flex;align-items:center;gap:6px;padding:9px 11px;background:#0B1E45;color:#fff;font-weight:700}
+.sc-head em{margin-left:auto;font-style:normal;font-size:10.5px;border:1px solid rgba(255,255,255,0.5);border-radius:999px;padding:2px 7px}
+.sc-dot{width:7px;height:7px;border-radius:50%;background:#3FD07A}
+.sc-msg{margin:8px 10px;padding:7px 9px;border-radius:10px;background:#F1F5FA;color:#0B1E45;line-height:1.4;max-width:88%}
+.sc-msg.me{margin-left:auto;background:#1F5FD1;color:#fff}
+.site-btn{position:absolute;right:16px;bottom:16px;width:46px;height:46px;border-radius:50%;background:#0B1E45}
 </style>
 <link rel="stylesheet" href="/theme.css">
 </head>
@@ -901,6 +964,8 @@ details[open] .faq-q{color:var(--signal);}
   </a>
   <ul class="nav-links">
     <li><a href="#how">How it works</a></li>
+    <li><a href="#train">Training</a></li>
+    <li><a href="#install">Install</a></li>
     <li><a href="#squad">The crew</a></li>
     <li><a href="#pricing">Pricing</a></li>
     <li><a href="/help">Help</a></li>
@@ -1162,6 +1227,111 @@ details[open] .faq-q{color:var(--signal);}
       <div class="step-card"><div class="step-num">01</div><div class="step-tag">Phase 01 · Recruitment</div><div class="step-title">Enter your business</div><p class="step-desc">Give Squadron your website, your App Store listing, or your documents.</p><ul class="step-points"><li>Website URL</li><li>iOS App Store URL</li><li>Uploaded documents</li></ul></div>
       <div class="step-card"><div class="step-num">02</div><div class="step-tag">Phase 02 · Basic training</div><div class="step-title">Review your profile and team</div><p class="step-desc">Squadron builds a Business Profile with a source on every fact, then generates the specialized agents your business needs. You correct anything before it goes live.</p><ul class="step-points"><li>Products, pricing, policies, hours</li><li>Front desk, scheduling, billing, returns and more</li><li>Voices from the 24-agent library</li></ul></div>
       <div class="step-card"><div class="step-num">03</div><div class="step-tag">Phase 03 · Deployment</div><div class="step-title">Test, then deploy</div><p class="step-desc">Talk to your team by chat and voice in the browser, then turn on each channel with its true status shown.</p><ul class="step-points"><li>Test by chat and voice in the browser</li><li>Every channel from one screen</li><li>Every conversation logged in Squadron HQ</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section class="tr-section" id="train">
+  <div class="tr-inner">
+    <p class="section-label">Training</p>
+    <h2 class="section-title">You train your team in plain English.</h2>
+    <p class="tr-sub">No prompts, no code and no flowcharts. Your team learns from your website, and you teach it the rest by correcting a fact or answering a question once. It never learns from anything you have not approved.</p>
+    <div class="tr-grid">
+
+      <div class="tr-card">
+        <div class="tr-ill" aria-hidden="true">
+          <div class="mk">
+            <div class="mk-bar"><i></i><i></i><i></i><span>Business Profile</span></div>
+            <div class="mk-row"><span class="mk-k">Hours</span><span class="mk-v">Mon to Fri, 9am to 6pm</span><span class="mk-chip ok">yourshop.com/contact</span></div>
+            <div class="mk-row"><span class="mk-k">Returns</span><span class="mk-v">30 days with a receipt</span><span class="mk-chip ok">yourshop.com/returns</span></div>
+            <div class="mk-row"><span class="mk-k">Parking</span><span class="mk-v mk-miss">Not stated in your sources</span><span class="mk-chip warn">Add it</span></div>
+          </div>
+        </div>
+        <div class="tr-num">01</div>
+        <h3>It reads your business</h3>
+        <p>Squadron reads your website, App Store listing or documents and builds a Business Profile. Every fact shows the page it came from, and anything missing is flagged.</p>
+      </div>
+
+      <div class="tr-card">
+        <div class="tr-ill" aria-hidden="true">
+          <div class="mk">
+            <div class="mk-bar"><i></i><i></i><i></i><span>Correct a fact</span></div>
+            <div class="mk-row"><span class="mk-k">Returns</span><span class="mk-v"><s>30 days with a receipt</s></span></div>
+            <div class="mk-edit">60 days with a receipt, 90 days for members</div>
+            <div class="mk-actions"><span class="mk-btn">Save</span><span class="mk-chip you">Updated by you</span></div>
+          </div>
+        </div>
+        <div class="tr-num">02</div>
+        <h3>You correct anything</h3>
+        <p>Change any answer in the profile, or add what your site does not say. The whole team uses the new answer from the next conversation, on chat and on the phone.</p>
+      </div>
+
+      <div class="tr-card">
+        <div class="tr-ill" aria-hidden="true">
+          <div class="mk">
+            <div class="mk-bar"><i></i><i></i><i></i><span>Knowledge queue · 3</span></div>
+            <div class="mk-q">“Do you deliver on Sundays?”<small>Asked by a caller · 2:14 pm</small></div>
+            <div class="mk-edit">Yes, from 10am to 4pm in the city.</div>
+            <div class="mk-actions"><span class="mk-btn">Approve answer</span></div>
+          </div>
+        </div>
+        <div class="tr-num">03</div>
+        <h3>You answer what it did not know</h3>
+        <p>When a customer asks something your profile does not cover, the agent says so honestly and the question lands in your knowledge queue in Squadron HQ. Answer it once, and your team knows it from then on.</p>
+      </div>
+
+      <div class="tr-card">
+        <div class="tr-ill" aria-hidden="true">
+          <div class="mk">
+            <div class="mk-bar"><i></i><i></i><i></i><span>Ledger · Billing Manager</span></div>
+            <div class="mk-lbl">Handles</div>
+            <div class="mk-tags"><span>Invoices</span><span>Refund status</span><span>Payment plans</span></div>
+            <div class="mk-lbl">Escalation rule</div>
+            <div class="mk-edit">Passes any refund over $500 to the owner.</div>
+            <div class="mk-lbl">Human layer</div>
+            <div class="mk-sel">AI first, a person on request ▾</div>
+          </div>
+        </div>
+        <div class="tr-num">04</div>
+        <h3>You set the rules</h3>
+        <p>Edit what each agent handles, when it passes a customer to a person, and its greeting. Choose AI first, customer's choice, a person first, or AI only.</p>
+      </div>
+
+    </div>
+    <p class="tr-note">Your team never invents a price, a policy or a promise. If it is not in your profile or an answer you approved, the agent says it does not know, takes a message, or passes the customer to a person.</p>
+  </div>
+</section>
+
+<section class="in-section" id="install">
+  <div class="in-inner">
+    <div class="in-copy">
+      <p class="section-label">Install</p>
+      <h2 class="section-title">One line of code. Two minutes.</h2>
+      <p class="tr-sub">Turn chat on in the Deploy screen, copy your line, and paste it into your site. The chat button appears on every page that has it.</p>
+      <div class="in-code"><code>&lt;script src="https://www.squadron.tel/widget.js" data-business="your-id" async&gt;&lt;/script&gt;</code></div>
+      <p class="in-hint">Your own line, with your business ID filled in, is on your Deploy screen.</p>
+      <div class="in-steps">
+        <div><b>Shopify</b><span>Online Store, Themes, Edit code, then paste into theme.liquid just before &lt;/body&gt;.</span></div>
+        <div><b>WordPress</b><span>Paste into your theme footer, or use any header and footer code plugin.</span></div>
+        <div><b>Squarespace</b><span>Paste into Code Injection, in the Footer box.</span></div>
+        <div><b>Wix</b><span>Settings, Custom Code, then add it to the end of the body on all pages.</span></div>
+        <div><b>Webflow</b><span>Site settings, Custom code, then paste into the Footer code box.</span></div>
+        <div><b>Any other site</b><span>Paste it just before the closing &lt;/body&gt; tag.</span></div>
+      </div>
+      <p class="in-hint">Phone lines are opening soon. When they do, you will publish your Squadron number or forward your existing line to it.</p>
+    </div>
+    <div class="in-ill" aria-hidden="true">
+      <div class="site">
+        <div class="mk-bar"><i></i><i></i><i></i><span>yourshop.com</span></div>
+        <div class="site-hero"><div class="site-l w60"></div><div class="site-l w40"></div><div class="site-l w80 thin"></div><div class="site-l w70 thin"></div><div class="site-blk"></div></div>
+        <div class="site-chat">
+          <div class="sc-head"><span class="sc-dot"></span>Ace · Front Desk Manager<em>Talk to a person</em></div>
+          <div class="sc-msg">Hi, I'm Ace, an AI agent for Your Shop. We're open until 6pm today, and returns are free within 60 days.</div>
+          <div class="sc-msg me">Do you deliver on Sundays?</div>
+          <div class="sc-msg">Yes, from 10am to 4pm in the city.</div>
+        </div>
+        <div class="site-btn"></div>
+      </div>
     </div>
   </div>
 </section>
