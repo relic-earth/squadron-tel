@@ -127,6 +127,16 @@ dialog::backdrop{background:rgba(11,30,69,0.4)}
       <div class="filters" id="filters"></div>
       <div style="overflow-x:auto"><table><thead><tr><th>Business</th><th style="width:300px">Email</th><th>Status</th><th>Actions</th></tr></thead><tbody id="rows"></tbody></table></div>
     </div>
+    <div class="panel" id="house">
+      <h2>House account</h2>
+      <p class="note" style="margin:0 0 14px">Put Squadron on Island Global Co's own sites. There is no invoice: the team runs on a monthly spend cap that the ledger enforces like a prepaid plan, and it renews every 30 days at the same cap.</p>
+      <div class="row"><input class="grow" id="hw" value="https://houselegal.org" placeholder="https://yoursite.com"><input id="hc" style="width:150px" value="50" placeholder="Cap, dollars"><input class="grow" id="hn" value="staff@houselegal.org" placeholder="Email for person requests"><button class="btn" id="hBtn" onclick="houseInstall()">Install team</button></div>
+      <div id="hOut" class="note" style="margin-top:14px"></div>
+      <div id="hNum" style="margin-top:14px;display:none">
+        <div class="row"><input id="ha" style="width:150px" placeholder="Area code"><input class="grow" id="hv" placeholder="Bridge voice webhook, ending in /twilio/voice"><button class="btn ghost" onclick="houseNums()">Find numbers</button></div>
+        <div id="hList" class="note" style="margin-top:12px"></div>
+      </div>
+    </div>
     <div class="panel">
       <div class="row" style="justify-content:space-between;margin-bottom:12px"><h2 style="margin:0">Support requests</h2><button class="btn ghost sm" onclick="loadTickets()">Refresh</button></div>
       <div id="tickets" class="note">Loading.</div>
@@ -288,6 +298,40 @@ async function loadTickets() {
 }
 async function tStatus(id, status) { try { await api({ action: 'ticket_status', id, status }); loadTickets(); } catch (e) { err(e.message); } }
 load().then(() => { if (D) loadTickets(); });
+
+// ---- House account ----
+let houseBiz = null;
+async function houseInstall() {
+  const b = $('hBtn'); b.disabled = true; b.textContent = 'Building, up to 3 minutes';
+  $('hOut').textContent = 'Reading the site, building the profile and the team.';
+  try {
+    const r = await api({ action: 'house_install', website: $('hw').value, capCents: Math.round(Number($('hc').value) * 100), notifyEmail: $('hn').value });
+    houseBiz = r.businessId;
+    $('hOut').innerHTML = `<b>${esc(r.name)}</b> is installed on the house account. Chat is on${r.phone ? `, and the phone line is ${esc(r.phone)}` : ''}. Budget this period: $${(r.ledger.budgetCents / 100).toFixed(2)}, spent $${(r.ledger.spentCents / 100).toFixed(2)}.<br>Snippet: <code>${esc(r.snippet)}</code>`;
+    $('hNum').style.display = r.phone ? 'none' : '';
+    if (!r.phone) houseNums();
+  } catch (e) { $('hOut').textContent = e.message; }
+  b.disabled = false; b.textContent = 'Install team';
+}
+async function houseNums() {
+  $('hList').textContent = 'Checking Twilio.';
+  try {
+    const r = await api({ action: 'house_numbers', areaCode: $('ha').value || undefined });
+    const bridge = r.owned.map((n) => n.voiceUrl).find((u) => /\/twilio\/voice$/.test(u || ''));
+    if (bridge && !$('hv').value) $('hv').value = bridge;
+    const price = r.price && r.price.current ? `$${Number(r.price.current).toFixed(2)} a month` : 'Twilio did not return a price';
+    $('hList').innerHTML = `<p>Numbers Squadron owns: ${r.owned.map((n) => `${esc(n.number)} (voice webhook: ${esc(n.voiceUrl || 'none')})`).join('; ') || 'none'}.</p><p>A new local number costs ${esc(price)}, billed by Twilio. Pressing Buy purchases that number right away.</p>` +
+      r.available.map((n) => `<div class="row" style="margin-top:8px"><span class="grow">${esc(n.number)} · ${esc(n.locality || '')} ${esc(n.region || '')}</span><button class="btn sm" onclick="houseBuy('${esc(n.number)}', this)">Buy</button></div>`).join('');
+  } catch (e) { $('hList').textContent = e.message; }
+}
+async function houseBuy(number, b) {
+  if (!houseBiz) return;
+  b.disabled = true; b.textContent = 'Buying';
+  try {
+    const r = await api({ action: 'house_buy', businessId: houseBiz, number, voiceUrl: $('hv').value });
+    $('hList').innerHTML = `<p><b>${esc(r.number)}</b> now answers with the house team.</p>`;
+  } catch (e) { b.disabled = false; b.textContent = 'Buy'; $('hList').insertAdjacentHTML('afterbegin', `<p>${esc(e.message)}</p>`); }
+}
 </script>
 </body>
 </html>

@@ -24,6 +24,14 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   try {
     await ensureSchema();
+    if (req.method === 'GET' && req.query?.site) {
+      // House-account sites install the widget by domain (data-site).
+      const host = String(req.query.site).toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/[\/?#].*$/, '');
+      if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(host)) return bad(res, 400, 'site required');
+      const rows = await sql().query("SELECT b.id FROM businesses b JOIN accounts a ON a.id = b.account_id WHERE a.email = 'house@squadron.tel' AND (b.input_value ILIKE $1 OR b.input_value ILIKE $2) AND (b.channels->'chat'->>'enabled') = 'true' ORDER BY b.created_at LIMIT 1", [`https://${host}/%`, `https://www.${host}/%`]);
+      if (!rows[0]) return bad(res, 404, 'No team is installed for this site.');
+      return res.status(200).json({ businessId: rows[0].id });
+    }
     if (req.method === 'GET') {
       const biz = await loadPublic(req.query?.businessId);
       if (!biz) return bad(res, 404, 'Chat is not turned on for this business.');

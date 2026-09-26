@@ -5,9 +5,24 @@
 (function () {
   var script = document.currentScript || (function () { var s = document.getElementsByTagName('script'); return s[s.length - 1]; })();
   var business = script && script.getAttribute('data-business');
-  if (!business) return;
   // squadron.tel redirects to www, and a redirected preflight fails, so the API is always called on www.
-  var origin = ((script.src || '').replace(/\/widget\.js.*$/, '') || 'https://www.squadron.tel').replace('https://squadron.tel', 'https://www.squadron.tel');
+  var origin = ((script && script.src || '').replace(/\/widget\.js.*$/, '') || 'https://www.squadron.tel').replace('https://squadron.tel', 'https://www.squadron.tel');
+  var site = script && script.getAttribute('data-site');
+  if (!business && site) {
+    // Install by domain: look up the team, then load the widget with its ID.
+    fetch(origin + '/api/handoff?site=' + encodeURIComponent(site))
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (!j || !j.businessId) return;
+        var s2 = document.createElement('script');
+        s2.src = script.src; s2.async = true; s2.setAttribute('data-business', j.businessId);
+        var c = script.getAttribute('data-color'); if (c) s2.setAttribute('data-color', c);
+        document.body.appendChild(s2);
+      })
+      .catch(function () {});
+    return;
+  }
+  if (!business) return;
   var accent = script.getAttribute('data-color') || '#1F5FD1';
   var conversationId = null, open = false, busy = false, agent = null, mode = 'ai_first', person = null, started = false, lastAsk = '';
 
