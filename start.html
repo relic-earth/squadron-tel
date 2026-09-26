@@ -232,7 +232,7 @@ async function payGate() {
   await api('/api/auth', { action: 'claim', token }).catch((e) => err('err2', e.message));
   const active = me.account.active;
   if (active) { box.innerHTML = ''; box.classList.add('hidden'); return reanalyze(); }
-  box.innerHTML = `<p style="font-size:22px;font-weight:800;color:var(--white);margin-bottom:16px">Choose your plan. Every plan has unlimited web chat, and nothing renews automatically.</p>
+  box.innerHTML = `<p style="font-size:22px;font-weight:800;color:var(--white);margin-bottom:16px">Choose your plan. Every plan includes web chat, and nothing renews automatically.</p>
     <div class="planpick">${PLAN_CHOICES.map(([k, n, p, m]) => `<button class="planopt" onclick="choosePlan('${k}')"><span class="pn">${n}</span><span class="pp">${p}</span><span class="pm">30 days · ${m}</span></button>`).join('')}</div>
     <p style="font-size:18px;color:#3D4C68;margin-top:14px">Pick a plan to pay by card, and your team is built the moment the payment goes through. To pay by bank transfer instead, use <a href="/billing" style="color:var(--signal);font-weight:700">Billing</a>, then come back and press the button below when the transfer lands.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button class="btn ghost" onclick="paidRetry(this)">My bank transfer has landed, build my team</button></div>`;

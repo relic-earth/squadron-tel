@@ -22,7 +22,7 @@
 .plan ul{list-style:none;font-size:17px;line-height:1.6;color:var(--slate);font-weight:600;flex:1}
 .plan .btn{margin-top:8px}
 .packs{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.inv{border-radius:12px;border:2px solid rgba(254,188,46,0.5);background:rgba(254,188,46,0.08);padding:22px 24px;margin-bottom:14px}
+.inv{border-radius:12px;border:2px solid rgba(181,71,8,0.5);background:rgba(181,71,8,0.08);padding:22px 24px;margin-bottom:14px}
 .inv.paid{border-color:rgba(34,217,90,0.4);background:rgba(34,217,90,0.08)}
 .inv h3{font-size:21px;font-weight:800;margin-bottom:12px}
 .wire{display:grid;grid-template-columns:220px 1fr;gap:8px 16px;font-size:18px;font-weight:600}
@@ -86,10 +86,10 @@ const money = (c) => '$' + (c / 100).toLocaleString('en-US', { minimumFractionDi
 const date = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const FEATURES = {
-  basic: ['250 AI voice minutes', 'Unlimited web chat', 'The full team, 24/7'],
-  pro: ['650 AI voice minutes', 'Unlimited web chat', 'The full team, 24/7'],
-  center: ['2,000 AI voice minutes', 'Unlimited web chat', 'The full team, 24/7'],
-  battalion: ['10,000 AI voice minutes', 'Beyond 10,000: our cost plus 1¢ a minute', 'Unlimited web chat', 'The full team, 24/7'],
+  basic: ['250 AI voice minutes', 'Web chat included', 'The full team, 24/7'],
+  pro: ['650 AI voice minutes', 'Web chat included', 'The full team, 24/7'],
+  center: ['2,000 AI voice minutes', 'Web chat included', 'The full team, 24/7'],
+  battalion: ['10,000 AI voice minutes', 'Beyond 10,000: our cost plus 1¢ a minute', 'Web chat included', 'The full team, 24/7'],
 };
 const PLAN_NAMES = { basic: 'Basic', pro: 'Pro', center: 'Command Center', battalion: 'Battalion' };
 let data = null;

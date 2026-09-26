@@ -244,11 +244,11 @@ const PAIN = [
   ['The AI made something up.', 'Answers only from your sources.', 'Every answer comes from your Business Profile with its source shown. When the profile does not cover a question, the agent says so and logs it for you.'],
   ['I got a surprise bill.', 'Prepaid, never billed after the fact.', 'You pay 30 days up front. When the prepaid amount is used, the team pauses and you get a top-up invoice. Nothing upgrades automatically.'],
   ['I could not cancel.', 'There is nothing to cancel.', 'No contract and no auto-renewal. Stop paying and the team stops at the end of the period, and you can delete your account in one click.'],
-  ['Key features cost extra.', 'The full team on every plan.', 'Every plan, including the $39 Basic plan, has the full team and unlimited web chat, with no feature held back for a higher tier. The overage rate, 25¢ a minute, is published.'],
+  ['Key features cost extra.', 'The full team on every plan.', 'Every plan, including the $39 Basic plan, has the full team and web chat, with no feature held back for a higher tier. The overage rate, 25¢ a minute, is published.'],
   ['The vendor never answered me.', 'Support you can reach.', 'This Help Center, Ace for instant answers, and a person by email with a reference number on every request.'],
   ['Setup took weeks.', 'Start from your website.', 'Paste your web address, review the profile and team Squadron builds, test by chat, voice and phone, then turn it on.'],
   ['Callers did not know it was a bot.', 'Honest from the first word.', 'Every agent says it is an AI at the start, every call opens with a recording notice, and Squadron never places outbound AI calls.'],
-  ['It was phone only.', 'Chat included.', 'Unlimited web chat comes with every plan, with phone lines opening soon, and each channel shows its true status on the Deploy screen.'],
+  ['It was phone only.', 'Chat included.', 'Web chat comes with every plan, with phone lines opening soon, and each channel shows its true status on the Deploy screen.'],
 ];
 $('pain').innerHTML = PAIN.map(([bad, h, p]) => `<div class="pcard"><div class="bad">“${esc(bad)}”</div><h3>${esc(h)}</h3><p>${esc(p)}</p></div>`).join('');
 

@@ -162,7 +162,7 @@ ${link}
 
 It has ${agents.length} AI agents, and each one manages one area: ${teamLine(agents)}. They answer only from what ${name} publishes, they say they are AI at the start of every conversation, and they pass a customer to a person at ${name} when a question needs one.
 
-The team answers the chat on your website today, and the phone as Squadron lines open. Plans start at $39 a month for 250 voice minutes with unlimited web chat, paid in advance, with no contract.
+The team answers the chat on your website today, and the phone as Squadron lines open. Plans start at $39 a month for 250 voice minutes and web chat, paid in advance, with no contract.
 
 If you want it working for ${name}, the page above has a button to deploy it.
 

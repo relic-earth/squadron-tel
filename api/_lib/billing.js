@@ -12,10 +12,10 @@ const API = 'https://api.mercury.com/api/v1';
 // Plan prices. Every item is paid before it is used. Extra minutes are sold
 // in prepaid blocks of 100 at $0.25 a minute.
 export const PRICES = {
-  basic: { kind: 'plan', label: 'Basic plan, 30 days (250 voice minutes, unlimited chat)', cents: 3900 },
-  pro: { kind: 'plan', label: 'Pro plan, 30 days (650 voice minutes, unlimited chat)', cents: 7900 },
-  center: { kind: 'plan', label: 'Command Center plan, 30 days (2,000 voice minutes, unlimited chat)', cents: 19900 },
-  battalion: { kind: 'plan', label: 'Battalion plan, 30 days (10,000 voice minutes, unlimited chat)', cents: 99900 },
+  basic: { kind: 'plan', label: 'Basic plan, 30 days (250 voice minutes, and web chat)', cents: 3900 },
+  pro: { kind: 'plan', label: 'Pro plan, 30 days (650 voice minutes, and web chat)', cents: 7900 },
+  center: { kind: 'plan', label: 'Command Center plan, 30 days (2,000 voice minutes, and web chat)', cents: 19900 },
+  battalion: { kind: 'plan', label: 'Battalion plan, 30 days (10,000 voice minutes, and web chat)', cents: 99900 },
   credit100: { kind: 'pack', label: '$100 Battalion overage credit (minutes beyond 10,000 at our cost plus 1 cent a minute)', cents: 10000, minutes: 0, credit: true },
   minutes100: { kind: 'pack', label: '100 extra voice minutes for the current period', cents: 2500, minutes: 100 },
 };

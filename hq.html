@@ -30,9 +30,9 @@ tr.row-c{cursor:pointer}
 tr.row-c:hover td{background:#fff}
 .pill{display:inline-block;font-size:14px;font-weight:800;letter-spacing:0.04em;padding:4px 10px;border-radius:12px;background:rgba(11,30,69,0.08);color:var(--white);white-space:nowrap}
 .pill.esc{background:rgba(255,95,87,0.15);color:var(--red)}
-.pill.gap{background:rgba(254,188,46,0.15);color:var(--amber)}
+.pill.gap{background:rgba(181,71,8,0.15);color:var(--amber)}
 .pill.ok{background:rgba(34,217,90,0.14);color:var(--green)}
-.pill.test{background:rgba(255,198,46,0.12);color:var(--signal)}
+.pill.test{background:rgba(31,95,209,0.12);color:var(--signal)}
 .panel{border-radius:12px;background:#fff;border:2px solid rgba(11,30,69,0.1);padding:22px 24px;margin-bottom:18px}
 .tr{display:flex;flex-direction:column;gap:12px;margin-top:14px}
 .t{max-width:82%;padding:12px 16px;border-radius:12px;font-size:16px;line-height:1.5;background:rgba(11,30,69,0.08)}
@@ -165,7 +165,7 @@ function settingsView() {
   const s = d.settings || {}, ch = d.channels;
   return `<div class="panel"><h2>Channels</h2>${['phone', 'chat', 'email', 'sms'].map((k) => `<div style="display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid rgba(11,30,69,0.08);font-size:16px;font-weight:600"><span style="text-transform:capitalize">${k}</span><span class="pill ${ch[k].state === 'live' ? 'ok' : ch[k].state === 'ready' ? 'test' : ''}">${esc(ch[k].label)}</span></div>`).join('')}<div class="acts"><button class="btn small ghost" onclick="location.href='/deploy?t='+encodeURIComponent(token)">Change on the deploy screen</button></div></div>
     <div class="panel"><h2>On-call and business hours</h2><div class="row2 field"><div><label>On-call name</label><input id="s_name" value="${esc(s.on_call_name || '')}"></div><div><label>On-call phone</label><input id="s_phone" value="${esc(s.on_call_phone || '')}"></div><div><label>Email for message alerts</label><input id="s_email" value="${esc(s.notify_email || '')}"></div><div><label>Business hours</label><input id="s_hours" value="${esc(s.hours || '')}"></div></div><div class="field"><label>Outside business hours</label><select id="s_after"><option value="answer" ${s.after_hours !== 'message' ? 'selected' : ''}>Answer questions and take messages</option><option value="message" ${s.after_hours === 'message' ? 'selected' : ''}>Take messages only</option></select></div><div class="acts"><button class="btn small" onclick="saveSettings()">Save</button><span id="saved" style="color:var(--green);font-weight:700;align-self:center"></span></div></div>
-    <div class="panel"><h2>Plan</h2><p style="font-size:17px;color:var(--slate);font-weight:500;line-height:1.55">${d.plan.active ? `${esc(d.plan.name)} · ${d.plan.minutes.toLocaleString()} voice minutes and unlimited web chat, prepaid through ${new Date(d.plan.periodEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.` : 'No paid plan is active.'} Squadron is prepaid and never bills after the fact. When a period's prepaid amount is used, your team pauses and we email you a top-up invoice. Manage it on the <a href="/billing" style="color:var(--signal)">Billing page</a>. There is no automatic upgrade.</p></div>`;
+    <div class="panel"><h2>Plan</h2><p style="font-size:17px;color:var(--slate);font-weight:500;line-height:1.55">${d.plan.active ? `${esc(d.plan.name)} · ${d.plan.minutes.toLocaleString()} voice minutes and web chat, prepaid through ${new Date(d.plan.periodEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.` : 'No paid plan is active.'} Squadron is prepaid and never bills after the fact. When a period's prepaid amount is used, your team pauses and we email you a top-up invoice. Manage it on the <a href="/billing" style="color:var(--signal)">Billing page</a>. There is no automatic upgrade.</p></div>`;
 }
 async function saveSettings() {
   $('saved').textContent = 'Saving…';

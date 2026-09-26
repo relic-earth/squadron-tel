@@ -5,7 +5,7 @@
   --ink:#0B1E45;--ink-2:#3D4C68;--pale:#EAF2FC;--gray:#F5F7FA;--line:#DCE4EF;
   --signal:#1F5FD1;--signal-dim:rgba(31,95,209,0.08);
   --white:#0B1E45;--slate:#3D4C68;--muted:#56647E;
-  --green:#127A3A;--red:#B42318;--amber:#8A5A00;
+  --green:#127A3A;--red:#B42318;--amber:#B54708;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -57,7 +57,7 @@ a.btn{text-decoration:none;display:inline-block}
 .log .now::before{content:'◌';animation:spin 1s linear infinite;display:inline-block}
 @keyframes spin{to{transform:rotate(360deg)}}
 /* profile */
-.gaps{border-radius:12px;background:rgba(254,188,46,0.1);border:2px solid rgba(254,188,46,0.5);padding:24px 28px;margin-bottom:40px}
+.gaps{border-radius:12px;background:rgba(181,71,8,0.1);border:2px solid rgba(181,71,8,0.5);padding:24px 28px;margin-bottom:40px}
 .gaps h3{font-size:20px;font-weight:800;color:var(--amber);margin-bottom:10px}
 .gaps li{font-size:17px;line-height:1.6;color:var(--ink);margin-left:20px;font-weight:500}
 .section{margin-bottom:44px;border-top:2px solid rgba(11,30,69,0.1);padding-top:30px}
@@ -67,8 +67,8 @@ a.btn{text-decoration:none;display:inline-block}
 .val.empty{color:var(--amber);font-weight:600}
 .meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px}
 .src{font-size:13px;font-weight:700;letter-spacing:0.04em;padding:6px 12px;border-radius:12px;background:rgba(34,217,90,0.14);color:var(--green);border:1px solid rgba(34,217,90,0.35);cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.src.owner{background:rgba(255,198,46,0.14);color:var(--signal);border-color:rgba(255,198,46,0.4)}
-.src.none{background:rgba(254,188,46,0.12);color:var(--amber);border-color:rgba(254,188,46,0.4);cursor:default}
+.src.owner{background:rgba(31,95,209,0.14);color:var(--signal);border-color:rgba(31,95,209,0.4)}
+.src.none{background:rgba(181,71,8,0.12);color:var(--amber);border-color:rgba(181,71,8,0.4);cursor:default}
 .edit{font-size:13px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;padding:6px 12px;border-radius:12px;border:1px solid rgba(11,30,69,0.3);background:transparent;color:var(--ink);cursor:pointer}
 .quote{margin-top:10px;padding:14px 18px;border-left:3px solid var(--green);background:#fff;font-size:15px;line-height:1.6;color:var(--slate);display:none}
 .quote a{color:var(--ink);font-weight:600;word-break:break-all}

@@ -8,12 +8,12 @@
   if (!business) return;
   // squadron.tel redirects to www, and a redirected preflight fails, so the API is always called on www.
   var origin = ((script.src || '').replace(/\/widget\.js.*$/, '') || 'https://www.squadron.tel').replace('https://squadron.tel', 'https://www.squadron.tel');
-  var accent = script.getAttribute('data-color') || '#FFC62E';
+  var accent = script.getAttribute('data-color') || '#1F5FD1';
   var conversationId = null, open = false, busy = false, agent = null, mode = 'ai_first', person = null, started = false, lastAsk = '';
 
   var css = '\
 .sqw-btn{position:fixed;right:20px;bottom:20px;z-index:2147483000;width:64px;height:64px;border-radius:50%;border:none;cursor:pointer;background:' + accent + ';box-shadow:0 8px 28px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center}\
-.sqw-btn svg{width:30px;height:30px;fill:#0B1E45}\
+.sqw-btn svg{width:30px;height:30px;fill:#fff}\
 .sqw-box{position:fixed;right:20px;bottom:96px;z-index:2147483000;width:420px;max-width:calc(100vw - 40px);height:600px;max-height:calc(100vh - 120px);transition:height .35s ease,width .35s ease;background:#0B1E45;color:#fff;border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,0.5);display:none;flex-direction:column;overflow:hidden;font-family:Inter,system-ui,sans-serif}\
 .sqw-box.open{display:flex}\
 .sqw-box.tall{height:880px;width:480px}\
@@ -26,21 +26,21 @@
 .sqw-person:hover{background:#fff;color:#0B1E45}\
 .sqw-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}\
 .sqw-m{max-width:88%;padding:11px 14px;border-radius:6px;font-size:17px;line-height:1.45;background:rgba(255,255,255,0.1);white-space:pre-wrap;word-break:break-word}\
-.sqw-m.me{align-self:flex-end;background:' + accent + ';color:#0B1E45;font-weight:600}\
-.sqw-m.note{background:rgba(254,188,46,0.16);border:1px solid rgba(254,188,46,0.55);font-size:16px}\
+.sqw-m.me{align-self:flex-end;background:' + accent + ';color:#fff;font-weight:600}\
+.sqw-m.note{background:rgba(181,71,8,0.16);border:1px solid rgba(181,71,8,0.55);font-size:16px}\
 .sqw-choice{display:flex;flex-direction:column;gap:8px}\
 .sqw-choice button{font:inherit;font-size:17px;font-weight:800;padding:14px 16px;border-radius:6px;border:1px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.06);color:#fff;cursor:pointer;text-align:left}\
-.sqw-choice button.pri{background:' + accent + ';color:#0B1E45;border-color:' + accent + '}\
+.sqw-choice button.pri{background:' + accent + ';color:#fff;border-color:' + accent + '}\
 .sqw-choice small{display:block;font-size:14px;font-weight:600;opacity:0.85;margin-top:2px}\
 .sqw-hf{display:flex;flex-direction:column;gap:8px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:14px}\
 .sqw-hf b{font-size:17px}\
 .sqw-hf input,.sqw-hf textarea{font:inherit;font-size:16px;padding:11px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.3);background:rgba(0,0,0,0.15);color:#fff;outline:none}\
 .sqw-hf textarea{min-height:70px;resize:vertical}\
-.sqw-hf button{font:inherit;font-weight:800;font-size:16px;padding:12px;border-radius:4px;border:none;background:' + accent + ';color:#0B1E45;cursor:pointer}\
+.sqw-hf button{font:inherit;font-weight:800;font-size:16px;padding:12px;border-radius:4px;border:none;background:' + accent + ';color:#fff;cursor:pointer}\
 .sqw-hf .sqw-err{color:#FFB3AF;font-size:14px;font-weight:600;min-height:0}\
 .sqw-form{display:flex;gap:8px;padding:12px;border-top:1px solid rgba(255,255,255,0.12)}\
 .sqw-form input{flex:1;font:inherit;font-size:17px;padding:12px 14px;border-radius:4px;border:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.06);color:#fff;outline:none;min-width:0}\
-.sqw-form button{font:inherit;font-weight:800;font-size:16px;padding:0 18px;border-radius:4px;border:none;background:' + accent + ';color:#0B1E45;cursor:pointer}\
+.sqw-form button{font:inherit;font-weight:800;font-size:16px;padding:0 18px;border-radius:4px;border:none;background:' + accent + ';color:#fff;cursor:pointer}\
 .sqw-foot{font-size:13px;color:#C3CAE0;text-align:center;padding:0 12px 10px}';
   var style = document.createElement('style'); style.textContent = css; document.head.appendChild(style);
 

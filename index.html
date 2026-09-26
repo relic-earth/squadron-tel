@@ -11,13 +11,13 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --navy:#0B1E45;--navy-mid:#10295C;--navy-light:#1A3A7A;
-  --signal:#FFC62E;--signal-dim:rgba(255,198,46,0.12);--signal-glow:rgba(255,198,46,0.35);
+  --signal:#1F5FD1;--signal-dim:rgba(31,95,209,0.12);--signal-glow:rgba(31,95,209,0.35);
   --white:#fff;--off-white:#F4F4F0;--slate:#C6D2E8;--muted:#9FB0CF;
-  --green:#22D95A;--red:#FF5F57;--amber:#FEBC2E;
+  --green:#22D95A;--red:#FF5F57;--amber:#B54708;
   --shadow-sm:0 2px 8px rgba(0,0,0,0.3);
   --shadow-md:0 8px 32px rgba(0,0,0,0.45);
   --shadow-lg:0 20px 60px rgba(0,0,0,0.6);
-  --shadow-signal:0 0 30px rgba(255,198,46,0.25),0 0 60px rgba(255,198,46,0.1);
+  --shadow-signal:0 0 30px rgba(31,95,209,0.25),0 0 60px rgba(31,95,209,0.1);
 }
 html{scroll-behavior:smooth;}
 body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(--white);-webkit-font-smoothing:antialiased;overflow-x:hidden;}
@@ -31,7 +31,7 @@ nav{
   border-bottom:1px solid rgba(255,255,255,0.07);
   display:flex;align-items:center;justify-content:space-between;
   padding:0 48px;height:64px;
-  box-shadow:0 1px 0 rgba(255,198,46,0.08),var(--shadow-sm);
+  box-shadow:0 1px 0 rgba(31,95,209,0.08),var(--shadow-sm);
 }
 .nav-logo{
   display:flex;align-items:center;text-decoration:none;
@@ -56,7 +56,7 @@ nav{
 }
 .logo-glisten{
   position:absolute;top:0;left:-100%;width:50%;height:100%;
-  background:linear-gradient(90deg,transparent,rgba(255,198,46,0.6),rgba(255,255,255,0.4),transparent);
+  background:linear-gradient(90deg,transparent,rgba(31,95,209,0.6),rgba(255,255,255,0.4),transparent);
   pointer-events:none;
   opacity:0;
 }
@@ -84,14 +84,14 @@ nav{
 .nav-links a:hover::after{transform:scaleX(1);}
 
 .nav-cta{
-  background:linear-gradient(135deg,#FFC62E 0%,#E5AC12 100%);
+  background:linear-gradient(135deg,#1F5FD1 0%,#174BAA 100%);
   color:var(--navy);
   font-weight:700;font-size:12px;
   padding:10px 22px;border:none;cursor:pointer;
   letter-spacing:0.08em;text-transform:uppercase;
   text-decoration:none;display:inline-block;
   transition:all 0.2s ease;
-  box-shadow:0 4px 16px rgba(255,198,46,0.3);
+  box-shadow:0 4px 16px rgba(31,95,209,0.3);
   position:relative;overflow:hidden;
 }
 .nav-cta::before{
@@ -101,7 +101,7 @@ nav{
 }
 .nav-cta:hover{
   opacity:0.95;transform:translateY(-2px);
-  box-shadow:0 8px 24px rgba(255,198,46,0.5);
+  box-shadow:0 8px 24px rgba(31,95,209,0.5);
 }
 .nav-cta:hover::before{left:100%;}
 .nav-cta:active{transform:translateY(0) scale(0.97);}
@@ -117,7 +117,7 @@ nav{
 .hero::before{
   content:'';position:absolute;top:-200px;right:-100px;
   width:900px;height:900px;
-  background:radial-gradient(ellipse,rgba(255,198,46,0.07) 0%,transparent 65%);
+  background:radial-gradient(ellipse,rgba(31,95,209,0.07) 0%,transparent 65%);
   pointer-events:none;
   animation:ambientPulse 6s ease-in-out infinite alternate;
 }
@@ -153,9 +153,9 @@ nav{
   font-family:'Saira Condensed',sans-serif;
   font-size:clamp(52px,6vw,88px);font-weight:900;line-height:0.93;
   letter-spacing:-0.01em;text-transform:uppercase;margin-bottom:28px;
-  text-shadow:0 4px 40px rgba(255,198,46,0.08);
+  text-shadow:0 4px 40px rgba(31,95,209,0.08);
 }
-.hero-h1 em{color:var(--signal);font-style:normal;text-shadow:0 0 40px rgba(255,198,46,0.4);}
+.hero-h1 em{color:var(--signal);font-style:normal;text-shadow:0 0 40px rgba(31,95,209,0.4);}
 .hero-sub{
   font-size:24px;line-height:1.5;color:rgba(255,255,255,0.82);
   max-width:640px;margin-bottom:44px;font-weight:500;
@@ -169,7 +169,7 @@ nav{
 
 /* BUTTONS */
 .btn-primary{
-  background:linear-gradient(180deg,#FFD460 0%,#FFC62E 45%,#E5AC12 100%);
+  background:linear-gradient(180deg,#3B7BE8 0%,#1F5FD1 45%,#174BAA 100%);
   color:var(--navy);font-family:'Inter',sans-serif;
   font-weight:700;font-size:14px;
   padding:15px 36px;border:none;cursor:pointer;
@@ -179,7 +179,7 @@ nav{
   transition:all 0.2s cubic-bezier(0.16,1,0.3,1);
   box-shadow:
     0 6px 0 #B8860B,
-    0 8px 20px rgba(255,198,46,0.4),
+    0 8px 20px rgba(31,95,209,0.4),
     0 1px 0 rgba(255,255,255,0.35) inset;
   position:relative;overflow:hidden;
   transform:translateY(-3px);
@@ -194,13 +194,13 @@ nav{
   transform:translateY(-5px);
   box-shadow:
     0 8px 0 #B8860B,
-    0 14px 32px rgba(255,198,46,0.55),
+    0 14px 32px rgba(31,95,209,0.55),
     0 1px 0 rgba(255,255,255,0.4) inset;
 }
 .btn-primary:hover::before{left:100%;}
 .btn-primary:active{
   transform:translateY(-1px);
-  box-shadow:0 2px 0 #B8860B,0 4px 12px rgba(255,198,46,0.3),0 1px 0 rgba(255,255,255,0.2) inset;
+  box-shadow:0 2px 0 #B8860B,0 4px 12px rgba(31,95,209,0.3),0 1px 0 rgba(255,255,255,0.2) inset;
 }
 
 .btn-ghost{
@@ -264,7 +264,7 @@ nav{
 }
 .t-dot{width:12px;height:12px;border-radius:50%;}
 .t-dot.red{background:#FF5F57;box-shadow:0 0 8px rgba(255,95,87,0.5);}
-.t-dot.amber{background:#FEBC2E;box-shadow:0 0 8px rgba(254,188,46,0.4);}
+.t-dot.amber{background:#B54708;box-shadow:0 0 8px rgba(181,71,8,0.4);}
 .t-dot.green{background:#28C840;box-shadow:0 0 8px rgba(40,200,64,0.5);}
 .terminal-title{flex:1;text-align:center;font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:0.05em;font-family:'Inter',sans-serif;}
 .terminal-body{padding:28px 32px;position:relative;z-index:2;min-height:260px;}
@@ -341,7 +341,7 @@ nav{
   box-shadow:inset 0 0 0 1px rgba(255,255,255,0.04);
   transition:box-shadow 0.4s ease;
 }
-.portrait-card:hover{box-shadow:0 0 0 2px rgba(255,198,46,0.4),0 20px 60px rgba(0,0,0,0.6);}
+.portrait-card:hover{box-shadow:0 0 0 2px rgba(31,95,209,0.4),0 20px 60px rgba(0,0,0,0.6);}
 .portrait-card img,.portrait-card video{
   width:100%;height:100%;object-fit:cover;display:block;
   transition:transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94),filter 0.4s ease;
@@ -365,17 +365,17 @@ nav{
 .portrait-role{font-size:13px;font-weight:700;letter-spacing:0.18em;color:var(--signal);text-transform:uppercase;opacity:0.9;}
 .portrait-live-badge{
   position:absolute;top:10px;right:10px;
-  background:var(--signal);color:var(--navy);
+  background:var(--signal);color:#fff;
   font-size:12px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;
   padding:5px 9px;font-family:'Inter',sans-serif;line-height:1.4;
-  box-shadow:0 2px 8px rgba(255,198,46,0.4);
+  box-shadow:0 2px 8px rgba(31,95,209,0.4);
 }
 
 /* Voice preview button */
 .voice-btn{
   position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
   width:48px;height:48px;border-radius:50%;
-  background:rgba(11,30,69,0.85);border:2px solid rgba(255,198,46,0.6);
+  background:rgba(11,30,69,0.85);border:2px solid rgba(31,95,209,0.6);
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;transition:all 0.3s ease;
   opacity:0;
@@ -384,9 +384,9 @@ nav{
 }
 .portrait-card:hover .voice-btn{opacity:1;}
 .voice-btn:hover{
-  background:rgba(255,198,46,0.15);border-color:var(--signal);
+  background:rgba(31,95,209,0.15);border-color:var(--signal);
   transform:translate(-50%,-50%) scale(1.1);
-  box-shadow:0 0 20px rgba(255,198,46,0.3),0 4px 20px rgba(0,0,0,0.5);
+  box-shadow:0 0 20px rgba(31,95,209,0.3),0 4px 20px rgba(0,0,0,0.5);
 }
 .voice-btn svg{width:18px;height:18px;fill:var(--signal);}
 .voice-btn.playing svg{display:none;}
@@ -514,7 +514,7 @@ nav{
 .ppm-table th{font-size:16px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.8);text-align:left;padding:14px 16px;border-bottom:2px solid rgba(255,255,255,0.25)}
 .ppm-table td{font-size:20px;padding:18px 16px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.12);color:#fff;font-weight:600}
 .ppm-table td a{color:#fff;text-decoration:underline;text-underline-offset:3px}
-.ppm-table tr.us td{background:var(--signal);color:var(--navy);font-weight:900;border-bottom:2px solid var(--navy)}
+.ppm-table tr.us td{background:var(--signal);color:#fff;font-weight:900;border-bottom:2px solid var(--navy)}
 .ppm-table td:nth-child(4){font-weight:900;font-size:26px}
 
 /* PRICING */
@@ -529,10 +529,10 @@ nav{
 }
 .price-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg),inset 0 0 0 1px rgba(255,255,255,0.1);}
 .price-card.featured{
-  background:var(--signal);color:var(--navy);
+  background:var(--signal);color:#fff;
   box-shadow:var(--shadow-signal),var(--shadow-lg);
 }
-.price-card.featured:hover{box-shadow:0 0 50px rgba(255,198,46,0.4),0 0 100px rgba(255,198,46,0.15),var(--shadow-lg);}
+.price-card.featured:hover{box-shadow:0 0 50px rgba(31,95,209,0.4),0 0 100px rgba(31,95,209,0.15),var(--shadow-lg);}
 .price-plan{font-family:'Saira Condensed',sans-serif;font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;}
 .price-card.featured .price-plan{color:var(--navy);}
 .price-amount{font-family:'Saira Condensed',sans-serif;font-size:72px;font-weight:900;line-height:1;margin-bottom:4px;}
@@ -584,7 +584,7 @@ nav{
 
 /* CTA */
 .cta-strip{
-  background:linear-gradient(135deg,#FFC62E 0%,#FFCF4D 50%,#E5AC12 100%);
+  background:linear-gradient(135deg,#1F5FD1 0%,#3B7BE8 50%,#174BAA 100%);
   padding:90px 48px;text-align:center;position:relative;overflow:hidden;
 }
 .cta-strip::before{
@@ -607,7 +607,7 @@ footer{
   border-top:1px solid rgba(255,255,255,0.06);
   padding:52px 48px;
   display:grid;grid-template-columns:1fr auto;align-items:center;gap:32px;
-  box-shadow:0 -1px 0 rgba(255,198,46,0.05);
+  box-shadow:0 -1px 0 rgba(31,95,209,0.05);
 }
 .footer-logo{display:inline-block;text-decoration:none;margin-bottom:12px;line-height:0;}
 .footer-logo-svg{height:26px;width:auto;display:block;overflow:visible;}
@@ -719,7 +719,7 @@ footer{
 .roi-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--signal);cursor:pointer;border:3px solid var(--navy);box-shadow:0 0 0 2px var(--signal);}
 .roi-val{font-size:20px;font-weight:800;color:var(--signal);width:80px;text-align:right;flex-shrink:0;}
 .roi-output{
-  background:rgba(255,198,46,0.08);border:1px solid rgba(255,198,46,0.2);
+  background:rgba(31,95,209,0.08);border:1px solid rgba(31,95,209,0.2);
   border-radius:3px;padding:40px;text-align:center;
 }
 .roi-saving{
@@ -786,12 +786,12 @@ details[open] .faq-q{color:var(--signal);}
 #sqChatBtn{
   position:fixed;bottom:28px;right:28px;z-index:8000;
   width:60px;height:60px;border-radius:50%;
-  background:linear-gradient(145deg,#FFD460,#FFC62E);
-  border:none;cursor:pointer;box-shadow:0 4px 20px rgba(255,198,46,0.5),0 6px 0 #B8860B;
+  background:linear-gradient(145deg,#3B7BE8,#1F5FD1);
+  border:none;cursor:pointer;box-shadow:0 4px 20px rgba(31,95,209,0.5),0 6px 0 #B8860B;
   display:flex;align-items:center;justify-content:center;font-size:26px;
   transform:translateY(-3px);transition:all 0.2s;
 }
-#sqChatBtn:hover{transform:translateY(-6px);box-shadow:0 8px 30px rgba(255,198,46,0.6),0 8px 0 #B8860B;}
+#sqChatBtn:hover{transform:translateY(-6px);box-shadow:0 8px 30px rgba(31,95,209,0.6),0 8px 0 #B8860B;}
 #sqChatBtn .sq-badge{
   position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;
   background:var(--green);border:2px solid #0B1E45;
@@ -809,7 +809,7 @@ details[open] .faq-q{color:var(--signal);}
 #sqChatWindow.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all;}
 #sqChatWindow.tall{height:min(880px,calc(100vh - 128px));width:min(480px,calc(100vw - 40px));}
 .sqchat-header{
-  background:rgba(255,198,46,0.1);border-bottom:1px solid rgba(255,255,255,0.08);
+  background:rgba(31,95,209,0.1);border-bottom:1px solid rgba(255,255,255,0.08);
   padding:16px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;
 }
 .sqchat-avatar{width:36px;height:36px;border-radius:50%;background:var(--signal);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
@@ -832,7 +832,7 @@ details[open] .faq-q{color:var(--signal);}
   border-bottom-left-radius:4px;
 }
 .sqchat-msg.user .sqchat-bubble{
-  background:linear-gradient(135deg,#FFD460,#FFC62E);color:#0B1E45;font-weight:600;
+  background:linear-gradient(135deg,#3B7BE8,#1F5FD1);color:#fff;font-weight:600;
   border-bottom-right-radius:4px;
 }
 .sqchat-typing{display:flex;gap:4px;padding:12px 14px;}
@@ -850,11 +850,11 @@ details[open] .faq-q{color:var(--signal);}
   color:#fff;font-size:13px;outline:none;transition:border-color 0.2s;
   font-family:inherit;
 }
-#sqChatInput:focus{border-color:rgba(255,198,46,0.4);}
+#sqChatInput:focus{border-color:rgba(31,95,209,0.4);}
 #sqChatInput::placeholder{color:rgba(255,255,255,0.25);}
 #sqChatSend{
   width:38px;height:38px;border-radius:50%;flex-shrink:0;
-  background:linear-gradient(135deg,#FFD460,#FFC62E);
+  background:linear-gradient(135deg,#3B7BE8,#1F5FD1);
   border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;
   transition:transform 0.15s;
 }
@@ -888,10 +888,10 @@ details[open] .faq-q{color:var(--signal);}
 .mk-k{font-weight:700;color:#56647E;font-size:12px;text-transform:uppercase;letter-spacing:0.04em}
 .mk-v{color:#0B1E45;font-weight:600}
 .mk-v s{color:#8391A8}
-.mk-miss{color:#8A5A00}
+.mk-miss{color:#44536F;font-style:italic}
 .mk-chip{grid-column:2;justify-self:start;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px}
 .mk-chip.ok{background:#E3F4E9;color:#127A3A}
-.mk-chip.warn{background:#FFF4DB;color:#8A5A00}
+.mk-chip.warn{background:#EAF2FC;color:#174BAA}
 .mk-chip.you{background:#EAF2FC;color:#1F5FD1}
 .mk-edit{margin:8px 12px;padding:8px 10px;border:2px solid #1F5FD1;border-radius:8px;color:#0B1E45;font-weight:600;line-height:1.35}
 .mk-actions{display:flex;align-items:center;gap:8px;padding:0 12px 12px}
@@ -985,7 +985,7 @@ details[open] .faq-q{color:var(--signal);}
         <input class="hero-url" type="url" id="heroUrl" placeholder="https://yourbusiness.com" autocomplete="url" required>
         <button type="submit" class="btn-primary" data-sound="click">Recruit my team →</button>
       </form>
-      <p class="hero-note">Enter your website, an App Store link, or your documents. Plans from $39 for 30 days, prepaid, with unlimited web chat.</p>
+      <p class="hero-note">Enter your website, an App Store link, or your documents. Plans from $39 for 30 days, prepaid, with web chat included.</p>
     </div>
     <div class="hero-art"><img src="https://cdn.midjourney.com/9625b87f-40d2-4b7d-a7f5-d58877d7dad2/0_2_640_N.webp" alt="Line drawing of a calm AI agent in a headset, with three jets flying past"><video class="hero-video" src="https://cdn.midjourney.com/video/1817c449-39ac-4212-b945-cf5255f9cb67/1.mp4" poster="https://cdn.midjourney.com/9625b87f-40d2-4b7d-a7f5-d58877d7dad2/0_2_640_N.webp" autoplay muted loop playsinline preload="auto" aria-hidden="true" oncanplay="this.classList.add('on')"></video></div>
   </div>
@@ -1341,28 +1341,28 @@ details[open] .faq-q{color:var(--signal);}
     <div class="pricing-header">
       <p class="section-label">Pricing</p>
       <h2 class="section-title">Choose your flight hours.</h2>
-      <p class="section-sub" style="margin:24px auto 0;font-size:22px;color:rgba(255,255,255,0.88);max-width:720px;">Every plan includes the full team and unlimited web chat. You prepay 30 days by card or bank transfer, and you are never billed after the fact. Web chat is live today; phone lines are opening soon.</p>
+      <p class="section-sub" style="margin:24px auto 0;font-size:22px;color:rgba(255,255,255,0.88);max-width:720px;">Every plan includes the full team and web chat. You prepay 30 days by card or bank transfer, and you are never billed after the fact. Web chat is live today; phone lines are opening soon.</p>
     </div>
     <div class="pricing-grid">
       <div class="price-card">
         <div class="price-plan">Basic</div><div class="price-amount">$39</div>
         <div class="price-period">per 30 days, prepaid · about 16¢ a voice minute</div>
         <div class="price-divider"></div>
-        <ul class="price-features"><li>The full team</li><li>250 AI voice minutes</li><li>Unlimited web chat</li><li>Squadron HQ</li><li>Extra minutes 25¢ each</li></ul>
+        <ul class="price-features"><li>The full team</li><li>250 AI voice minutes</li><li>Web chat included</li><li>Squadron HQ</li><li>Extra minutes 25¢ each</li></ul>
         <a href="/start" class="price-btn price-btn-outline" data-sound="click">Start with Basic →</a>
       </div>
       <div class="price-card featured">
         <div class="price-plan">Pro</div><div class="price-amount">$79</div>
         <div class="price-period">per 30 days, prepaid · about 12¢ a voice minute</div>
         <div class="price-divider"></div>
-        <ul class="price-features"><li>The full team</li><li>650 AI voice minutes</li><li>Unlimited web chat</li><li>Squadron HQ</li><li>Extra minutes 25¢ each</li></ul>
+        <ul class="price-features"><li>The full team</li><li>650 AI voice minutes</li><li>Web chat included</li><li>Squadron HQ</li><li>Extra minutes 25¢ each</li></ul>
         <a href="/start" class="price-btn price-btn-solid" data-sound="click">Start with Pro →</a>
       </div>
       <div class="price-card">
         <div class="price-plan">Command Center</div><div class="price-amount">$199</div>
         <div class="price-period">per 30 days, prepaid · under 10¢ a voice minute</div>
         <div class="price-divider"></div>
-        <ul class="price-features"><li>The full team</li><li>2,000 AI voice minutes</li><li>Unlimited web chat</li><li>Squadron HQ</li><li>Extra minutes 25¢ each</li></ul>
+        <ul class="price-features"><li>The full team</li><li>2,000 AI voice minutes</li><li>Web chat included</li><li>Squadron HQ</li><li>Extra minutes 25¢ each</li></ul>
         <a href="/start" class="price-btn price-btn-outline" data-sound="click">Start with Command Center →</a>
       </div>
     </div>
@@ -1372,7 +1372,7 @@ details[open] .faq-q{color:var(--signal);}
         <div class="bat-tag">For high-volume teams</div>
         <div class="price-plan bat-name">Battalion</div>
         <div class="bat-price"><span class="price-amount">$999</span><span class="bat-per">per 30 days, prepaid · about 10¢ a voice minute</span></div>
-        <ul class="bat-list"><li>10,000 AI voice minutes and unlimited web chat</li><li>Beyond 10,000 minutes, you pay our cost plus 1¢ a minute, from prepaid credit</li><li>The full team, Squadron HQ and the human layer</li><li>No contract and no automatic upgrade</li></ul>
+        <ul class="bat-list"><li>10,000 AI voice minutes and web chat</li><li>Beyond 10,000 minutes, you pay our cost plus 1¢ a minute, from prepaid credit</li><li>The full team, Squadron HQ and the human layer</li><li>No contract and no automatic upgrade</li></ul>
         <details class="bat-rates"><summary>What an extra minute costs, past 10,000</summary>
           <p>Each extra minute costs exactly what that call costs Squadron at our providers' published prices, plus 1¢. Nothing else is added.</p>
           <table><tbody>
@@ -1394,7 +1394,7 @@ details[open] .faq-q{color:var(--signal);}
     <div class="compare cmp" id="compare">
       <h3 class="compare-title">How Squadron compares with the big names</h3>
       <p class="compare-sub">Every price below is copied from the company's own pricing page, checked on September 24, 2026, with a link to the source. Squadron is one price per minute with everything included; the developer platforms charge for each piece separately and leave the building to you.</p>
-      <div class="inc-list"><div class="inc us"><div class="inc-top"><div><div class="inc-name">Squadron</div><div class="inc-plan">Basic $39 · Pro $79 · Command Center $199 · Battalion $999 a month</div></div><div class="inc-price"><b>16¢ to 10¢</b><span>a minute, all-in</span></div></div><p class="inc-what">The AI, the voices, the phone line, transcription and recording in one price, a ready-built team, and unlimited web chat. Past 10,000 minutes on Battalion: our cost plus 1¢.</p><a class="inc-src" href="/#pricing">See Squadron plans</a></div><div class="inc "><div class="inc-top"><div><div class="inc-name">Retell AI</div><div class="inc-plan">Pay as you go, no monthly fee</div></div><div class="inc-price"><b>7¢ to 31¢</b><span>a minute</span></div></div><p class="inc-what">Voice infrastructure 5.5¢, voices 1.5¢ and phone line 1.5¢ a minute, plus the AI model, which varies by model. Knowledge base and other features are extra. You build the agent yourself.</p><a class="inc-src" href="https://www.retellai.com/pricing" rel="nofollow noopener" target="_blank">Source: retellai.com/pricing</a></div><div class="inc "><div class="inc-top"><div><div class="inc-name">Bland AI</div><div class="inc-plan">Start: no platform fee · Build: $299 a month</div></div><div class="inc-price"><b>14¢ or 12¢</b><span>a minute</span></div></div><p class="inc-what">14¢ a minute on Start, or 12¢ on Build with its $299 monthly fee. Transfers to a person cost 5¢ or 4¢ a minute more. You build the agent yourself.</p><a class="inc-src" href="https://www.bland.ai/pricing" rel="nofollow noopener" target="_blank">Source: bland.ai/pricing</a></div><div class="inc "><div class="inc-top"><div><div class="inc-name">Vapi</div><div class="inc-plan">Prepaid hosting</div></div><div class="inc-price"><b>5¢ + providers</b><span>a minute</span></div></div><p class="inc-what">5¢ a minute for hosting, with transcription, the AI model, the voice and the phone line billed separately. Vapi estimates $82 to $129 for 1,000 minutes. You build the agent yourself.</p><a class="inc-src" href="https://vapi.ai/pricing" rel="nofollow noopener" target="_blank">Source: vapi.ai/pricing</a></div><div class="inc "><div class="inc-top"><div><div class="inc-name">Intercom Fin</div><div class="inc-plan">Seats from $29 per agent a month</div></div><div class="inc-price"><b>$0.99</b><span>per resolution</span></div></div><p class="inc-what">Fin charges $0.99 for each conversation it resolves, on top of seat prices of $29, $85 or $132 per agent a month. Intercom does not list a per-minute phone price.</p><a class="inc-src" href="https://www.intercom.com/pricing" rel="nofollow noopener" target="_blank">Source: intercom.com/pricing</a></div><div class="inc "><div class="inc-top"><div><div class="inc-name">Synthflow</div><div class="inc-plan">Enterprise contracts</div></div><div class="inc-price"><b>From $30,000</b><span>a year</span></div></div><p class="inc-what">Synthflow lists enterprise contracts starting at $30,000 a year and asks you to contact sales for per-minute pricing.</p><a class="inc-src" href="https://www.synthflow.ai/pricing" rel="nofollow noopener" target="_blank">Source: synthflow.ai/pricing</a></div></div>
+      <div class="inc-list"><div class="inc us"><div class="inc-top"><div><div class="inc-name">Squadron</div><div class="inc-plan">Basic $39 · Pro $79 · Command Center $199 · Battalion $999 a month</div></div><div class="inc-price"><b>16¢ to 10¢</b><span>a minute, all-in</span></div></div><p class="inc-what">The AI, the voices, the phone line, transcription and recording in one price, a ready-built team, and web chat. Past 10,000 minutes on Battalion: our cost plus 1¢.</p><a class="inc-src" href="/#pricing">See Squadron plans</a></div><div class="inc "><div class="inc-top"><div><div class="inc-name">Retell AI</div><div class="inc-plan">Pay as you go, no monthly fee</div></div><div class="inc-price"><b>7¢ to 31¢</b><span>a minute</span></div></div><p class="inc-what">Voice infrastructure 5.5¢, voices 1.5¢ and phone line 1.5¢ a minute, plus the AI model, which varies by model. Knowledge base and other features are extra. You build the agent yourself.</p><a class="inc-src" href="https://www.retellai.com/pricing" rel="nofollow noopener" target="_blank">Source: retellai.com/pricing</a></div><div class="inc "><div class="inc-top"><div><div class="inc-name">Bland AI</div><div class="inc-plan">Start: no platform fee · Build: $299 a month</div></div><div class="inc-price"><b>14¢ or 12¢</b><span>a minute</span></div></div><p class="inc-what">14¢ a minute on Start, or 12¢ on Build with its $299 monthly fee. Transfers to a person cost 5¢ or 4¢ a minute more. You build the agent yourself.</p><a class="inc-src" href="https://www.bland.ai/pricing" rel="nofollow noopener" target="_blank">Source: bland.ai/pricing</a></div><div class="inc "><div class="inc-top"><div><div class="inc-name">Vapi</div><div class="inc-plan">Prepaid hosting</div></div><div class="inc-price"><b>5¢ + providers</b><span>a minute</span></div></div><p class="inc-what">5¢ a minute for hosting, with transcription, the AI model, the voice and the phone line billed separately. Vapi estimates $82 to $129 for 1,000 minutes. You build the agent yourself.</p><a class="inc-src" href="https://vapi.ai/pricing" rel="nofollow noopener" target="_blank">Source: vapi.ai/pricing</a></div><div class="inc "><div class="inc-top"><div><div class="inc-name">Intercom Fin</div><div class="inc-plan">Seats from $29 per agent a month</div></div><div class="inc-price"><b>$0.99</b><span>per resolution</span></div></div><p class="inc-what">Fin charges $0.99 for each conversation it resolves, on top of seat prices of $29, $85 or $132 per agent a month. Intercom does not list a per-minute phone price.</p><a class="inc-src" href="https://www.intercom.com/pricing" rel="nofollow noopener" target="_blank">Source: intercom.com/pricing</a></div><div class="inc "><div class="inc-top"><div><div class="inc-name">Synthflow</div><div class="inc-plan">Enterprise contracts</div></div><div class="inc-price"><b>From $30,000</b><span>a year</span></div></div><p class="inc-what">Synthflow lists enterprise contracts starting at $30,000 a year and asks you to contact sales for per-minute pricing.</p><a class="inc-src" href="https://www.synthflow.ai/pricing" rel="nofollow noopener" target="_blank">Source: synthflow.ai/pricing</a></div></div>
       <p class="compare-note">Prices change, so follow each link to check the current price. Retell, Bland and Vapi are tools for developers to build their own agents; Squadron builds and runs the team for you.</p>
     </div>
     </div>
@@ -1428,7 +1428,7 @@ details[open] .faq-q{color:var(--signal);}
       </details>
       <details class="faq-item">
         <summary class="faq-q">How is pricing calculated? <span class="faq-chevron">+</span></summary>
-        <p class="faq-a">Each plan is a flat prepaid price for 30 days, with a set number of AI voice minutes and unlimited web chat. Extra voice minutes cost 25¢ each, prepaid in blocks of 100. Squadron never bills after the fact: when a period's prepaid amount is used, your team pauses and we email you a top-up invoice. There is no automatic upgrade and no per-agent fee.</p>
+        <p class="faq-a">Each plan is a flat prepaid price for 30 days, with a set number of AI voice minutes and web chat. Extra voice minutes cost 25¢ each, prepaid in blocks of 100. Squadron never bills after the fact: when a period's prepaid amount is used, your team pauses and we email you a top-up invoice. There is no automatic upgrade and no per-agent fee.</p>
       </details>
       <details class="faq-item">
         <summary class="faq-q">Can my customers talk to a person instead? <span class="faq-chevron">+</span></summary>
@@ -1918,7 +1918,7 @@ document.addEventListener('click',e=>{
         width:48px;height:48px;border-radius:50%;overflow:hidden;
         border:2px solid var(--signal);flex-shrink:0;
       ">
-        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' fill='%2310295C'/%3E%3Ccircle cx='24' cy='20' r='10' fill='%23FFD460'/%3E%3Cellipse cx='24' cy='38' rx='14' ry='10' fill='%23FFD460'/%3E%3C/svg%3E" width="48" height="48" alt="Ace"/>
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' fill='%2310295C'/%3E%3Ccircle cx='24' cy='20' r='10' fill='%233B7BE8'/%3E%3Cellipse cx='24' cy='38' rx='14' ry='10' fill='%233B7BE8'/%3E%3C/svg%3E" width="48" height="48" alt="Ace"/>
       </div>
       <div>
         <div style="color:#fff;font-weight:700;font-size:16px;">Ace</div>
@@ -1952,7 +1952,7 @@ document.addEventListener('click',e=>{
       ">🎙 Start Talking</button>
       <button onclick="alexSpeak()" style="
         padding:14px 20px;border-radius:3px;
-        background:linear-gradient(180deg,#FFD460 0%,#FFC62E 100%);
+        background:linear-gradient(180deg,#3B7BE8 0%,#1F5FD1 100%);
         color:#0B1E45;font-weight:700;font-size:14px;border:none;
         cursor:pointer;white-space:nowrap;
       ">Type Instead →</button>
@@ -1966,7 +1966,7 @@ document.addEventListener('click',e=>{
           onkeydown="if(event.key==='Enter')sendTyped()"/>
         <button onclick="sendTyped()" style="
           padding:12px 20px;border-radius:3px;
-          background:linear-gradient(180deg,#FFD460,#FFC62E);
+          background:linear-gradient(180deg,#3B7BE8,#1F5FD1);
           color:#0B1E45;font-weight:700;border:none;cursor:pointer;
         ">Send</button>
       </div>

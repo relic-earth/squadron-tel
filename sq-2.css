@@ -10,10 +10,10 @@
 }
 .price-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg),inset 0 0 0 1px rgba(255,255,255,0.1);}
 .price-card.featured{
-  background:var(--signal);color:var(--navy);
+  background:var(--signal);color:#fff;
   box-shadow:var(--shadow-signal),var(--shadow-lg);
 }
-.price-card.featured:hover{box-shadow:0 0 50px rgba(255,198,46,0.4),0 0 100px rgba(255,198,46,0.15),var(--shadow-lg);}
+.price-card.featured:hover{box-shadow:0 0 50px rgba(31,95,209,0.4),0 0 100px rgba(31,95,209,0.15),var(--shadow-lg);}
 .price-plan{font-family:'Saira Condensed',sans-serif;font-size:28px;font-weight:900;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;}
 .price-card.featured .price-plan{color:var(--navy);}
 .price-amount{font-family:'Saira Condensed',sans-serif;font-size:72px;font-weight:900;line-height:1;margin-bottom:4px;}
@@ -65,7 +65,7 @@
 
 /* CTA */
 .cta-strip{
-  background:linear-gradient(135deg,#FFC62E 0%,#FFCF4D 50%,#E5AC12 100%);
+  background:linear-gradient(135deg,#1F5FD1 0%,#3B7BE8 50%,#174BAA 100%);
   padding:90px 48px;text-align:center;position:relative;overflow:hidden;
 }
 .cta-strip::before{
@@ -88,7 +88,7 @@ footer{
   border-top:1px solid rgba(255,255,255,0.06);
   padding:52px 48px;
   display:grid;grid-template-columns:1fr auto;align-items:center;gap:32px;
-  box-shadow:0 -1px 0 rgba(255,198,46,0.05);
+  box-shadow:0 -1px 0 rgba(31,95,209,0.05);
 }
 .footer-logo{display:inline-block;text-decoration:none;margin-bottom:12px;line-height:0;}
 .footer-logo-svg{height:26px;width:auto;display:block;overflow:visible;}
@@ -199,7 +199,7 @@ footer{
 .roi-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--signal);cursor:pointer;border:3px solid var(--navy);box-shadow:0 0 0 2px var(--signal);}
 .roi-val{font-size:20px;font-weight:800;color:var(--signal);width:80px;text-align:right;flex-shrink:0;}
 .roi-output{
-  background:rgba(255,198,46,0.08);border:1px solid rgba(255,198,46,0.2);
+  background:rgba(31,95,209,0.08);border:1px solid rgba(31,95,209,0.2);
   border-radius:3px;padding:40px;text-align:center;
 }
 .roi-saving{
@@ -261,12 +261,12 @@ details[open] .faq-q{color:var(--signal);}
 #sqChatBtn{
   position:fixed;bottom:28px;right:28px;z-index:8000;
   width:60px;height:60px;border-radius:50%;
-  background:linear-gradient(145deg,#FFD460,#FFC62E);
-  border:none;cursor:pointer;box-shadow:0 4px 20px rgba(255,198,46,0.5),0 6px 0 #B8860B;
+  background:linear-gradient(145deg,#3B7BE8,#1F5FD1);
+  border:none;cursor:pointer;box-shadow:0 4px 20px rgba(31,95,209,0.5),0 6px 0 #B8860B;
   display:flex;align-items:center;justify-content:center;font-size:26px;
   transform:translateY(-3px);transition:all 0.2s;
 }
-#sqChatBtn:hover{transform:translateY(-6px);box-shadow:0 8px 30px rgba(255,198,46,0.6),0 8px 0 #B8860B;}
+#sqChatBtn:hover{transform:translateY(-6px);box-shadow:0 8px 30px rgba(31,95,209,0.6),0 8px 0 #B8860B;}
 #sqChatBtn .sq-badge{
   position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;
   background:var(--green);border:2px solid #0B1E45;
@@ -283,7 +283,7 @@ details[open] .faq-q{color:var(--signal);}
 }
 #sqChatWindow.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all;}
 .sqchat-header{
-  background:rgba(255,198,46,0.1);border-bottom:1px solid rgba(255,255,255,0.08);
+  background:rgba(31,95,209,0.1);border-bottom:1px solid rgba(255,255,255,0.08);
   padding:16px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;
 }
 .sqchat-avatar{width:36px;height:36px;border-radius:50%;background:var(--signal);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
@@ -306,7 +306,7 @@ details[open] .faq-q{color:var(--signal);}
   border-bottom-left-radius:4px;
 }
 .sqchat-msg.user .sqchat-bubble{
-  background:linear-gradient(135deg,#FFD460,#FFC62E);color:#0B1E45;font-weight:600;
+  background:linear-gradient(135deg,#3B7BE8,#1F5FD1);color:#fff;font-weight:600;
   border-bottom-right-radius:4px;
 }
 .sqchat-typing{display:flex;gap:4px;padding:12px 14px;}
@@ -324,11 +324,11 @@ details[open] .faq-q{color:var(--signal);}
   color:#fff;font-size:13px;outline:none;transition:border-color 0.2s;
   font-family:inherit;
 }
-#sqChatInput:focus{border-color:rgba(255,198,46,0.4);}
+#sqChatInput:focus{border-color:rgba(31,95,209,0.4);}
 #sqChatInput::placeholder{color:rgba(255,255,255,0.25);}
 #sqChatSend{
   width:38px;height:38px;border-radius:50%;flex-shrink:0;
-  background:linear-gradient(135deg,#FFD460,#FFC62E);
+  background:linear-gradient(135deg,#3B7BE8,#1F5FD1);
   border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;
   transition:transform 0.15s;
 }
