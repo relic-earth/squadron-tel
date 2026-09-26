@@ -224,3 +224,6 @@ body.home .footer-links{flex-wrap:wrap;gap:14px 24px}
 @media(max-width:600px){body.home .nav-login{white-space:nowrap;margin-right:12px}body.home .nav-cta{white-space:nowrap;font-size:14px!important;padding:11px 16px!important}}
 @media(max-width:380px){body.home .nav-cta{font-size:13px!important;padding:10px 12px!important}}
 @media(max-width:600px){body.home .cta-title br{display:none}body.home footer{padding-bottom:110px!important}}
+body.home .tr-ill{padding:16px 10px}
+body.home .mk-row{grid-template-columns:62px minmax(0,1fr)}
+body.home .mk-chip{font-size:12.5px;max-width:100%;overflow-wrap:anywhere}

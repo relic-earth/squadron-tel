@@ -32,7 +32,7 @@ h2{font-family:'Inter Tight','Inter',sans-serif;font-weight:700;font-size:34px;l
 .tab{font-size:16px;font-weight:700;padding:12px 22px;border-radius:999px;background:#fff;border:2px solid rgba(11,30,69,0.14);background:transparent;color:var(--slate);cursor:pointer}
 .tab.on{border-color:var(--signal);color:var(--navy);background:var(--signal)}
 .field{display:flex;gap:12px;flex-wrap:wrap}
-.input{flex:1;min-width:280px;font:inherit;font-size:20px;font-weight:500;padding:18px 24px;border-radius:999px;border:2px solid rgba(11,30,69,0.22);background:#fff;color:var(--ink);outline:none}
+.input{flex:1;min-width:min(280px,100%);font:inherit;font-size:20px;font-weight:500;padding:18px 24px;border-radius:999px;border:2px solid rgba(11,30,69,0.22);background:#fff;color:var(--ink);outline:none}
 .input::placeholder{color:rgba(11,30,69,0.45)}
 .input:focus{border-color:var(--signal);box-shadow:0 0 0 4px var(--signal-dim)}
 textarea.input{border-radius:16px;min-height:220px;font-size:17px;font-weight:500;line-height:1.5;resize:vertical}
