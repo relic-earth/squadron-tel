@@ -295,6 +295,10 @@
       "dest": "/api/handoff.js"
     },
     {
+      "src": "/api/voice-check",
+      "dest": "/api/voice-check.js"
+    },
+    {
       "src": "/(.*)",
       "dest": "/$1"
     }
