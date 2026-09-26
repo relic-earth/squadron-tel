@@ -1,7 +1,7 @@
 /* Squadron: high-end, minimal AI call center with a loose Air Force motif.
    Grounds are pale blue and very light gray only; navy is for text. */
 :root{
-  --pale:#EAF2FC;--gray:#F5F7FA;--white:#fff;
+  --pale:#EAF2FC;--gray:#F5F7FA;
   --ink:#0B1E45;--ink-2:#44536F;--blue:#1F5FD1;--blue-2:#174BAA;--line:#DCE4EF;
   --display:'Inter Tight','Inter',system-ui,sans-serif;
   --label:'Inter',system-ui,sans-serif;
@@ -181,3 +181,46 @@ body.home .cta-email{min-width:300px!important}
 
 
 @media (prefers-reduced-motion:reduce){body.home .hero-art video{display:none}}
+
+/* Larger, bolder type from the Sept 26 prod check */
+body.home .tr-num{font-size:17px}
+body.home .tr-card h3{font-size:29px}
+body.home .tr-card p{font-size:19px;color:#2E3D5A}
+body.home .tr-note{font-size:21px}
+body.home .mk{font-size:15px}
+body.home .mk-bar span{font-size:15px}
+body.home .mk-row{grid-template-columns:68px 1fr}
+body.home .mk-k,body.home .mk-lbl{font-size:13px;color:#44536F}
+body.home .mk-chip,body.home .mk-tags span{font-size:13px}
+body.home .mk-btn{font-size:14px;padding:7px 14px}
+body.home .mk-q{font-size:16px}
+body.home .mk-q small{font-size:13px;color:#44536F}
+body.home .in-code{overflow-x:visible}
+body.home .in-code code{white-space:normal;overflow-wrap:anywhere;font-size:17px;line-height:1.6}
+body.home .in-hint{font-size:18px;color:#2E3D5A}
+body.home .in-steps b{font-size:19px}
+body.home .in-steps span{font-size:17px;color:#2E3D5A}
+body.home .site-chat{width:80%;font-size:15px}
+body.home .sc-head{font-size:15px;padding:11px 12px}
+body.home .sc-head em{font-size:12.5px;padding:3px 9px}
+body.home .sc-msg{padding:9px 11px}
+body.home .price-period{font-size:18px!important}
+body.home .price-features li{font-size:18px!important;color:#2E3D5A!important}
+body.home .inc-plan{font-size:17px}
+body.home .inc-price span{font-size:16px}
+body.home .inc-what{font-size:18px;color:#2E3D5A}
+body.home .inc-src{font-size:17px}
+body.home .compare-note{font-size:18px!important}
+body.home .sqchat-status{font-size:13px!important;font-weight:600;color:#127A3A!important}
+body.home .sqchat-sugg button{font-size:15px}
+body.home #sqChatInput{font-size:16px!important}
+@media(max-width:680px){body.home .tr-card h3{font-size:26px}body.home .in-code code{font-size:15px}body.home .site-chat{width:88%}}
+/* Mobile fit: nothing wider than the screen */
+body.home .in-inner>*{min-width:0}
+@media(max-width:1000px){body.home .in-inner{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:900px){body.home .battalion{grid-template-columns:minmax(0,1fr)}body.home .bat-body{min-width:0}}
+@media(max-width:600px){body.home .bat-rates td:last-child{white-space:normal}body.home .bat-rates td:first-child{padding-right:8px}body.home .bat-art{min-height:240px}}
+body.home .footer-links{flex-wrap:wrap;gap:14px 24px}
+@media(max-width:600px){body.home .nav-login{white-space:nowrap;margin-right:12px}body.home .nav-cta{white-space:nowrap;font-size:14px!important;padding:11px 16px!important}}
+@media(max-width:380px){body.home .nav-cta{font-size:13px!important;padding:10px 12px!important}}
+@media(max-width:600px){body.home .cta-title br{display:none}body.home footer{padding-bottom:110px!important}}

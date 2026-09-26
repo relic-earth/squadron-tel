@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     if (!biz) return bad(res, 404, 'Unknown business');
     if (req.method === 'POST') {
       const row = await loadProfile(biz.id);
-      if (!row) return bad(res, 400, 'Build the Business Profile first.');
+      if (!row) return bad(res, 400, 'Your Business Profile is built as soon as your first 30 days are paid. Create your account and choose a plan in Billing, then come back here.');
       const profile = applyCorrections(row.profile, row.corrections);
       await requireFunds(biz.account_id, HOLD.team, 'This account');
       const { agents, routing_notes, model, usage } = await generateTeam(profile);
