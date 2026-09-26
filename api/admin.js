@@ -18,6 +18,7 @@ import { buildProfile, applyCorrections } from './_lib/profile.js';
 import { generateTeam } from './_lib/team.js';
 import { responses, outputText } from './_lib/openai.js';
 import { PERSONAS } from './_lib/personas.js';
+import { houseInstall, houseNumbers, houseBuy } from './_lib/house.js';
 
 const ADMINS = ADMIN_EMAILS;
 const FROM = process.env.COLD_FROM || process.env.EMAIL_FROM || 'Squadron <alerts@relic.earth>';
@@ -281,6 +282,10 @@ export default async function handler(req, res) {
       }
       return res.status(200).json({ found: found.length, added: added.length, duplicates: dupes.length });
     }
+
+    if (action === 'house_install') return res.status(200).json(await houseInstall(body));
+    if (action === 'house_numbers') return res.status(200).json(await houseNumbers(body));
+    if (action === 'house_buy') return res.status(200).json(await houseBuy(body));
 
     if (action === 'add') {
       const r = await addProspect({ website: body.website, name: body.name, email: body.email, city: body.city, category: body.category, source: 'manual' });

@@ -9,6 +9,7 @@ import { sql } from './_lib/db.js';
 import { reconcile, createInvoice, wireInstructions, PRICES } from './_lib/billing.js';
 import { ledgerStatus, ensureLedgerSchema } from './_lib/ledger.js';
 import { noticeOnce, sendEmail, accountEmail } from './_lib/email.js';
+import { renewHouse } from './_lib/house.js';
 
 const BILLING = 'https://www.squadron.tel/billing';
 
@@ -20,6 +21,7 @@ export async function runBilling() {
   const rec = await reconcile();
   await ensureLedgerSchema();
   const out = { reconciled: rec, renewals: 0, topups: 0, notices: 0 };
+  out.house = await renewHouse().catch((e) => { console.error('[house renew]', e.message); return false; });
   for (const id of rec.paid) {
     const inv = (await sql().query('SELECT * FROM invoices WHERE id = $1', [id]))[0];
     const to = inv && await accountEmail(inv.account_id);

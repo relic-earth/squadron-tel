@@ -111,6 +111,8 @@ export const PLANS = {
   // Battalion: flat fee for 10,000 minutes; minutes beyond that draw on
   // prepaid overage credit at Squadron's measured cost plus 1 cent a minute.
   battalion: { name: 'Battalion', price: 999, minutes: 10000, metered: true },
+  // House: Island Global Co's own businesses; a monthly spend cap, no invoice.
+  house: { name: 'House', price: 0, minutes: 100000 },
 };
 // Earlier plan ids map to the current plans.
 const ALIASES = { scout: 'basic', commander: 'pro', hq: 'center', trial: 'none' };
