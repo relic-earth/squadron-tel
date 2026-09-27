@@ -99,6 +99,7 @@
     <div class="field"><label>Webhook address</label><input id="i_webhook" placeholder="https://hooks.zapier.com/hooks/catch/..."></div>
     <div id="i_secret"></div>
     <div style="margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn small" onclick="saveTools()">Save connections</button><button class="btn small ghost" onclick="testTools(this)">Send a test</button><span class="ok" id="i_saved"></span></div>
+    <div class="error" id="i_err" style="margin-top:16px"></div>
     <div id="i_log"></div>
   </div>
 
@@ -206,22 +207,25 @@ function renderTools() {
   const d = data.deliveries || [];
   $('i_log').innerHTML = d.length ? `<p style="font-size:18px;font-weight:700;color:var(--ink);margin-top:20px">Latest deliveries</p>${d.map((x) => `<p class="detail" style="margin-top:6px"><b style="color:${x.ok ? 'var(--green)' : 'var(--red)'}">${x.ok ? 'Delivered' : 'Failed'}</b> · ${esc(x.target === 'hubspot' ? 'HubSpot' : 'Webhook')} · ${esc(x.event)} · ${new Date(x.created_at).toLocaleString()}${x.detail ? ' · ' + esc(x.detail) : ''}</p>`).join('')}` : '';
 }
+function toolErr(m) { const e = $('i_err'); e.textContent = m || ''; e.style.display = m ? 'block' : 'none'; }
 async function saveTools() {
-  err(''); $('i_saved').textContent = 'Saving…';
+  toolErr(''); $('i_saved').textContent = 'Saving…';
   const integrations = { booking_url: $('i_booking').value, webhook_url: $('i_webhook').value };
   if ($('i_hstoken') && $('i_hstoken').value.trim()) integrations.hubspot_token = $('i_hstoken').value.trim();
   try { const r = await api('/api/settings', { token, action: 'integrations', integrations }); data.integrations = r.integrations; data.deliveries = r.deliveries; renderTools(); $('i_saved').textContent = 'Saved.'; }
-  catch (e) { $('i_saved').textContent = ''; err(e.message); }
+  catch (e) { $('i_saved').textContent = ''; toolErr(e.message); }
 }
-async function hsOff() { try { const r = await api('/api/settings', { token, action: 'integrations', integrations: { hubspot_disconnect: true } }); data.integrations = r.integrations; renderTools(); } catch (e) { err(e.message); } }
+async function hsOff() { try { const r = await api('/api/settings', { token, action: 'integrations', integrations: { hubspot_disconnect: true } }); data.integrations = r.integrations; renderTools(); } catch (e) { toolErr(e.message); } }
 async function testTools(b) {
-  err(''); b.disabled = true; $('i_saved').textContent = 'Sending a test…';
+  toolErr(''); b.disabled = true; $('i_saved').textContent = 'Sending a test…';
   try {
     const r = await api('/api/settings', { token, action: 'integrations_test' });
     data.deliveries = r.deliveries; renderTools();
     const t = r.test || {};
-    $('i_saved').textContent = !t.webhook && !t.hubspot ? 'Save a webhook address or a HubSpot token first.' : [t.webhook && (t.webhook.ok ? 'Webhook delivered.' : 'Webhook failed.'), t.hubspot && (t.hubspot.ok ? 'HubSpot token works.' : 'HubSpot refused the token.')].filter(Boolean).join(' ');
-  } catch (e) { $('i_saved').textContent = ''; err(e.message); }
+    $('i_saved').textContent = !t.webhook && !t.hubspot ? 'Save a webhook address or a HubSpot token first.' : [t.webhook && (t.webhook.ok ? 'Webhook delivered.' : 'Webhook failed.'), t.hubspot && t.hubspot.ok && 'HubSpot token works.'].filter(Boolean).join(' ');
+    const fails = [t.webhook && !t.webhook.ok && `The webhook test failed${t.webhook.status ? ` with status ${t.webhook.status}` : ''}${t.webhook.error ? `: ${t.webhook.error}` : ''}. Check the address and that the receiver is switched on.`, t.hubspot && !t.hubspot.ok && `HubSpot refused the token: ${t.hubspot.error || 'no reason given'}. Create a new private app token with the contacts read and write scopes, paste it above and save.`].filter(Boolean);
+    toolErr(fails.join(' '));
+  } catch (e) { $('i_saved').textContent = ''; toolErr(e.message); }
   b.disabled = false;
 }
 async function askRating() {
