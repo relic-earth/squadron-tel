@@ -120,7 +120,7 @@ async function accountAnswer(acc, intent) {
       if (!st.active) return { reply: noPlan, link: '/billing' };
       return { reply: `You are on **${st.plan.name}**: ${st.plan.minutes.toLocaleString()} voice minutes and web chat for 30 days, prepaid, active through ${day(st.periodEnd)}. To change plan, pay for a different plan in Billing; it starts when the current period ends. Nothing upgrades automatically.`, link: '/billing' };
     case 'email':
-      return { reply: `Your Squadron account uses ${acc.email}. Squadron's notices and invoices go there, and alerts about customer messages go to the notification email on the Deploy screen if you set one.` };
+      return { reply: `${acc.member ? `You are signed in as ${acc.member.email}, a colleague on this account. ` : ''}The Squadron account uses ${acc.email}. Squadron's notices and invoices go there, and alerts about customer messages go to the notification email on the Deploy screen if you set one.${acc.member ? '' : ' To change it, go to Account email on your account page and confirm with your password.'}` };
     default: return null;
   }
 }
@@ -151,7 +151,7 @@ export default async function handler(req, res) {
   try {
     if (!text || /^(hi|hello|hey|howdy|yo|start|help|menu)[!. ]*$/i.test(text)) {
       state.pending = null;
-      return reply({ reply: acc ? GREETING_ACC(acc.email) : GREETING, suggestions: acc ? STARTERS_ACC : STARTERS });
+      return reply({ reply: acc ? GREETING_ACC(acc.member ? acc.member.email : acc.email) : GREETING, suggestions: acc ? STARTERS_ACC : STARTERS });
     }
     if (/^(thanks|thank you|thx|ty|great|perfect|ok|okay|cool)[!. ]*$/i.test(text)) {
       state.pending = null;
@@ -161,11 +161,11 @@ export default async function handler(req, res) {
     if (state.pending === 'handoff') {
       if (/^(cancel|never ?mind|no|stop)[!. ]*$/i.test(text)) { state.pending = null; state.draft = null; return reply({ reply: 'Understood. Nothing was sent, and I am still here for anything else.' }); }
       const found = text.match(EMAIL);
-      const email = acc ? acc.email : found && found[0];
+      const email = acc ? (acc.member ? acc.member.email : acc.email) : found && found[0];
       const msg = [state.draft, text.replace(EMAIL, '').trim()].filter((x) => x && x.length > 1).join('\n');
       if (!email) { state.draft = msg; return reply({ reply: 'Add the email address where you want the reply, in your next message, and I will send your request to a person with a reference number.' }); }
       if (msg.length < 5) { return reply({ reply: 'Write what you need help with in one message, and I will send it to a person with a reference number.' }); }
-      const t = await createTicket({ email, message: msg, topic: 'Other', page: page || 'Ace chat', transcript: state.transcript, ip: ipHash(req), accountId: acc && acc.id, accountLine: acc ? `${acc.email} (${acc.id})` : null });
+      const t = await createTicket({ email, message: msg, topic: 'Other', page: page || 'Ace chat', transcript: state.transcript, ip: ipHash(req), accountId: acc && acc.id, accountLine: acc ? `${acc.member ? `${acc.member.email}, colleague on ` : ''}${acc.email} (${acc.id})` : null });
       state.pending = null; state.draft = null;
       return reply({ reply: `Sent. A person at Squadron has your request, reference **${t.reference}**, and the confirmation is on its way to ${email}. They reply by email, and keeping the reference in the subject links any follow-up to it.`, ticket: t.reference });
     }
@@ -174,7 +174,7 @@ export default async function handler(req, res) {
     if (!aboutCustomers && PERSON.test(text)) {
       state.pending = 'handoff'; state.draft = null;
       return reply({ reply: acc
-        ? `I'm escalating you to a person at Squadron. Write what you need in your next message, and I will send it with your account details and this chat; you get a reference number right away and the reply comes to ${acc.email}.`
+        ? `I'm escalating you to a person at Squadron. Write what you need in your next message, and I will send it with your account details and this chat; you get a reference number right away and the reply comes to ${acc.member ? acc.member.email : acc.email}.`
         : `I'm escalating you to a person at Squadron. Write what you need and your email address in your next message, and I will send it with this chat; you get a reference number right away and a person replies by email. You can also write to info@squadron.tel.`, handoff: true });
     }
     // The customer's own account.
