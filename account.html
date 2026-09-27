@@ -95,9 +95,9 @@ async function logout() { await api({ action: 'logout' }); load(); }
 // Invitation: /account?invite=TOKEN. The colleague chooses a password and is signed in.
 function inviteForm() {
   document.querySelector('h1').innerHTML = 'Join your <em>team.</em>';
-  $('body').innerHTML = `<div class="card"><p class="big">You were invited to a Squadron account. Choose a password to accept the invitation and sign in.</p>
-    <p class="detail">You will sign in with the email address the invitation was sent to. You can see conversations in Squadron HQ, answer the knowledge queue, test the team and change settings. Billing and account deletion stay with the account owner.</p>
-    <form class="two" onsubmit="event.preventDefault();accept(this)"><input class="input" id="newpass" type="password" placeholder="Choose a password (8 or more characters)" autocomplete="new-password" minlength="8" required><input class="input" id="newpass2" type="password" placeholder="Type it again" autocomplete="new-password" minlength="8" required><button class="btn" type="submit" style="grid-column:1/-1">Accept the invitation</button></form></div>`;
+  $('body').innerHTML = `<div class="card"><p class="big">You were invited to a Squadron account. Choose a password of at least eight characters to accept the invitation and sign in.</p>
+    <p class="detail">You will sign in with the email address the invitation was sent to. You can see conversations in Squadron HQ, answer the knowledge queue, test the team and change settings. Inviting colleagues, changing the account email and deleting the account stay with the account owner.</p>
+    <form class="two" onsubmit="event.preventDefault();accept(this)"><input class="input" id="newpass" type="password" placeholder="New password" autocomplete="new-password" minlength="8" required><input class="input" id="newpass2" type="password" placeholder="Type it again" autocomplete="new-password" minlength="8" required><button class="btn" type="submit" style="grid-column:1/-1">Accept the invitation</button></form></div>`;
 }
 async function accept(f) {
   $('err').textContent = '';
@@ -165,7 +165,7 @@ async function load() {
       ${['new', 'crawled'].includes(b.status) ? `<p class="detail">Next step: ${a.active ? 'build your Business Profile and team.' : 'pay for a plan, and your profile and team are built right away.'}</p><div class="actions"><a class="btn small" href="/start?t=${t}">Continue setup</a></div></div>` : b.status === 'profiled' ? `<p class="detail">Next step: build your team from your reviewed profile.</p><div class="actions"><a class="btn small" href="/team?t=${t}">Build the team</a><a class="btn small ghost" href="/start?t=${t}">Review the profile</a></div></div>` : `${chat ? '' : '<p class="detail">Next step: test your team, then turn chat on in Deploy.</p>'}<div class="actions"><a class="btn small" href="/hq?t=${t}">Open Squadron HQ</a><a class="btn small ghost" href="/test?t=${t}">Test the team</a><a class="btn small ghost" href="/deploy?t=${t}">Channels and settings</a></div></div>`}`;
   }
   h += `<div class="card"><p class="big" style="font-size:24px;font-weight:800">Colleagues</p>
-    <p class="detail">${isOwner ? 'Colleagues sign in with their own email and password and share this account. They can use Squadron HQ, the knowledge queue, testing and settings. Only you can manage billing, colleagues, the account email and deletion.' : `The account owner, ${esc(a.email)}, manages billing, colleagues, the account email and deletion.`}</p>
+    <p class="detail">${isOwner ? 'Colleagues sign in with their own email and password and share this account. They can use Squadron HQ, the knowledge queue, testing and settings. Only you can invite or remove colleagues, change the account email or delete the account.' : `The account owner, ${esc(a.email)}, manages colleagues, the account email and deletion.`}</p>
     <div id="members"><p class="detail">Loading colleagues.</p></div>
     ${isOwner ? `<form class="two" onsubmit="event.preventDefault();invite(this)"><input class="input" id="invemail" type="email" placeholder="Colleague's email" autocomplete="off" required><button class="btn" type="submit">Send invitation</button></form>` : ''}</div>`;
   if (isOwner) {
