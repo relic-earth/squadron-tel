@@ -18,6 +18,15 @@
 .error:not(:empty){display:block}
 .tag{display:inline-block;font-size:13px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;padding:6px 12px;border-radius:12px;border:1px solid rgba(11,30,69,0.25);color:var(--slate);margin-left:8px;vertical-align:middle}
 .tag.on{color:var(--green);border-color:rgba(34,217,90,0.5)}
+.okmsg{display:none;margin:0 0 18px;padding:16px 20px;border-radius:12px;background:#EEF4FF;border:2px solid rgba(31,95,209,0.35);color:#0B1E45;font-size:18px;font-weight:600;line-height:1.5}
+.people{list-style:none;margin:16px 0 4px;padding:0}
+.people .row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 0;border-top:1px solid rgba(11,30,69,0.1);font-size:18px;font-weight:600;color:var(--white);word-break:break-word}
+.people .row .tag{margin-left:0}
+.switchrow{display:flex;align-items:center;gap:16px;margin-top:16px}
+.switch{flex:none;width:64px;height:36px;border-radius:999px;border:2px solid rgba(11,30,69,0.25);background:#E9EDF3;position:relative;cursor:pointer;padding:0}
+.switch span{position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(11,30,69,0.3);transition:left .15s}
+.switch[aria-checked="true"]{background:#1F5FD1;border-color:#1F5FD1}
+.switch[aria-checked="true"] span{left:31px}
 @media (max-width:720px){.two{grid-template-columns:1fr}}
 </style>
 <link rel="stylesheet" href="/theme.css">
@@ -55,18 +64,22 @@
 <main>
   <p class="eyebrow">Your account</p>
   <h1>Welcome <em>back.</em></h1>
+  <div class="okmsg" id="note"></div>
   <div class="error" id="err"></div>
   <div id="body"><p class="big">Loading.</p></div>
 </main>
 <script>
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const params = new URLSearchParams(location.search);
+const fmtDate = (d) => new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 async function api(body) {
   const r = await fetch('/api/auth', body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {});
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(j.error || 'Something went wrong. Please try again.');
   return j;
 }
+function note(html) { $('note').innerHTML = html; $('note').style.display = html ? 'block' : 'none'; }
 function loginForm() {
   $('body').innerHTML = `<div class="card"><p class="big">Log in to see your teams, Squadron HQ and billing.</p>
     <form class="two" onsubmit="event.preventDefault();login()"><input class="input" id="email" type="email" placeholder="Email" autocomplete="email" required><input class="input" id="pass" type="password" placeholder="Password" autocomplete="current-password" required><button class="btn" type="submit" style="grid-column:1/-1">Log in</button></form>
@@ -78,27 +91,97 @@ async function login() {
   try { await api({ action: 'login', email: $('email').value.trim(), password: $('pass').value }); load(); } catch (e) { $('err').textContent = e.message; }
 }
 async function logout() { await api({ action: 'logout' }); load(); }
+
+// Invitation: /account?invite=TOKEN. The colleague chooses a password and is signed in.
+function inviteForm() {
+  document.querySelector('h1').innerHTML = 'Join your <em>team.</em>';
+  $('body').innerHTML = `<div class="card"><p class="big">You were invited to a Squadron account. Choose a password to accept the invitation and sign in.</p>
+    <p class="detail">You will sign in with the email address the invitation was sent to. You can see conversations in Squadron HQ, answer the knowledge queue, test the team and change settings. Billing and account deletion stay with the account owner.</p>
+    <form class="two" onsubmit="event.preventDefault();accept(this)"><input class="input" id="newpass" type="password" placeholder="Choose a password (8 or more characters)" autocomplete="new-password" minlength="8" required><input class="input" id="newpass2" type="password" placeholder="Type it again" autocomplete="new-password" minlength="8" required><button class="btn" type="submit" style="grid-column:1/-1">Accept the invitation</button></form></div>`;
+}
+async function accept(f) {
+  $('err').textContent = '';
+  if ($('newpass').value !== $('newpass2').value) { $('err').textContent = 'The two passwords do not match. Please type them again.'; return; }
+  const b = f.querySelector('button'); b.disabled = true; b.textContent = 'Accepting…';
+  try {
+    await api({ action: 'accept', token: params.get('invite'), password: $('newpass').value });
+    history.replaceState(null, '', '/account');
+    document.querySelector('h1').innerHTML = 'Welcome <em>aboard.</em>';
+    note('You accepted the invitation and you are signed in.');
+    load();
+  } catch (e) { $('err').textContent = e.message; b.disabled = false; b.textContent = 'Accept the invitation'; }
+}
+
+async function loadMembers(isOwner) {
+  const box = $('members'); if (!box) return;
+  let m; try { m = await api({ action: 'members' }); } catch (e) { box.innerHTML = `<p class="detail">${esc(e.message)}</p>`; return; }
+  const rows = [`<li class="row"><span><strong>${esc(m.owner)}</strong></span><span class="tag on">Owner</span></li>`]
+    .concat(m.members.map((x) => `<li class="row"><span>${esc(x.email)}</span><span><span class="tag ${x.accepted_at ? 'on' : ''}">${x.accepted_at ? 'Colleague' : 'Invited'}</span>${isOwner ? ` <button class="btn small ghost" data-id="${esc(x.id)}" data-email="${esc(x.email)}" onclick="removeMember(this.dataset.id, this.dataset.email)">Remove</button>` : ''}</span></li>`));
+  box.innerHTML = `<ul class="people">${rows.join('')}</ul>${m.members.length ? '' : `<p class="detail">${isOwner ? 'No colleagues yet. Invite someone below, and they get their own email and password for this account.' : ''}</p>`}`;
+}
+async function invite(f) {
+  $('err').textContent = ''; note('');
+  const b = f.querySelector('button'); b.disabled = true;
+  const email = $('invemail').value.trim();
+  try { await api({ action: 'invite', email }); $('invemail').value = ''; note(`Invitation sent to ${esc(email)}. The link works for seven days.`); loadMembers(true); }
+  catch (e) { $('err').textContent = e.message; }
+  b.disabled = false;
+}
+async function removeMember(id, email) {
+  if (!confirm(`Remove ${email}? They are signed out right away.`)) return;
+  $('err').textContent = '';
+  try { await api({ action: 'remove_member', id }); note(`${esc(email)} was removed and can no longer sign in.`); loadMembers(true); } catch (e) { $('err').textContent = e.message; }
+}
+async function changeEmail(f) {
+  $('err').textContent = ''; note('');
+  const b = f.querySelector('button'); b.disabled = true;
+  try { const r = await api({ action: 'change_email', email: $('newemail').value.trim(), password: $('emailpass').value }); note(`Your account email is now ${esc(r.email)}. We sent a notice to both addresses.`); load(); }
+  catch (e) { $('err').textContent = e.message; b.disabled = false; }
+}
+async function setWeekly(on) {
+  $('err').textContent = '';
+  try { const r = await api({ action: 'prefs', weekly: on }); const w = r.prefs.weekly !== false; $('weeklystate').textContent = w ? 'On. The summary arrives every Monday.' : 'Off. You will not get the weekly summary.'; $('weeklysw').setAttribute('aria-checked', String(w)); }
+  catch (e) { $('err').textContent = e.message; }
+}
+
 async function load() {
   $('err').textContent = '';
+  if (params.get('invite')) return inviteForm();
   let me; try { me = await api(); } catch (e) { $('err').textContent = e.message; return; }
   if (!me.account) return loginForm();
   const a = me.account;
-  const planLine = a.active ? `Your plan is <strong>${esc(a.planInfo.name)}</strong>, paid through ${new Date(a.paidThrough).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.` : 'You have no active paid plan. Squadron is prepaid, so choose a plan in Billing to build and run your team.';
-  let h = `<div class="card"><p class="big">Signed in as ${esc(a.email)}. ${planLine}</p>
+  const isOwner = !a.member;
+  const planLine = a.active ? `Your plan is <strong>${esc(a.planInfo.name)}</strong>, paid through ${fmtDate(a.paidThrough)}.` : (isOwner ? 'You have no active paid plan. Squadron is prepaid, so choose a plan in Billing to build and run your team.' : 'This account has no active paid plan. The account owner can choose one in Billing.');
+  const who = isOwner ? `Signed in as ${esc(a.email)}, the account owner.` : `Signed in as ${esc(a.member.email)}, a colleague on the account owned by ${esc(a.email)}.`;
+  let h = `<div class="card"><p class="big">${who} ${planLine}</p>
     <div class="actions"><a class="btn small" href="/billing">Billing</a><a class="btn small ghost" href="/start">Build another team</a><button class="btn small ghost" onclick="logout()">Log out</button></div></div>`;
   if (!me.businesses.length) h += `<div class="card"><p class="big">You have no teams yet.</p><div class="actions"><a class="btn small" href="/start">Build your team</a></div></div>`;
   for (const b of me.businesses) {
     const chat = b.channels && b.channels.chat && b.channels.chat.enabled;
     const t = encodeURIComponent(b.token);
     h += `<div class="card biz"><h3>${esc(b.input_value)}<span class="tag ${chat ? 'on' : ''}">${chat ? 'Chat live' : 'Not live'}</span></h3>
-      <p class="detail">Created ${new Date(b.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
+      <p class="detail">Created ${fmtDate(b.created_at)}.</p>
       ${b.phone_number ? `<p class="detail">Phone: ${esc(b.phone_number)}.</p>` : ''}
       ${['new', 'crawled'].includes(b.status) ? `<p class="detail">Next step: ${a.active ? 'build your Business Profile and team.' : 'pay for a plan, and your profile and team are built right away.'}</p><div class="actions"><a class="btn small" href="/start?t=${t}">Continue setup</a></div></div>` : b.status === 'profiled' ? `<p class="detail">Next step: build your team from your reviewed profile.</p><div class="actions"><a class="btn small" href="/team?t=${t}">Build the team</a><a class="btn small ghost" href="/start?t=${t}">Review the profile</a></div></div>` : `${chat ? '' : '<p class="detail">Next step: test your team, then turn chat on in Deploy.</p>'}<div class="actions"><a class="btn small" href="/hq?t=${t}">Open Squadron HQ</a><a class="btn small ghost" href="/test?t=${t}">Test the team</a><a class="btn small ghost" href="/deploy?t=${t}">Channels and settings</a></div></div>`}`;
   }
-  h += `<div class="card" style="border-color:rgba(255,90,90,0.55)"><p class="big" style="font-size:24px;font-weight:800">Delete my account</p>
-    <p class="detail" style="color:#1E2D4A">This permanently deletes your account, every team, conversation and call recording, and takes your agents offline right away. It cannot be undone, and payments are not refunded.</p>
+  h += `<div class="card"><p class="big" style="font-size:24px;font-weight:800">Colleagues</p>
+    <p class="detail">${isOwner ? 'Colleagues sign in with their own email and password and share this account. They can use Squadron HQ, the knowledge queue, testing and settings. Only you can manage billing, colleagues, the account email and deletion.' : `The account owner, ${esc(a.email)}, manages billing, colleagues, the account email and deletion.`}</p>
+    <div id="members"><p class="detail">Loading colleagues.</p></div>
+    ${isOwner ? `<form class="two" onsubmit="event.preventDefault();invite(this)"><input class="input" id="invemail" type="email" placeholder="Colleague's email" autocomplete="off" required><button class="btn" type="submit">Send invitation</button></form>` : ''}</div>`;
+  if (isOwner) {
+    const weekly = !(a.prefs && a.prefs.weekly === false);
+    h += `<div class="card"><p class="big" style="font-size:24px;font-weight:800">Weekly summary email</p>
+      <p class="detail">Every Monday we email ${esc(a.email)} your team's last seven days: conversations, questions waiting for you and prepaid balance left.</p>
+      <div class="switchrow"><button type="button" role="switch" id="weeklysw" class="switch" aria-checked="${weekly}" aria-label="Weekly summary email" onclick="setWeekly(this.getAttribute('aria-checked') !== 'true')"><span></span></button><span class="detail" id="weeklystate" style="margin:0">${weekly ? 'On. The summary arrives every Monday.' : 'Off. You will not get the weekly summary.'}</span></div></div>`;
+    h += `<div class="card"><p class="big" style="font-size:24px;font-weight:800">Account email</p>
+      <p class="detail">Sign-in, invoices and notices go to ${esc(a.email)}. To change it, enter the new address and your current password. We send a notice to both addresses.</p>
+      <form class="two" onsubmit="event.preventDefault();changeEmail(this)"><input class="input" id="newemail" type="email" placeholder="New email address" autocomplete="email" required><input class="input" id="emailpass" type="password" placeholder="Your current password" autocomplete="current-password" required><button class="btn" type="submit" style="grid-column:1/-1">Change the email</button></form></div>`;
+    h += `<div class="card" style="border-color:rgba(255,90,90,0.55)"><p class="big" style="font-size:24px;font-weight:800">Delete my account</p>
+    <p class="detail" style="color:#1E2D4A">This permanently deletes your account, every team, conversation and call recording, and every colleague login, and takes your agents offline right away. It cannot be undone, and payments are not refunded.</p>
     <form class="two" onsubmit="event.preventDefault();deleteAccount(this)"><input class="input" id="delpass" type="password" placeholder="Your password" autocomplete="current-password" required><button class="btn" type="submit" style="background:#C8102E;color:#fff;border-color:#C8102E;box-shadow:0 4px 0 #7A0A1C;font-size:17px">Delete my account now</button></form></div>`;
+  }
   $('body').innerHTML = h;
+  loadMembers(isOwner);
 }
 async function deleteAccount(f) {
   $('err').textContent = '';
@@ -106,6 +189,7 @@ async function deleteAccount(f) {
   try { await api({ action: 'delete', password: $('delpass').value }); try { localStorage.removeItem('sqToken'); } catch (e) {} $('body').innerHTML = '<div class="card"><p class="big">Your account and everything in it are deleted.</p><div class="actions"><a class="btn small" href="/">Back to Squadron</a></div></div>'; }
   catch (e) { $('err').textContent = e.message; b.disabled = false; b.textContent = 'Delete my account now'; }
 }
+if (params.get('weekly') === 'off') { note('The weekly summary email is off. You can switch it back on below at any time.'); history.replaceState(null, '', '/account'); }
 load();
 </script>
 <script src="/ace.js" defer></script>
