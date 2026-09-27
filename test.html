@@ -145,7 +145,7 @@ const token = new URLSearchParams(location.search).get('t');
 let agents = [], conversationId = null, busy = false;
 $('backLink').href = '/team?t=' + encodeURIComponent(token || '');
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
-function err(msg) { const e = $('err'); e.textContent = msg || ''; e.style.display = msg ? 'block' : 'none'; }
+function err(msg) { const e = $('err'); e.textContent = msg || ''; if (msg && /billing|plan|prepaid|paused/i.test(msg)) e.innerHTML += ' <a href="/billing" style="color:inherit;font-weight:800">Open Billing</a>'; e.style.display = msg ? 'block' : 'none'; }
 async function api(path, body, method) {
   const r = await fetch(path, { method: method || (body ? 'POST' : 'GET'), headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
   const j = await r.json().catch(() => ({ error: 'Bad response from server' }));

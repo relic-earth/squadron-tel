@@ -229,7 +229,9 @@ body.home .mk-row{grid-template-columns:62px minmax(0,1fr)}
 body.home .mk-chip{font-size:12.5px;max-width:100%;overflow-wrap:anywhere}
 
 /* Hero price line and first-screen sizing (Sept 27 2026) */
-body.home .hero-h1{font-size:clamp(46px,5.6vw,84px)!important;font-weight:700!important;line-height:1.02!important}
+body.home .hero-h1{font-size:clamp(44px,4.5vw,70px)!important;font-weight:700!important;line-height:1.02!important;margin-bottom:22px!important}
+body.home .hero{min-height:0!important;padding-top:118px!important;padding-bottom:64px!important}
+body.home .hero-eyebrow{margin-bottom:18px!important}
 body.home .hero-price{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px;margin:0 0 22px;font-family:var(--label);color:var(--ink-2);font-size:19px;font-weight:500;line-height:1.4}
 body.home .hero-price b{font-family:var(--display);font-size:34px;font-weight:800;color:var(--ink);letter-spacing:-0.02em}
 body.home .hero-sub{font-size:22px!important;line-height:1.5!important;margin-bottom:18px!important}
