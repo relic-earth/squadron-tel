@@ -7,6 +7,7 @@ import crypto from 'node:crypto';
 import { ADMIN_EMAILS, ensureAuthSchema, createAccount, findAccount, verifyPassword, hashPassword, sessionCookie, clearCookie, currentAccount } from './_lib/auth.js';
 import { ledgerStatus } from './_lib/ledger.js';
 import { sendEmail } from './_lib/email.js';
+import { track } from './_lib/events.js';
 
 const sha = (t) => crypto.createHash('sha256').update(t).digest('hex');
 
@@ -68,6 +69,7 @@ export default async function handler(req, res) {
       }
       const q = async (text, params) => { try { await sql().query(text, params); } catch (e) { if (!/does not exist/.test(e.message)) throw e; } };
       if (ids.length) {
+        try { const { releaseNumbers } = await import('./_lib/numbers.js'); await releaseNumbers(ids); } catch (e) { console.error('[auth delete numbers]', e.message); }
         await q('DELETE FROM calls WHERE business_id = ANY($1)', [ids]);
         await q('UPDATE demo_numbers SET business_id = NULL, expires_at = NULL, assigned_at = NULL WHERE business_id = ANY($1)', [ids]);
         await q('DELETE FROM businesses WHERE id = ANY($1)', [ids]);
@@ -133,6 +135,7 @@ export default async function handler(req, res) {
       await sql().query('ALTER TABLE accounts ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMPTZ');
       await sql().query("UPDATE accounts SET terms_accepted_at = now() WHERE id = $1", [id]);
       if (body.token) { const biz = await loadBusiness(body.token); if (biz && !biz.account_id) await sql().query('UPDATE businesses SET account_id = $2 WHERE id = $1', [biz.id, id]); }
+      await track('account_created', { accountId: id });
       res.setHeader('Set-Cookie', sessionCookie(id));
       return res.status(200).json({ ok: true, accountId: id });
     }

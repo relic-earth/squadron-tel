@@ -283,7 +283,7 @@ async function stopVoice(save) {
 }
 fetch('/api/demo-number?token=' + encodeURIComponent(token || '')).then((r) => r.json()).then((j) => { if (j && j.available) $('modePhone').style.display = ''; }).catch(() => {});
 (async () => {
-  if (!token) { location.href = '/start'; return; }
+  if (!token) { const me = await fetch('/api/auth', { credentials: 'same-origin' }).then((r) => r.json()).catch(() => ({})); const b = me.businesses && me.businesses[0]; location.href = b ? location.pathname + '?t=' + encodeURIComponent(b.token) + location.search.replace(/^\?/, '&') : '/account'; return; }
   try {
     const r = await api('/api/team?token=' + encodeURIComponent(token));
     if (!r.agents) { location.href = '/team?t=' + encodeURIComponent(token); return; }
@@ -294,5 +294,6 @@ fetch('/api/demo-number?token=' + encodeURIComponent(token || '')).then((r) => r
   } catch (e) { err(e.message); }
 })();
 </script>
+<script src="/ace.js" defer></script>
 </body>
 </html>

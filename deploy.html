@@ -145,20 +145,54 @@ function chanCard(key, title, st) {
   const cls = st.state === 'live' ? 'live' : st.state === 'ready' ? 'ready' : st.state === 'pending' ? 'pending' : 'unavailable';
   const enabled = data.channels[key] && data.channels[key].enabled;
   let action = '';
-  if (key === 'chat') action = account ? `<button class="btn small ${enabled ? 'ghost' : ''}" onclick="toggle('chat', ${!enabled})">${enabled ? 'Turn chat off' : 'Turn chat on'}</button>` : `<span class="detail">Create your account to turn chat on.</span>`;
+  if (key === 'chat') action = account ? `<button class="btn small ${enabled ? 'ghost' : ''}" onclick="toggle('chat', ${!enabled})">${enabled ? 'Turn chat off' : 'Turn chat on'}</button>${enabled ? `<button class="btn small ghost" style="margin-left:8px" onclick="copySnippet(this)">Copy the snippet</button><p class="detail" style="margin-top:12px">Paste it once before the closing &lt;/body&gt; tag of your site, or in your site builder's custom code setting. The chat button then appears on every page.</p>` : ''}` : `<span class="detail">Create your account to turn chat on.</span>`;
+  if (key === 'phone' && !data.business.phone_number) action = account && account.active ? `<div class="row2 field" style="margin-top:0"><div><label>Area code (optional)</label><input id="areaCode" inputmode="numeric" maxlength="3" placeholder="312"></div><div style="display:flex;align-items:flex-end"><button class="btn small" onclick="findNumbers(this)">Show available numbers</button></div></div><div id="numList"></div>` : `<span class="detail">An active plan is needed to get a number.</span>`;
   return `<div class="card"><div class="chan"><div><h2>${esc(title)}</h2><div class="detail">${esc(st.detail)}</div>${st.snippet ? `<div class="snippet">${esc(st.snippet)}</div>` : ''}${action ? `<div style="margin-top:14px">${action}</div>` : ''}</div><span class="state ${cls}">${esc(st.label)}</span></div></div>`;
 }
 function render() {
   const s = data.status;
   $('channels').innerHTML = chanCard('phone', 'Phone', s.phone) + chanCard('chat', 'Chat', s.chat) + chanCard('email', 'Email', s.email) + chanCard('sms', 'SMS', s.sms);
   const st = data.settings || {};
-  $('s_name').value = st.on_call_name || ''; $('s_phone').value = st.on_call_phone || ''; $('s_email').value = st.notify_email || ''; $('s_hours').value = st.hours || ''; $('s_after').value = st.after_hours || 'answer';
+  const sg = data.suggested || {};
+  $('s_name').value = st.on_call_name || ''; $('s_phone').value = st.on_call_phone || sg.on_call_phone || ''; $('s_email').value = st.notify_email || sg.notify_email || ''; $('s_hours').value = st.hours || sg.hours || ''; $('s_after').value = st.after_hours || 'answer';
+  const pre = !st.notify_email && (sg.notify_email || sg.on_call_phone || sg.hours);
+  $('saved').textContent = pre ? 'Filled in from your website and account. Check them and press Save.' : '';
+  if (data.channels.chat && data.channels.chat.enabled) askRating();
   renderHuman(data.humanModes || {}, st.human_mode || 'ai_first');
 }
 async function toggle(key, enabled) {
   err('');
-  try { data = await api('/api/settings', { token, channels: { [key]: { enabled } } }); render(); } catch (e) { err(e.message); }
+  try { data = await api('/api/settings', { token, channels: { [key]: { enabled } } }); render(); if (key === 'chat' && enabled) { const n = document.querySelector('.snippet'); if (n) n.scrollIntoView({ behavior: 'smooth', block: 'center' }); } } catch (e) { err(e.message); }
 }
+function copySnippet(b) { const s = data.status.chat.snippet; (navigator.clipboard ? navigator.clipboard.writeText(s) : Promise.reject()).then(() => { b.textContent = 'Copied'; setTimeout(() => (b.textContent = 'Copy the snippet'), 2000); }).catch(() => { b.textContent = 'Select the snippet above and copy it'; }); }
+async function findNumbers(b) {
+  err(''); b.disabled = true; $('numList').innerHTML = '<p class="detail">Looking up numbers.</p>';
+  try {
+    const r = await api('/api/settings', { token, action: 'number_search', areaCode: ($('areaCode').value || '').trim() });
+    $('numList').innerHTML = r.numbers.length ? `<p class="detail" style="margin:12px 0">Pick one. The line rental is $${(r.monthlyCents / 100).toFixed(2)} a month, taken from your prepaid balance now and once each paid period, and call minutes count against your plan. Your team answers the number as soon as you pick it.</p><div style="display:flex;flex-wrap:wrap;gap:10px">${r.numbers.map((n) => `<button class="btn small ghost" onclick="buyNum('${n.number}', this)">${esc(n.pretty)}${n.locality ? ' · ' + esc(n.locality) + ', ' + esc(n.region) : ''}</button>`).join('')}</div>` : '<p class="detail">No numbers are free in that area code. Try another, or leave it empty.</p>';
+  } catch (e) { $('numList').innerHTML = ''; err(e.message); }
+  b.disabled = false;
+}
+async function buyNum(number, b) {
+  err(''); document.querySelectorAll('#numList .btn').forEach((x) => (x.disabled = true)); b.textContent = 'Setting up ' + number;
+  try { await api('/api/settings', { token, action: 'number_buy', number }); await load(); }
+  catch (e) { err(e.message); document.querySelectorAll('#numList .btn').forEach((x) => (x.disabled = false)); }
+}
+async function askRating() {
+  if (window._rated) return; window._rated = 1;
+  try {
+    const r = await api('/api/track', { action: 'rate', token });
+    if ((r.ratings || []).some((x) => x.stage === 'setup')) return;
+    const box = document.createElement('div'); box.className = 'card'; box.id = 'rateBox';
+    box.innerHTML = `<h2>One question</h2><p class="detail">How easy was it to set up your team? 1 is not at all, 5 is completely.</p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">${[1, 2, 3, 4, 5].map((n) => `<button class="btn small ghost" style="min-width:56px;font-size:20px" onclick="rate(${n})">${n}</button>`).join('')}</div><div id="rateMore"></div>`;
+    $('channels').after(box);
+  } catch (e) {}
+}
+async function rate(n) {
+  await api('/api/track', { action: 'rate', token, stage: 'setup', score: n }).catch(() => {});
+  $('rateMore').innerHTML = `<p class="detail" style="margin-top:14px">${n < 5 ? 'Thank you. What would have made it a 5? A person at Squadron reads it.' : 'Thank you. Anything we should still improve?'}</p><textarea id="rateC" rows="3" style="width:100%;margin-top:10px;font:inherit;font-size:17px;padding:12px;border-radius:10px;border:1px solid var(--line)"></textarea><div style="margin-top:10px"><button class="btn small" onclick="rateComment(${n})">Send</button></div>`;
+}
+async function rateComment(n) { await api('/api/track', { action: 'rate', token, stage: 'setup', score: n, comment: $('rateC').value }).catch(() => {}); $('rateBox').innerHTML = '<h2>Thank you.</h2><p class="detail">Your answer is saved.</p>'; }
 async function saveSettings() {
   $('saved').textContent = 'Saving…';
   try {
@@ -174,7 +208,7 @@ async function load() {
   render();
 }
 (async () => {
-  if (!token) { location.href = '/start'; return; }
+  if (!token) { const me = await fetch('/api/auth', { credentials: 'same-origin' }).then((r) => r.json()).catch(() => ({})); const b = me.businesses && me.businesses[0]; location.href = b ? location.pathname + '?t=' + encodeURIComponent(b.token) + location.search.replace(/^\?/, '&') : '/account'; return; }
   try { await load(); } catch (e) { err(e.message); }
 })();
 function renderHuman(modes, cur) {
@@ -182,5 +216,6 @@ function renderHuman(modes, cur) {
   el.innerHTML = Object.entries(modes).map(([k, m]) => `<label class="hm ${k === cur ? 'on' : ''}"><input type="radio" name="human" value="${k}" ${k === cur ? 'checked' : ''} onchange="document.querySelectorAll('.hm').forEach((x) => x.classList.toggle('on', x.contains(this)))"><span><b>${m.label}</b><small>${m.detail}</small></span></label>`).join('');
 }
 </script>
+<script src="/ace.js" defer></script>
 </body>
 </html>

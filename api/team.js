@@ -4,6 +4,7 @@ import { ensureSchema, sql, loadBusiness, loadProfile, loadTeam, readJson, bad }
 import { applyCorrections } from './_lib/profile.js';
 import { generateTeam } from './_lib/team.js';
 import { requireFunds, recordSpend, textCostCents, HOLD, PaymentRequired } from './_lib/ledger.js';
+import { track } from './_lib/events.js';
 
 const EDITABLE = ['title', 'job_description', 'scope', 'out_of_scope', 'escalation_rule', 'greeting', 'enabled'];
 
@@ -28,6 +29,7 @@ export default async function handler(req, res) {
          ON CONFLICT (business_id) DO UPDATE SET agents = EXCLUDED.agents, model = EXCLUDED.model, updated_at = now()`,
         [biz.id, JSON.stringify({ agents, routing_notes }), model]);
       await sql().query("UPDATE businesses SET status = 'team', updated_at = now() WHERE id = $1", [biz.id]);
+      await track('team_built', { accountId: biz.account_id, businessId: biz.id });
       return res.status(200).json({ agents, routing_notes, model });
     }
     if (req.method === 'PATCH') {

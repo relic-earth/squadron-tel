@@ -32,6 +32,7 @@ export default async function handler(req, res) {
          FROM conversations WHERE business_id = $1 AND test = false AND started_at >= $2`, [biz.id, since.toISOString()]);
     const tests = await sql().query('SELECT COUNT(*)::int AS n FROM conversations WHERE business_id = $1 AND test = true', [biz.id]);
     const gaps = await sql().query('SELECT id, conversation_id, question, proposed_answer, status, created_at FROM knowledge_gaps WHERE business_id = $1 ORDER BY created_at DESC LIMIT 200', [biz.id]);
+    const fp = biz.account_id ? await sql().query("SELECT MIN(paid_at) AS t FROM invoices WHERE account_id = $1 AND kind = 'plan' AND status = 'paid'", [biz.account_id]) : [{}];
     const paused = !st.active || st.remainingCents < 3;
     const balancePercent = st.budgetCents ? Math.max(0, Math.round((st.remainingCents / st.budgetCents) * 100)) : 0;
     const prow = await loadProfile(biz.id);
@@ -39,6 +40,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       business: { id: biz.id, name: bizName, status: biz.status, phone_number: biz.phone_number },
       account: acc ? { email: acc.email } : null,
+      firstPaidAt: fp[0] ? fp[0].t : null,
       plan: { key: st.planKey, name: st.plan.name, active: st.active, periodEnd: st.periodEnd, minutes: st.minutesIncluded },
       usage: { periodStart: since.toISOString(), minutes: st.minutesUsed, minutesIncluded: st.minutesIncluded, minutesRemaining: st.minutesRemaining, balancePercent, conversations: usage[0].conversations, escalations: usage[0].escalations, testConversations: tests[0].n, paused, voicePaused: paused || st.minutesRemaining <= 0 },
       conversations, gaps, settings: biz.settings || {}, channels: channelStatus(biz),

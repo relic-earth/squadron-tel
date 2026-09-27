@@ -184,9 +184,33 @@ function render() {
   if (openId && (tab === 'conversations' || tab === 'escalations')) loadConv(openId);
 }
 (async () => {
-  if (!token) { location.href = '/start'; return; }
-  try { d = await api('/api/hq?token=' + encodeURIComponent(token)); stats(); render(); } catch (e) { err(e.message); }
+  if (!token) { const me = await fetch('/api/auth', { credentials: 'same-origin' }).then((r) => r.json()).catch(() => ({})); const b = me.businesses && me.businesses[0]; location.href = b ? location.pathname + '?t=' + encodeURIComponent(b.token) + location.search.replace(/^\?/, '&') : '/account'; return; }
+  try { d = await api('/api/hq?token=' + encodeURIComponent(token)); stats(); render(); rating(); } catch (e) { err(e.message); }
 })();
 </script>
+<script>async function rating() {
+  const q = new URLSearchParams(location.search);
+  let stage = q.get('rate'), score = +q.get('score');
+  try {
+    if (stage && score >= 1 && score <= 5) { await api('/api/track', { action: 'rate', token, stage, score }); history.replaceState(null, '', '/hq?t=' + encodeURIComponent(token)); return rateBox(stage, score); }
+    if (!d.firstPaidAt || (Date.now() - new Date(d.firstPaidAt)) / 86400000 < 7) return;
+    const r = await api('/api/track', { action: 'rate', token });
+    if (!(r.ratings || []).some((x) => x.stage === 'week1')) rateBox('week1', 0);
+  } catch (e) {}
+}
+function rateBox(stage, score) {
+  const el = document.createElement('div'); el.className = 'panel'; el.id = 'rateBox'; el.style.marginBottom = '24px';
+  const q = stage === 'setup' ? 'How easy was it to set up your team?' : 'How satisfied are you with your team after its first week?';
+  el.innerHTML = score ? '' : `<h2>One question</h2><p style="font-size:18px;color:var(--slate);margin-top:6px">${q} 1 is not at all, 5 is completely.</p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">${[1, 2, 3, 4, 5].map((n) => `<button class="btn small ghost" style="min-width:56px;font-size:20px" onclick="rateNow('${stage}', ${n})">${n}</button>`).join('')}</div>`;
+  $('stats').before(el);
+  if (score) rateMore(stage, score);
+}
+async function rateNow(stage, n) { await api('/api/track', { action: 'rate', token, stage, score: n }).catch(() => {}); rateMore(stage, n); }
+function rateMore(stage, n) {
+  $('rateBox').innerHTML = `<h2>Thank you for the ${n}.</h2><p style="font-size:18px;color:var(--slate);margin-top:6px">${n < 5 ? 'What would have made it a 5? A person at Squadron reads it and gets back to you.' : 'Anything we should still improve?'}</p><textarea id="rateC" rows="3" style="width:100%;margin-top:10px;font:inherit;font-size:17px;padding:12px;border-radius:10px;border:1px solid var(--line)"></textarea><div style="margin-top:10px"><button class="btn small" onclick="rateSend('${stage}', ${n})">Send</button></div>`;
+}
+async function rateSend(stage, n) { await api('/api/track', { action: 'rate', token, stage, score: n, comment: $('rateC').value }).catch(() => {}); $('rateBox').innerHTML = '<h2>Thank you.</h2><p style="font-size:18px;color:var(--slate)">Your answer is saved.</p>'; }
+</script>
+<script src="/ace.js" defer></script>
 </body>
 </html>

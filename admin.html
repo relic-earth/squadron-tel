@@ -107,6 +107,19 @@ dialog::backdrop{background:rgba(11,30,69,0.4)}
   <div id="gate"></div>
   <div id="app" style="display:none">
     <div class="stats" id="stats"></div>
+    <div class="panel">
+      <div class="row" style="justify-content:space-between;margin-bottom:12px"><h2 style="margin:0">Funnel</h2><div class="row"><select id="fDays" onchange="loadFunnel()"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option></select><button class="btn ghost sm" onclick="loadFunnel()">Refresh</button></div></div>
+      <div id="funnel" class="note">Loading.</div>
+    </div>
+    <div class="panel">
+      <div class="row" style="justify-content:space-between;margin-bottom:12px"><h2 style="margin:0">Customers and satisfaction</h2><button class="btn ghost sm" onclick="loadCustomers()">Refresh</button></div>
+      <div id="ratings" class="note" style="margin-bottom:16px">Loading.</div>
+      <div id="customers" class="note">Loading.</div>
+      <h2 style="margin-top:22px">Complimentary period</h2>
+      <p class="note" style="margin-bottom:10px">Gives an account 30 days of a plan, paid by Squadron and capped at the amount you set, to make an unhappy customer whole or to test the paid journey. The customer gets the welcome email if it is their first period.</p>
+      <div class="row"><input class="grow" id="cEmail" type="email" placeholder="customer@business.com"><select id="cPlan"><option value="basic">Basic</option><option value="pro">Pro</option><option value="center">Command Center</option></select><input id="cCents" style="width:130px" value="5" placeholder="Cap in $"><button class="btn sm" onclick="comp()">Give period</button></div>
+      <p class="note" id="cOut" style="margin-top:10px"></p>
+    </div>
     <div class="grid2">
       <div class="panel">
         <h2>Find businesses</h2>
@@ -298,7 +311,29 @@ async function loadTickets() {
   } catch (e) { $('tickets').textContent = e.message; }
 }
 async function tStatus(id, status) { try { await api({ action: 'ticket_status', id, status }); loadTickets(); } catch (e) { err(e.message); } }
-load().then(() => { if (D) loadTickets(); });
+load().then(() => { if (D) { loadTickets(); loadFunnel(); loadCustomers(); } });
+async function loadFunnel() {
+  try {
+    const r = await api({ action: 'funnel', days: $('fDays').value });
+    const top = Math.max(1, ...r.steps.map((s) => s.tracked));
+    $('funnel').innerHTML = `<p class="note" style="margin-bottom:12px">${r.trackingSince ? 'Browser tracking started ' + new Date(r.trackingSince).toLocaleDateString() + '. ' : 'No tracked events yet. '}Tracked counts come from the new events (no cookies, no IP addresses). Database counts come from the records Squadron already keeps, so they cover the time before tracking started; the homepage has no database count.</p><table><thead><tr><th>Step</th><th>Tracked</th><th>From step before</th><th>Database</th></tr></thead><tbody>` +
+      r.steps.map((s, i) => { const prev = i ? r.steps[i - 1].tracked : 0; return `<tr><td><b>${esc(s.label)}</b><div style="height:8px;border-radius:4px;background:#DCE4EF;margin-top:6px"><div style="height:8px;border-radius:4px;background:#1F5FD1;width:${Math.round(s.tracked / top * 100)}%"></div></div></td><td style="font-size:22px;font-weight:800">${s.tracked}</td><td>${i && prev ? Math.round(s.tracked / prev * 100) + '%' : '—'}</td><td>${s.database == null ? 'not recorded' : s.database}</td></tr>`; }).join('') +
+      `</tbody></table><p class="note" style="margin-top:10px">Saw the payment step: ${r.extra.pay_view}. Clicked a plan: ${r.extra.pay_click}. First real answers: ${r.extra.first_answer}.</p>`;
+  } catch (e) { $('funnel').textContent = e.message; }
+}
+async function loadCustomers() {
+  try {
+    const r = await api({ action: 'customers' });
+    const low = r.ratings.filter((x) => x.score < 5);
+    $('ratings').innerHTML = r.ratings.length ? `<p style="margin-bottom:8px"><b>${r.ratings.length} answers</b>, average ${(r.ratings.reduce((n, x) => n + x.score, 0) / r.ratings.length).toFixed(1)} of 5, ${low.length} below 5.</p><table><thead><tr><th>When</th><th>Customer</th><th>Stage</th><th>Score</th><th>Comment</th></tr></thead><tbody>${r.ratings.map((x) => `<tr><td>${new Date(x.updated_at).toLocaleDateString()}</td><td>${esc(x.email || x.account_id)}</td><td>${x.stage === 'setup' ? 'After setup' : 'After week one'}</td><td style="font-weight:800;color:${x.score < 5 ? 'var(--red)' : 'var(--green)'}">${x.score}/5</td><td>${esc(x.comment || '')}</td></tr>`).join('')}</tbody></table>` : 'No satisfaction answers yet.';
+    $('customers').innerHTML = r.customers.length ? `<table><thead><tr><th>Customer</th><th>Plan</th><th>Balance</th><th>Minutes</th><th>Teams</th><th>Paid</th></tr></thead><tbody>${r.customers.map((c) => `<tr><td>${esc(c.email)}<div class="note">since ${new Date(c.created_at).toLocaleDateString()}</div></td><td>${c.active ? esc(c.plan) + '<div class="note">through ' + new Date(c.periodEnd).toLocaleDateString() + '</div>' : 'None'}</td><td>${c.active ? c.balancePercent + '%' : '—'}</td><td>${c.active ? c.minutesUsed + ' / ' + c.minutesIncluded : '—'}</td><td>${c.businesses.map((b) => esc(b.input_value) + ' · ' + esc(b.status) + (b.chat ? ' · chat live' : '') + (b.phone_number ? ' · ' + esc(b.phone_number) : '')).join('<br>') || '—'}</td><td>$${(c.paidCents / 100).toFixed(0)}</td></tr>`).join('')}</tbody></table>` : 'No customer accounts yet.';
+  } catch (e) { $('customers').textContent = e.message; }
+}
+async function comp() {
+  $('cOut').textContent = 'Working.';
+  try { const r = await api({ action: 'comp', email: $('cEmail').value.trim(), plan: $('cPlan').value, cents: Math.round(parseFloat($('cCents').value || '5') * 100) }); $('cOut').textContent = `Done: ${r.invoice}. ${r.status.plan.name} is active through ${new Date(r.status.periodEnd).toLocaleDateString()}.`; loadCustomers(); }
+  catch (e) { $('cOut').textContent = e.message; }
+}
 
 // ---- House account ----
 let houseBiz = null;

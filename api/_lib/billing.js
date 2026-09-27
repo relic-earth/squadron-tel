@@ -127,6 +127,7 @@ export async function markPaid(inv, txId) {
     await sql().query('UPDATE invoices SET period_start = $2, period_end = $3 WHERE id = $1', [inv.id, start.toISOString(), end.toISOString()]);
     await sql().query('UPDATE accounts SET plan = $2, paid_through = $3 WHERE id = $1', [inv.account_id, inv.item, end.toISOString()]);
     await sql().query("UPDATE invoices SET period_start = $2, period_end = $3 WHERE account_id = $1 AND kind = 'pack' AND status = 'paid' AND period_start IS NULL", [inv.account_id, start.toISOString(), end.toISOString()]);
+    try { const { afterPlanPaid } = await import('./care.js'); await afterPlanPaid({ ...inv, mercury_tx_id: txId }); } catch (e) { console.error('[care]', e.message); }
   } else {
     const cur = await sql().query("SELECT period_start, period_end FROM invoices WHERE account_id = $1 AND kind = 'plan' AND status = 'paid' AND period_start <= now() AND period_end > now() ORDER BY period_start DESC LIMIT 1", [inv.account_id]);
     if (cur[0]) await sql().query('UPDATE invoices SET period_start = $2, period_end = $3 WHERE id = $1', [inv.id, cur[0].period_start, cur[0].period_end]);

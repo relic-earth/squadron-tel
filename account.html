@@ -92,11 +92,12 @@ async function load() {
     const t = encodeURIComponent(b.token);
     h += `<div class="card biz"><h3>${esc(b.input_value)}<span class="tag ${chat ? 'on' : ''}">${chat ? 'Chat live' : 'Not live'}</span></h3>
       <p class="detail">Created ${new Date(b.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.</p>
-      <div class="actions"><a class="btn small" href="/hq?t=${t}">Open Squadron HQ</a><a class="btn small ghost" href="/test?t=${t}">Test the team</a><a class="btn small ghost" href="/deploy?t=${t}">Channels and settings</a></div></div>`;
+      ${b.phone_number ? `<p class="detail">Phone: ${esc(b.phone_number)}.</p>` : ''}
+      ${['new', 'crawled'].includes(b.status) ? `<p class="detail">Next step: ${a.active ? 'build your Business Profile and team.' : 'pay for a plan, and your profile and team are built right away.'}</p><div class="actions"><a class="btn small" href="/start?t=${t}">Continue setup</a></div></div>` : b.status === 'profiled' ? `<p class="detail">Next step: build your team from your reviewed profile.</p><div class="actions"><a class="btn small" href="/team?t=${t}">Build the team</a><a class="btn small ghost" href="/start?t=${t}">Review the profile</a></div></div>` : `${chat ? '' : '<p class="detail">Next step: test your team, then turn chat on in Deploy.</p>'}<div class="actions"><a class="btn small" href="/hq?t=${t}">Open Squadron HQ</a><a class="btn small ghost" href="/test?t=${t}">Test the team</a><a class="btn small ghost" href="/deploy?t=${t}">Channels and settings</a></div></div>`}`;
   }
   h += `<div class="card" style="border-color:rgba(255,90,90,0.55)"><p class="big" style="font-size:24px;font-weight:800">Delete my account</p>
     <p class="detail" style="color:#1E2D4A">This permanently deletes your account, every team, conversation and call recording, and takes your agents offline right away. It cannot be undone, and payments are not refunded.</p>
-    <form class="two" onsubmit="event.preventDefault();deleteAccount(this)"><input class="input" id="delpass" type="password" placeholder="Your password" autocomplete="current-password" required><button class="btn" type="submit" style="background:#C8102E;color:var(--white);border-color:#C8102E;box-shadow:0 4px 0 #7A0A1C;font-size:17px">Delete my account now</button></form></div>`;
+    <form class="two" onsubmit="event.preventDefault();deleteAccount(this)"><input class="input" id="delpass" type="password" placeholder="Your password" autocomplete="current-password" required><button class="btn" type="submit" style="background:#C8102E;color:#fff;border-color:#C8102E;box-shadow:0 4px 0 #7A0A1C;font-size:17px">Delete my account now</button></form></div>`;
   $('body').innerHTML = h;
 }
 async function deleteAccount(f) {
@@ -107,5 +108,6 @@ async function deleteAccount(f) {
 }
 load();
 </script>
+<script src="/ace.js" defer></script>
 </body>
 </html>

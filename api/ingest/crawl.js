@@ -2,6 +2,8 @@
 // stores every page as a source document.
 import { ensureSchema, sql, loadBusiness, readJson, bad } from '../_lib/db.js';
 import { crawlSite, fetchAppStore, normalizeUrl } from '../_lib/crawl.js';
+import { sitePreview } from '../_lib/preview.js';
+import { track } from '../_lib/events.js';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -32,7 +34,13 @@ export default async function handler(req, res) {
     }
     await sql().query("UPDATE businesses SET status = 'crawled', updated_at = now() WHERE id = $1", [biz.id]);
     const rows = await sql().query('SELECT kind, url, title, length(content) AS chars FROM sources WHERE business_id = $1 ORDER BY id', [biz.id]);
-    return res.status(200).json({ ok: true, log, sources: rows });
+    // The free preview: facts found by pattern matching, gaps, and the team
+    // sketch. No AI model is called before payment.
+    const full = await sql().query('SELECT url, title, content FROM sources WHERE business_id = $1 ORDER BY id', [biz.id]);
+    let host = null; try { host = new URL(biz.input_value).hostname.replace(/^www\./, ''); } catch {}
+    const preview = sitePreview(full, host);
+    await track('site_read', { businessId: biz.id, meta: { pages: preview.pagesRead, facts: preview.factCount } });
+    return res.status(200).json({ ok: true, log, sources: rows, preview });
   } catch (e) {
     console.error('[crawl]', e);
     return bad(res, 500, e.message);

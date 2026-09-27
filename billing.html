@@ -114,6 +114,7 @@ function render() {
   }
   if (data.notice) s += `<p class="ok">${esc(data.notice)}</p>`;
   let t = null; try { t = localStorage.getItem('sqToken'); } catch (_) {}
+  if (new URLSearchParams(location.search).get('from') === 'start' && !st.active) s += `<p class="detail">Your bank-transfer invoice is below. Squadron checks for your transfer every hour and emails you when it lands; your team is built then, and you can pick up where you left off with the button below.</p>`;
   if (t) s += `<div class="actions"><a class="btn small" href="/start?t=${encodeURIComponent(t)}">${st.active ? 'Continue building your team' : 'Back to your team setup'}</a></div>`;
   $('status').innerHTML = s;
 
@@ -149,6 +150,7 @@ function render() {
     const open = pending.some((i) => i.item === k);
     return `<div class="plan ${cur ? 'current' : ''}"><h3>${PLAN_NAMES[k]}</h3><div class="price">${money(p.cents)}<small> / 30 days</small></div>
       <ul>${FEATURES[k].map((f) => `<li>${f}</li>`).join('')}</ul>
+      ${st.active ? `<p class="detail" style="margin-bottom:12px">${cur ? 'Paying now adds the next 30 days' : 'A new plan'} starting ${date(st.periodEnd)}, when your current period ends. For more minutes before then, add 100 minutes below.</p>` : ''}
       ${data.cards ? `<button class="btn small" onclick="card('${k}', this)">${cur ? 'Pay the next 30 days by card' : 'Pay ' + money(p.cents) + ' by card'}</button>` : ''}
       <button class="btn small ${data.cards ? 'ghost' : cur ? 'ghost' : ''}" ${open ? 'disabled' : ''} onclick="invoice('${k}', this)">${open ? 'Wire invoice waiting' : 'Pay by bank transfer'}</button></div>`;
   }).join('');
@@ -179,5 +181,6 @@ async function login() {
 const stripeSession = new URLSearchParams(location.search).get('stripe_session');
 if (stripeSession) { history.replaceState(null, '', '/billing'); call({ action: 'confirm', session: stripeSession }); } else call();
 </script>
+<script src="/ace.js" defer></script>
 </body>
 </html>

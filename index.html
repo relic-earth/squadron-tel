@@ -978,14 +978,15 @@ details[open] .faq-q{color:var(--signal);}
 <section class="hero">
   <div class="hero-inner">
     <div class="hero-copy">
-      <p class="hero-eyebrow">Now recruiting</p>
-      <h1 class="hero-h1">Recruit a<br>customer-service team<br><em>in minutes.</em></h1>
-      <p class="hero-sub">AI chat and voice agents that answer from what your business publishes, and hand off to a person when they can't.</p>
+      <p class="hero-eyebrow">For small businesses, shops and apps</p>
+      <h1 class="hero-h1">Your website, turned into a <em>customer-service team.</em></h1>
+      <p class="hero-sub">AI agents answer your customers by chat and phone from what your business publishes, and hand off to a person when they can't.</p>
+      <p class="hero-price"><b>From $39</b><span>for 30 days, prepaid. No contract, and nothing renews by itself.</span></p>
       <form class="hero-form" onsubmit="heroSubmit(event)">
-        <input class="hero-url" type="url" id="heroUrl" placeholder="https://yourbusiness.com" autocomplete="url" required>
-        <button type="submit" class="btn-primary" data-sound="click">Recruit my team →</button>
+        <input class="hero-url" type="text" inputmode="url" id="heroUrl" placeholder="yourbusiness.com" autocomplete="url" aria-label="Your website address" required>
+        <button type="submit" class="btn-primary" data-sound="click">See my team free →</button>
       </form>
-      <p class="hero-note">Enter your website, an App Store link, or your documents. Plans from $39 for 30 days, prepaid, with web chat included.</p>
+      <p class="hero-note">Squadron reads your site and shows what it found and the team it would build before you pay anything.</p>
     </div>
     <div class="hero-art"><img src="https://cdn.midjourney.com/9625b87f-40d2-4b7d-a7f5-d58877d7dad2/0_2_640_N.webp" alt="Line drawing of a calm AI agent in a headset, with three jets flying past"><video class="hero-video" src="https://cdn.midjourney.com/video/1817c449-39ac-4212-b945-cf5255f9cb67/1.mp4" poster="https://cdn.midjourney.com/9625b87f-40d2-4b7d-a7f5-d58877d7dad2/0_2_640_N.webp" autoplay muted loop playsinline preload="auto" aria-hidden="true" oncanplay="this.classList.add('on')"></video></div>
   </div>
@@ -1318,7 +1319,7 @@ details[open] .faq-q{color:var(--signal);}
         <div><b>Webflow</b><span>Site settings, Custom code, then paste into the Footer code box.</span></div>
         <div><b>Any other site</b><span>Paste it just before the closing &lt;/body&gt; tag.</span></div>
       </div>
-      <p class="in-hint">Phone lines are opening soon. When they do, you will publish your Squadron number or forward your existing line to it.</p>
+      <p class="in-hint">For calls, pick a local number on the Deploy screen, then publish it or forward your existing line to it.</p>
     </div>
     <div class="in-ill" aria-hidden="true">
       <div class="site">
@@ -1420,7 +1421,7 @@ details[open] .faq-q{color:var(--signal);}
       </details>
       <details class="faq-item">
         <summary class="faq-q">Do I need a new phone number? <span class="faq-chevron">+</span></summary>
-        <p class="faq-a">Phone lines are opening soon. When they do, Squadron will give you a number that you can publish directly or forward your existing business line to. Web chat works today with one line of code on your site.</p>
+        <p class="faq-a">After you pay, pick a local phone number on the Deploy screen, and your team answers it at once. Publish it, or forward your existing business line to it with your carrier. The line rental is $1.15 a month from your prepaid balance. Web chat works with one line of code on your site.</p>
       </details>
       <details class="faq-item">
         <summary class="faq-q">Is there a free trial? <span class="faq-chevron">+</span></summary>
@@ -2316,7 +2317,8 @@ function ctaSubmit(e){
 }
 function heroSubmit(e){
   e.preventDefault();
-  const url=document.getElementById('heroUrl').value;
+  const url=document.getElementById('heroUrl').value.trim();
+  if(window.sqTrack) window.sqTrack('url_entered');
   window.location.href='/start?url='+encodeURIComponent(url);
 }
 
@@ -2331,5 +2333,6 @@ document.querySelectorAll('video.hover-play').forEach(function (v) {
 });
 </script>
 <script src="/sfx.js" defer></script>
+<script src="/funnel.js" data-event="landing" defer></script>
 </body>
 </html>

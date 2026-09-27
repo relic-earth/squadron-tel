@@ -19,6 +19,10 @@ import { generateTeam } from './_lib/team.js';
 import { responses, outputText } from './_lib/openai.js';
 import { PERSONAS } from './_lib/personas.js';
 import { houseInstall, houseNumbers, houseBuy } from './_lib/house.js';
+import { funnel } from './_lib/events.js';
+import { ensureCareSchema } from './_lib/care.js';
+import { ledgerStatus } from './_lib/ledger.js';
+import { createInvoice, markPaid, ensureBillingSchema } from './_lib/billing.js';
 
 const ADMINS = ADMIN_EMAILS;
 const FROM = process.env.COLD_FROM || process.env.EMAIL_FROM || 'Squadron <alerts@relic.earth>';
@@ -281,6 +285,40 @@ export default async function handler(req, res) {
         } catch {}
       }
       return res.status(200).json({ found: found.length, added: added.length, duplicates: dupes.length });
+    }
+
+    if (action === 'funnel') return res.status(200).json(await funnel(body.days || req.query?.days || 30));
+
+    if (action === 'customers') {
+      // Every customer account with its plan, balance, teams and ratings.
+      await ensureCareSchema(); await ensureBillingSchema();
+      const accs = await sql().query("SELECT id, email, created_at, paid_through FROM accounts WHERE email <> 'house@squadron.tel' ORDER BY created_at DESC LIMIT 300");
+      const ratings = await sql().query('SELECT account_id, stage, score, comment, updated_at FROM satisfaction ORDER BY updated_at DESC');
+      const out = [];
+      for (const a of accs) {
+        const st = await ledgerStatus(a.id);
+        const biz = await sql().query("SELECT id, input_value, status, phone_number, (channels->'chat'->>'enabled') = 'true' AS chat FROM businesses WHERE account_id = $1", [a.id]);
+        const paid = await sql().query("SELECT COALESCE(SUM(amount_cents),0)::int AS c FROM invoices WHERE account_id = $1 AND status = 'paid' AND COALESCE(mercury_tx_id,'') NOT LIKE 'comp:%'", [a.id]);
+        out.push({ id: a.id, email: a.email, created_at: a.created_at, active: st.active, plan: st.plan.name, periodEnd: st.periodEnd, balancePercent: st.budgetCents ? Math.round(st.remainingCents / st.budgetCents * 100) : 0, minutesUsed: st.minutesUsed, minutesIncluded: st.minutesIncluded, paidCents: paid[0].c, businesses: biz, ratings: ratings.filter((r) => r.account_id === a.id) });
+      }
+      return res.status(200).json({ customers: out, ratings: ratings.map((r) => ({ ...r, email: (accs.find((a) => a.id === r.account_id) || {}).email })) });
+    }
+
+    if (action === 'comp') {
+      // A complimentary, capped period paid by Squadron: to make an unhappy
+      // customer whole, or to test the paid journey. The cap is the prepaid
+      // amount, so spend can never pass it.
+      const email = String(body.email || '').trim().toLowerCase();
+      const cents = Math.max(100, Math.min(20000, Math.round(Number(body.cents) || 500)));
+      const acc = (await sql().query('SELECT id FROM accounts WHERE email = $1', [email]))[0];
+      if (!acc) return bad(res, 404, 'No account with that email.');
+      await ensureBillingSchema();
+      const item = ['basic', 'pro', 'center'].includes(body.plan) ? body.plan : 'basic';
+      const { newId } = await import('./_lib/db.js');
+      const { newReference } = await import('./_lib/billing.js');
+      const rows = await sql().query('INSERT INTO invoices (id, account_id, item, kind, label, amount_cents, reference) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *', [newId('inv'), acc.id, item, 'plan', `Complimentary ${item === 'basic' ? 'Basic' : item === 'pro' ? 'Pro' : 'Command Center'} period from Squadron, 30 days (usage up to $${(cents / 100).toFixed(2)})`, cents, newReference()]);
+      await markPaid(rows[0], `comp:${me.email}`);
+      return res.status(200).json({ ok: true, invoice: rows[0].reference, status: await ledgerStatus(acc.id) });
     }
 
     if (action === 'house_install') return res.status(200).json(await houseInstall(body));

@@ -17,6 +17,27 @@
 .planopt .pp{font-family:'Inter Tight',sans-serif;font-weight:700;font-size:46px;line-height:1;color:var(--signal)}
 .planopt .pm{font-size:17px;font-weight:600;color:#3D4C68}
 @media (max-width:760px){.planpick{grid-template-columns:1fr}}
+.planopt.on{border-color:var(--signal);box-shadow:0 0 0 4px rgba(31,95,209,0.14)}
+.pv{margin-top:26px;display:grid;gap:16px}
+.pvcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:24px 26px}
+.pvcard h2{font-family:'Inter Tight',sans-serif;font-size:28px;font-weight:700;letter-spacing:-0.02em;color:var(--ink);margin-bottom:12px}
+.pvnums{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.pvnum{background:var(--pale);border-radius:12px;padding:16px 18px}
+.pvnum b{display:block;font-family:'Inter Tight',sans-serif;font-size:44px;font-weight:800;line-height:1;color:var(--ink)}
+.pvnum span{font-size:16px;font-weight:600;color:var(--ink-2)}
+.pvfact{padding:10px 0;border-top:1px solid var(--line);font-size:18px;line-height:1.5;color:var(--ink)}
+.pvfact:first-of-type{border-top:none}
+.pvfact small{display:block;font-size:14px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted)}
+.pvgap{display:inline-block;margin:4px 6px 4px 0;padding:8px 14px;border-radius:999px;background:#FFF4E5;color:#7A3B06;font-size:16px;font-weight:600}
+.pvteam{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.pvagent{display:flex;gap:14px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:14px}
+.pvagent img{width:56px;height:56px;border-radius:12px;flex:none}
+.pvagent b{display:block;font-size:18px;color:var(--ink)}
+.pvagent span{display:block;font-size:15px;color:var(--ink-2);line-height:1.45;margin-top:3px}
+.trust{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:18px}
+.trust div{background:var(--pale);border-radius:12px;padding:16px 18px;font-size:16px;line-height:1.5;color:var(--ink-2)}
+.trust b{display:block;color:var(--ink);font-size:17px;margin-bottom:4px}
+.payrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;margin-top:14px}
 </style>
 <link rel="stylesheet" href="/theme.css">
 </head>
@@ -53,7 +74,7 @@
 <main>
   <div class="steps" id="steps">
     <span class="step on" data-s="1">1 · Enter your business</span>
-    <span class="step" data-s="2">2 · Analyze</span>
+    <span class="step" data-s="2">2 · Free preview</span>
     <span class="step" data-s="3">3 · Review profile</span>
     <span class="step" data-s="4">4 · Build the team</span>
     <span class="step" data-s="5">5 · Test</span>
@@ -99,10 +120,11 @@
   <section id="s2" class="hidden">
     <p class="eyebrow">Step 2</p>
     <h1>Reading your <em>business.</em></h1>
-    <p class="lead" id="s2lead">This takes about a minute. Every fact Squadron records will show where it came from.</p>
+    <p class="lead" id="s2lead">This takes about a minute and costs nothing. You see what Squadron found and the team it would build before you pay.</p>
     <div class="log" id="log"></div>
     <div class="error" id="err2"></div>
     <div id="retryBox" class="hidden" style="margin-top:20px"><button class="btn ghost" onclick="location.href='/start'">Start over</button></div>
+    <div id="preview" class="pv hidden"></div>
     <div id="payBox" class="hidden" style="margin-top:24px"></div>
   </section>
 
@@ -116,7 +138,7 @@
     <div class="bar">
       <span class="saved" id="savedMsg"></span>
       <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <button class="btn ghost" onclick="reanalyze()">Re-read my sources</button>
+        <button class="btn ghost" onclick="if (confirm('Re-read your website and rebuild the profile? Your corrections are kept, and it uses a few cents of your prepaid balance.')) reanalyze()">Re-read my sources</button>
         <button class="btn" id="nextBtn" onclick="goTeam()">Build my team →</button>
       </div>
     </div>
@@ -181,6 +203,7 @@ function renderDocs() {
 }
 async function create(body) {
   err('err1', '');
+  if (window.sqTrack) sqTrack('url_entered');
   document.querySelectorAll('#s1 .btn').forEach((b) => (b.disabled = true));
   try {
     const r = await api('/api/business', body);
@@ -199,11 +222,12 @@ async function analyze(skipCrawl) {
       const c = await api('/api/ingest/crawl', { token });
       for (const line of c.log) logLine(line);
       sources = c.sources;
+      if (c.preview) renderPreview(c.preview);
     } else {
       logLine('Documents received');
     }
     const xr = await fetch('/api/ingest/extract', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token }) });
-    if (xr.status === 402) { logLine('Your site is read. Your plan comes next.'); return payGate(); }
+    if (xr.status === 402) { logLine('Your site is read. Here is what Squadron found.'); return payGate(); }
     const x = await xr.json().catch(() => ({}));
     if (!xr.ok) throw new Error(x.error || ('HTTP ' + xr.status));
     logLine('Built your Business Profile with a source on every field');
@@ -216,42 +240,82 @@ async function analyze(skipCrawl) {
   }
 }
 // Squadron is prepaid, so the profile and team are built after the plan is
-// paid. Reading the site costs nothing and happens first.
-const PLAN_CHOICES = [['basic', 'Basic', '$39', '250 voice minutes'], ['pro', 'Pro', '$79', '650 voice minutes'], ['center', 'Command Center', '$199', '2,000 voice minutes'], ['battalion', 'Battalion', '$999', '10,000 voice minutes']];
+// paid. Reading the site and the preview cost nothing and happen first.
+const PLAN_CHOICES = [['basic', 'Basic', 39, '250 voice minutes'], ['pro', 'Pro', 79, '650 voice minutes'], ['center', 'Command Center', 199, '2,000 voice minutes'], ['battalion', 'Battalion', 999, '10,000 voice minutes']];
+let plan = 'basic', me = null;
+function renderPreview(p) {
+  const el = $('preview'); el.classList.remove('hidden');
+  const facts = (p.facts || []).map((f) => `<div class="pvfact"><small>${esc(f.kind)}</small>${f.items.map(esc).join(' · ')}</div>`).join('');
+  el.innerHTML = `<div class="pvcard"><h2>What Squadron found${p.host ? ' on ' + esc(p.host) : ''}</h2>
+      <div class="pvnums"><div class="pvnum"><b>${p.pagesRead}</b><span>page${p.pagesRead === 1 ? '' : 's'} read</span></div><div class="pvnum"><b>${p.factCount}</b><span>fact${p.factCount === 1 ? '' : 's'} found</span></div><div class="pvnum"><b>${(p.gaps || []).length}</b><span>gap${(p.gaps || []).length === 1 ? '' : 's'} to fill</span></div></div>
+      ${facts ? `<div style="margin-top:14px">${facts}</div>` : '<p class="hint">Squadron found few plain facts on these pages. The paid build reads them more closely, and you can add anything in the profile.</p>'}
+      ${(p.gaps || []).length ? `<p style="font-size:18px;font-weight:700;color:var(--ink);margin:16px 0 6px">Your site does not state</p>${p.gaps.map((g) => `<span class="pvgap">${esc(g)}</span>`).join('')}<p class="hint">You fill these in during setup, so your team can answer them.</p>` : ''}
+    </div>
+    <div class="pvcard"><h2>The team Squadron would build</h2>
+      <div class="pvteam">${p.team.map((a) => `<div class="pvagent"><img src="${esc(a.portrait)}" alt=""><div><b>${esc(a.persona)} · ${esc(a.title)}</b><span>${esc(a.why)}</span></div></div>`).join('')}</div>
+      <p class="hint">${esc(p.note)}</p>
+    </div>`;
+}
 async function payGate() {
   const box = $('payBox'); box.classList.remove('hidden');
-  $('s2lead').textContent = 'Your site is read. Squadron is prepaid, so your profile and team are built as soon as your first 30 days are paid.';
-  const me = await api('/api/auth').catch(() => ({ account: null }));
-  if (!me.account) {
-    box.innerHTML = `<div class="card" style="padding:24px;border-radius:12px;background:#fff;border:2px solid rgba(11,30,69,0.12)"><p style="font-size:20px;font-weight:700;color:var(--white);margin-bottom:12px">Create your account to choose a plan.</p>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px"><input class="input" id="p_email" type="email" placeholder="Email" autocomplete="email"><input class="input" id="p_pass" type="password" placeholder="Password (8+ characters)" autocomplete="new-password"></div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn" onclick="payAuth('signup')">Create account</button><button class="btn ghost" onclick="payAuth('login')">I have an account, log in</button></div>
-      <label style="display:flex;gap:12px;align-items:flex-start;margin-top:16px;font-size:17px;line-height:1.5;color:#3D4C68;font-weight:500;cursor:pointer"><input type="checkbox" id="p_terms" style="width:22px;height:22px;margin-top:2px;flex:none;accent-color:#1F5FD1"><span>I agree to the <a href="/terms" target="_blank" style="color:var(--signal);font-weight:700">Terms of Service</a> and the <a href="/privacy" target="_blank" style="color:var(--signal);font-weight:700">Privacy Policy</a>, and I will follow the call-recording and consumer laws that apply to my business.</span></label></div>`;
-    return;
+  $('s2lead').textContent = 'Your site is read. Here is what Squadron found and the team it would build. Pay for your first 30 days, and the full profile and team are built right away.';
+  me = await api('/api/auth').catch(() => ({ account: null }));
+  if (me.account) {
+    await api('/api/auth', { action: 'claim', token }).catch((e) => err('err2', e.message));
+    if (me.account.active) { box.innerHTML = ''; box.classList.add('hidden'); return reanalyze(); }
   }
-  await api('/api/auth', { action: 'claim', token }).catch((e) => err('err2', e.message));
-  const active = me.account.active;
-  if (active) { box.innerHTML = ''; box.classList.add('hidden'); return reanalyze(); }
-  box.innerHTML = `<p style="font-size:22px;font-weight:800;color:var(--white);margin-bottom:16px">Choose your plan. Every plan includes web chat, and nothing renews automatically.</p>
-    <div class="planpick">${PLAN_CHOICES.map(([k, n, p, m]) => `<button class="planopt" onclick="choosePlan('${k}')"><span class="pn">${n}</span><span class="pp">${p}</span><span class="pm">30 days · ${m}</span></button>`).join('')}</div>
-    <p style="font-size:18px;color:#3D4C68;margin-top:14px">Pick a plan to pay by card, and your team is built the moment the payment goes through. To pay by bank transfer instead, use <a href="/billing" style="color:var(--signal);font-weight:700">Billing</a>, then come back and press the button below when the transfer lands.</p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px"><button class="btn ghost" onclick="paidRetry(this)">My bank transfer has landed, build my team</button></div>`;
+  if (window.sqTrack) sqTrack('pay_view');
+  const signedIn = !!me.account;
+  box.innerHTML = `<div class="pvcard"><h2>Choose your plan</h2>
+    <div class="planpick">${PLAN_CHOICES.map(([k, n, p, m]) => `<button type="button" class="planopt ${k === plan ? 'on' : ''}" data-k="${k}" onclick="pickPlan('${k}')"><span class="pn">${n}</span><span class="pp">$${p}</span><span class="pm">30 days · ${m} · web chat</span></button>`).join('')}</div>
+    ${signedIn ? `<p style="font-size:18px;color:var(--ink-2);margin-top:16px">Signed in as <b style="color:var(--ink)">${esc(me.account.email)}</b>.</p>` : `<p style="font-size:20px;font-weight:700;color:var(--ink);margin-top:22px">Your account</p>
+    <div class="payrow"><input class="input" id="p_email" type="email" placeholder="Email" autocomplete="email"><input class="input" id="p_pass" type="password" placeholder="Choose a password (8+ characters)" autocomplete="new-password"></div>
+    <label style="display:flex;gap:12px;align-items:flex-start;margin-top:14px;font-size:17px;line-height:1.5;color:#3D4C68;font-weight:500;cursor:pointer"><input type="checkbox" id="p_terms" style="width:22px;height:22px;margin-top:2px;flex:none;accent-color:#1F5FD1"><span>I agree to the <a href="/terms" target="_blank" style="color:var(--signal);font-weight:700">Terms of Service</a> and the <a href="/privacy" target="_blank" style="color:var(--signal);font-weight:700">Privacy Policy</a>, and I will follow the call-recording and consumer laws that apply to my business.</span></label>
+    <p class="hint">Already have an account? <a href="#" onclick="loginMode();return false" style="color:var(--signal);font-weight:700">Log in instead</a>.</p>`}
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;align-items:center"><button class="btn" id="payBtn" onclick="pay('card')">Pay $39 by card and build my team →</button><button class="btn ghost" onclick="pay('wire')">Pay by bank transfer</button></div>
+    <div class="trust">
+      <div><b>What happens next</b>Card payments switch your team on at once: Squadron builds your profile and team in about two minutes, then you review, test and turn on chat. A bank transfer starts it when the money lands.</div>
+      <div><b>No surprises</b>You pay for 30 days up front, and nothing renews by itself. We email a renewal invoice five days before the period ends, and you decide. If the prepaid amount runs out first, the team pauses; nothing is billed after the fact.</div>
+      <div><b>Refunds and cancelling</b>There is nothing to cancel: stop paying and the team stops at the end of the period. Payments are final and not refunded, except where the law requires it. You can delete your account at any time in one step.</div>
+      <div><b>A person when you need one</b>Ask Ace, the support chat on every page, or write to info@squadron.tel. Every request gets a reference number, and a person replies by email.</div>
+      <div><b>How the price compares</b>Every competitor price is copied from its own pricing page, with a link to the source, in <a href="/#compare" target="_blank" style="color:var(--signal);font-weight:700">the sourced comparison</a>.</div>
+    </div></div>`;
+  pickPlan(plan);
 }
-async function payAuth(action) {
-  err('err2', '');
-  if (action === 'signup' && !$('p_terms').checked) return err('err2', 'Please agree to the Terms of Service and Privacy Policy to create your account.');
-  try { await api('/api/auth', { action, email: $('p_email').value.trim(), password: $('p_pass').value, token, terms: action === 'signup' ? true : undefined }); await payGate(); }
-  catch (e) { err('err2', e.message); }
+function pickPlan(k) {
+  plan = k;
+  document.querySelectorAll('.planopt').forEach((b) => b.classList.toggle('on', b.dataset.k === k));
+  const p = PLAN_CHOICES.find((x) => x[0] === k);
+  if ($('payBtn')) $('payBtn').textContent = `Pay $${p[2]} by card and build my team →`;
 }
-async function choosePlan(item) {
+function loginMode() {
+  $('p_pass').setAttribute('placeholder', 'Your password'); $('p_pass').setAttribute('autocomplete', 'current-password');
+  const lbl = $('p_terms').closest('label'); if (lbl) lbl.style.display = 'none';
+  window._login = true;
+}
+async function ensureAccount() {
+  if (me && me.account) return true;
+  const email = $('p_email').value.trim(), password = $('p_pass').value;
+  if (!window._login && !$('p_terms').checked) { err('err2', 'Please agree to the Terms of Service and Privacy Policy to create your account.'); return false; }
+  await api('/api/auth', { action: window._login ? 'login' : 'signup', email, password, token, terms: window._login ? undefined : true });
+  me = await api('/api/auth').catch(() => ({ account: null }));
+  if (me.account && me.account.active) { $('payBox').classList.add('hidden'); $('payBox').innerHTML = ''; reanalyze(); return false; }
+  return !!me.account;
+}
+async function pay(method) {
   err('err2', '');
+  const btns = document.querySelectorAll('#payBox .btn'); btns.forEach((b) => (b.disabled = true));
   try {
-    const j = await api('/api/billing', { action: 'card', item, returnTo: '/start?t=' + encodeURIComponent(token) });
-    location.href = j.url;
-  } catch (e) {
-    // Card payments not available: fall back to a bank-transfer invoice.
-    try { await api('/api/billing', { action: 'invoice', item }); location.href = '/billing'; } catch (e2) { err('err2', e2.message); }
-  }
+    if (!(await ensureAccount())) return;
+    if (window.sqTrack) sqTrack('pay_click', { k: plan + ':' + method });
+    if (method === 'card') {
+      try { const j = await api('/api/billing', { action: 'card', item: plan, returnTo: '/start?t=' + encodeURIComponent(token) }); location.href = j.url; return; }
+      catch (e) { err('err2', e.message + ' A bank-transfer invoice is ready instead.'); }
+    }
+    await api('/api/billing', { action: 'invoice', item: plan });
+    location.href = '/billing?from=start&t=' + encodeURIComponent(token);
+  } catch (e) { err('err2', e.message); }
+  finally { btns.forEach((b) => (b.disabled = false)); }
 }
 async function paidRetry(b) {
   b.disabled = true; err('err2', '');
@@ -372,5 +436,7 @@ function renderProfile() {
   }
 })();
 </script>
+<script src="/funnel.js" data-event="start_view" defer></script>
+<script src="/ace.js" defer></script>
 </body>
 </html>

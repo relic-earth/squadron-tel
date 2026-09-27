@@ -5,6 +5,10 @@ import { sql, loadBusiness, readJson, bad } from './_lib/db.js';
 import { ensureAuthSchema } from './_lib/auth.js';
 import { channelStatus } from './_lib/channels.js';
 import { HUMAN_MODES } from './_lib/human.js';
+import { currentAccount } from './_lib/auth.js';
+import { track } from './_lib/events.js';
+import { searchNumbers, buyNumber, NUMBER_CENTS } from './_lib/numbers.js';
+import { PaymentRequired } from './_lib/ledger.js';
 
 
 export default async function handler(req, res) {
@@ -16,6 +20,22 @@ export default async function handler(req, res) {
     await ensureAuthSchema();
     const biz = await loadBusiness(token);
     if (!biz) return bad(res, 404, 'Unknown business');
+    if (req.method === 'POST' && (body.action === 'number_search' || body.action === 'number_buy')) {
+      // Buying a number spends prepaid balance, so it needs the owner's session.
+      const acc = await currentAccount(req);
+      if (!acc || acc.id !== biz.account_id) return bad(res, 401, 'Log in to the account that owns this team first.');
+      try {
+        if (body.action === 'number_search') return res.status(200).json({ numbers: await searchNumbers(body.areaCode), monthlyCents: NUMBER_CENTS });
+        const out = await buyNumber(biz, body.number);
+        await track('number_bought', { accountId: acc.id, businessId: biz.id });
+        const fresh = (await sql().query('SELECT * FROM businesses WHERE id = $1', [biz.id]))[0];
+        return res.status(200).json({ ...out, status: channelStatus(fresh), channels: fresh.channels });
+      } catch (e) {
+        if (e instanceof PaymentRequired) return bad(res, 402, e.message);
+        if (e.status) return bad(res, e.status, e.message);
+        throw e;
+      }
+    }
     if (req.method === 'POST') {
       const settings = { ...(biz.settings || {}) };
       const s = body.settings || {};
@@ -28,11 +48,22 @@ export default async function handler(req, res) {
       const channels = { ...(biz.channels || {}) };
       if (body.channels && typeof body.channels === 'object') {
         for (const k of ['chat', 'phone']) if (body.channels[k] && typeof body.channels[k].enabled === 'boolean') channels[k] = { ...(channels[k] || {}), enabled: body.channels[k].enabled, changed_at: new Date().toISOString() };
+        if (body.channels.chat && body.channels.chat.enabled === true && !(biz.channels && biz.channels.chat && biz.channels.chat.enabled)) await track('chat_deployed', { accountId: biz.account_id, businessId: biz.id });
       }
       await sql().query('UPDATE businesses SET settings = $2, channels = $3, updated_at = now() WHERE id = $1', [biz.id, JSON.stringify(settings), JSON.stringify(channels)]);
       biz.settings = settings; biz.channels = channels;
     }
-    return res.status(200).json({ business: { id: biz.id, status: biz.status, phone_number: biz.phone_number }, settings: biz.settings || {}, channels: biz.channels || {}, status: channelStatus(biz), humanModes: HUMAN_MODES });
+    let suggested = {};
+    try {
+      const p = await sql().query('SELECT profile, corrections FROM profiles WHERE business_id = $1', [biz.id]);
+      const { applyCorrections } = await import('./_lib/profile.js');
+      const prof = p[0] ? applyCorrections(p[0].profile, p[0].corrections) : null;
+      const v = (f) => (f && f.value) || '';
+      const acc = biz.account_id ? (await sql().query('SELECT email FROM accounts WHERE id = $1', [biz.account_id]))[0] : null;
+      const hours = prof && Array.isArray(prof.hours) ? prof.hours.map((h) => [v(h.days), [v(h.open), v(h.close)].filter(Boolean).join(' to ')].filter(Boolean).join(', ')).filter(Boolean).join('; ') : '';
+      suggested = { on_call_phone: prof ? v(prof.contact && prof.contact.phone) : '', notify_email: (acc && acc.email) || (prof ? v(prof.contact && prof.contact.email) : ''), hours: hours.slice(0, 400) };
+    } catch (e) { console.error('[settings suggest]', e.message); }
+    return res.status(200).json({ suggested, business: { id: biz.id, status: biz.status, phone_number: biz.phone_number }, settings: biz.settings || {}, channels: biz.channels || {}, status: channelStatus(biz), humanModes: HUMAN_MODES });
   } catch (e) {
     console.error('[settings]', e);
     return bad(res, 500, e.message);

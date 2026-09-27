@@ -113,6 +113,9 @@
     },
     "api/bridge/status.js": {
       "maxDuration": 30
+    },
+    "api/track.js": {
+      "maxDuration": 15
     }
   },
   "routes": [
@@ -131,6 +134,10 @@
     {
       "src": "/api/chat",
       "dest": "/api/chat.js"
+    },
+    {
+      "src": "/api/track",
+      "dest": "/api/track.js"
     },
     {
       "src": "/api/signup",

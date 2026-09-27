@@ -81,6 +81,7 @@
     <p class="lead">Squadron reads your profile and creates the agents your business needs: each with a job description, a scope, an escalation rule and a voice from the library.</p>
     <div class="log" id="log"><div class="now">Designing the team from your Business Profile</div></div>
     <div class="error" id="err"></div>
+    <div id="retry" class="hidden" style="margin-top:18px"><button class="btn" onclick="regenerate()">Try again</button> <button class="btn ghost" onclick="openAce && openAce('Talk to a person')">Ask a person for help</button></div>
   </section>
   <section id="show" class="hidden">
     <p class="eyebrow">Step 4</p>
@@ -91,7 +92,7 @@
     <div class="bar">
       <span class="saved" id="savedMsg"></span>
       <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <button class="btn ghost" onclick="regenerate()">Rebuild the team</button>
+        <button class="btn ghost" onclick="if (confirm('Rebuild the whole team from your profile? Your edits to agents are replaced, and it uses a few cents of your prepaid balance.')) regenerate()">Rebuild the team</button>
         <button class="btn" onclick="location.href='/test?t='+encodeURIComponent(token)">Test my team →</button>
       </div>
     </div>
@@ -163,12 +164,12 @@ async function play(idx, btn) {
   audio.play().catch(() => { btn.classList.remove('on'); });
 }
 async function regenerate() {
-  $('show').classList.add('hidden'); $('gen').classList.remove('hidden'); err('');
+  $('show').classList.add('hidden'); $('gen').classList.remove('hidden'); err(''); $('retry').classList.add('hidden');
   try { const r = await api('/api/team', { token }); agents = r.agents; notes = r.routing_notes; render(); $('gen').classList.add('hidden'); $('show').classList.remove('hidden'); }
-  catch (e) { err(e.message); }
+  catch (e) { err(e.message); $('retry').classList.remove('hidden'); }
 }
 (async () => {
-  if (!token) { location.href = '/start'; return; }
+  if (!token) { const me = await fetch('/api/auth', { credentials: 'same-origin' }).then((r) => r.json()).catch(() => ({})); const b = me.businesses && me.businesses[0]; location.href = b ? location.pathname + '?t=' + encodeURIComponent(b.token) + location.search.replace(/^\?/, '&') : '/account'; return; }
   try {
     const r = await api('/api/team?token=' + encodeURIComponent(token));
     if (r.agents) { agents = r.agents; notes = r.routing_notes; render(); $('gen').classList.add('hidden'); $('show').classList.remove('hidden'); }
@@ -176,5 +177,6 @@ async function regenerate() {
   } catch (e) { err(e.message); }
 })();
 </script>
+<script src="/ace.js" defer></script>
 </body>
 </html>
