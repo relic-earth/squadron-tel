@@ -5,6 +5,7 @@ import { sql, loadProfile, loadTeam } from '../_lib/db.js';
 import { applyCorrections } from '../_lib/profile.js';
 import { answer } from '../_lib/answer.js';
 import { notifyOwner } from '../_lib/email.js';
+import { emitLater, contactFrom, transcriptText } from '../_lib/integrations.js';
 import { recordSpend, textCostCents } from '../_lib/ledger.js';
 import { formParams, validTwilio, unsign, twiml, listen, speak, xml, canTransfer, PUBLIC, SPEECH_CENTS_PER_TURN, TTS_CENTS_PER_CHAR, TWILIO_VOICE } from '../_lib/phone.js';
 
@@ -59,7 +60,11 @@ export default async function handler(req, res) {
     if (!st.d && ['take_message', 'transfer'].includes(out.replyType) && out.messageForOwner) {
       const recent = history.slice(-12).map((h) => `${h.role === 'customer' ? 'Caller' : (h.agent_name || 'AI team')}: ${h.text}`).join('\n');
       notifyOwner(biz.id, { subject: transfer ? 'A caller was transferred to you' : 'A caller left a message', text: `${out.messageForOwner}\n\nThe call so far:\n${recent}\n\nIt is in Squadron HQ.` }).catch((e) => console.error('[bridge/turn notify]', e.message));
+      const call = (await sql().query('SELECT from_number FROM calls WHERE conversation_id = $1 LIMIT 1', [st.c]).catch(() => []))[0];
+      const c = contactFrom(out.messageForOwner);
+      await emitLater(biz, transfer ? 'person.requested' : 'message.taken', { channel: 'phone', conversation_id: st.c, message: out.messageForOwner, contact: { name: null, email: c.email, phone: c.phone || (call && call.from_number) || null }, transcript_text: transcriptText(history) });
     }
+    if (!st.d && out.gapQuestion && ['refusal', 'take_message', 'transfer'].includes(out.replyType)) await emitLater(biz, 'question.unanswered', { channel: 'phone', conversation_id: st.c, question: out.gapQuestion });
     if (transfer) return send(`${speak(spoken, settings)}<Dial>${xml(settings.on_call_phone)}</Dial>`);
     return send(listen({ ...st, n: 0 }, speak(spoken, settings)));
   } catch (e) {

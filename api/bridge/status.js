@@ -5,6 +5,8 @@
 import { sql } from '../_lib/db.js';
 import { settleHold, PER_MINUTE } from '../_lib/ledger.js';
 import { formParams, validTwilio } from '../_lib/phone.js';
+import { emitLater, transcriptText } from '../_lib/integrations.js';
+import { firstRealAnswer } from '../_lib/care.js';
 
 export default async function handler(req, res) {
   const p = formParams(req);
@@ -17,6 +19,12 @@ export default async function handler(req, res) {
       const cents = Math.ceil(seconds / 60) * (PER_MINUTE.twilioInbound + PER_MINUTE.twilioRecording);
       if (call.hold_ref) await settleHold(String(call.hold_ref), { cents, seconds });
       if (call.conversation_id) await sql().query("UPDATE conversations SET duration_s = $2, ended_at = now(), outcome = CASE WHEN outcome = 'in progress' THEN 'ended' ELSE outcome END WHERE id = $1", [call.conversation_id, seconds]);
+      if (call.conversation_id && !call.demo) {
+        const biz = (await sql().query('SELECT * FROM businesses WHERE id = $1', [call.business_id]))[0];
+        const cv = (await sql().query('SELECT outcome, summary, transcript FROM conversations WHERE id = $1', [call.conversation_id]))[0] || {};
+        await firstRealAnswer(call.business_id);
+        await emitLater(biz, 'call.ended', { channel: 'phone', conversation_id: call.conversation_id, duration_s: seconds, outcome: cv.outcome || null, summary: cv.summary || null, contact: { name: null, email: null, phone: call.from_number || null }, transcript_text: transcriptText(cv.transcript) });
+      }
     }
   } catch (e) { console.error('[bridge/status]', e); }
   return res.status(200).end();

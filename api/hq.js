@@ -43,7 +43,7 @@ export default async function handler(req, res) {
       firstPaidAt: fp[0] ? fp[0].t : null,
       plan: { key: st.planKey, name: st.plan.name, active: st.active, periodEnd: st.periodEnd, minutes: st.minutesIncluded },
       usage: { periodStart: since.toISOString(), minutes: st.minutesUsed, minutesIncluded: st.minutesIncluded, minutesRemaining: st.minutesRemaining, balancePercent, conversations: usage[0].conversations, escalations: usage[0].escalations, testConversations: tests[0].n, paused, voicePaused: paused || st.minutesRemaining <= 0 },
-      conversations, gaps, settings: biz.settings || {}, channels: channelStatus(biz),
+      conversations, gaps, settings: (({ integrations, ...s }) => s)(biz.settings || {}), channels: channelStatus(biz),
     });
   } catch (e) {
     console.error('[hq]', e);

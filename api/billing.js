@@ -7,7 +7,7 @@
 // Top-ups can only be bought for a running paid period.
 import { sql, readJson, bad } from './_lib/db.js';
 import { currentAccount, PLANS } from './_lib/auth.js';
-import { ensureBillingSchema, PRICES, wireInstructions, reconcile, createInvoice } from './_lib/billing.js';
+import { ensureBillingSchema, PRICES, wireInstructions, reconcile, createInvoice, BENEFICIARY } from './_lib/billing.js';
 import { ledgerStatus } from './_lib/ledger.js';
 import { sendEmail } from './_lib/email.js';
 import { startCheckout, confirmSession, stripeEnabled } from './_lib/stripe.js';
@@ -18,6 +18,23 @@ export default async function handler(req, res) {
     await ensureBillingSchema();
     const acc = await currentAccount(req);
     if (!acc) return bad(res, 401, 'Sign in first.');
+    if (req.method === 'GET' && req.query && req.query.receipt) {
+      // A printable receipt from Squadron for one paid invoice.
+      const inv = (await sql().query("SELECT * FROM invoices WHERE id = $1 AND account_id = $2 AND status = 'paid'", [String(req.query.receipt), acc.id]))[0];
+      if (!inv) return bad(res, 404, 'No paid invoice with that id on this account.');
+      const e = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+      const tx = String(inv.mercury_tx_id || '');
+      const method = tx.startsWith('stripe:') ? 'Card (Stripe)' : tx.startsWith('comp:') ? 'Complimentary, paid by Squadron' : 'Bank transfer (Mercury)';
+      const d = (x) => x ? new Date(x).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      return res.status(200).send(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Receipt ${e(inv.reference)} — Squadron</title><style>body{font-family:Inter,Arial,sans-serif;color:#0B1E45;background:#F5F7FA;margin:0;padding:32px 16px}main{max-width:720px;margin:0 auto;background:#fff;border:1px solid #DCE4EF;border-radius:14px;padding:36px}h1{font-size:40px;margin:0 0 6px}p{font-size:18px;line-height:1.5;color:#3D4C68;margin:4px 0}table{width:100%;border-collapse:collapse;margin:24px 0;font-size:18px}td{padding:12px 0;border-bottom:1px solid #DCE4EF}td:last-child{text-align:right;font-weight:700;color:#0B1E45}.paid{display:inline-block;background:#E7F6EC;color:#127A3A;font-weight:800;padding:6px 12px;border-radius:999px;font-size:16px}button{font:inherit;font-size:17px;font-weight:700;padding:14px 24px;border-radius:999px;border:none;background:#0B1E45;color:#fff;cursor:pointer}@media print{button{display:none}body{background:#fff}main{border:none}}</style></head><body><main>
+        <h1>Receipt</h1><p><span class="paid">Paid</span></p>
+        <p style="margin-top:18px"><b style="color:#0B1E45">Island Global Co DBA Squadron</b><br>${e(BENEFICIARY.address)}<br>squadron.tel · info@squadron.tel</p>
+        <p style="margin-top:14px">Billed to ${e(acc.email)}</p>
+        <table><tr><td>Reference</td><td>${e(inv.reference)}</td></tr><tr><td>Date paid</td><td>${d(inv.paid_at)}</td></tr><tr><td>Item</td><td>${e(inv.label)}</td></tr>${inv.period_start ? `<tr><td>Service period</td><td>${d(inv.period_start)} to ${d(inv.period_end)}</td></tr>` : ''}<tr><td>Payment method</td><td>${method}</td></tr><tr><td>Amount paid</td><td>$${(inv.amount_cents / 100).toFixed(2)} USD</td></tr></table>
+        <p>Squadron is prepaid. This payment covers the item above, and nothing renews by itself.</p>
+        <p style="margin-top:22px"><button onclick="print()">Print or save as PDF</button></p></main></body></html>`);
+    }
     const body = req.method === 'POST' ? readJson(req) : {};
     let notice = null;
     let st = await ledgerStatus(acc.id);
@@ -42,7 +59,7 @@ export default async function handler(req, res) {
       const r = await confirmSession(String(body.session || ''));
       if (r.paid && r.invoice && r.invoice.account_id === acc.id) {
         notice = `Payment received: ${r.invoice.label}. Your team is switched on.`;
-        if (!r.already) await sendEmail({ to: acc.email, subject: `Payment received: ${r.invoice.label}`, text: `Thank you. Your card payment for ${r.invoice.label} ($${(r.invoice.amount_cents / 100).toFixed(2)}, reference ${r.invoice.reference}) is received, and it is applied to your Squadron account.\n\nBilling: https://www.squadron.tel/billing` }).catch((e) => console.error('[billing email]', e.message));
+        if (!r.already) await sendEmail({ to: acc.email, subject: `Payment received: ${r.invoice.label}`, text: `Thank you. Your card payment for ${r.invoice.label} ($${(r.invoice.amount_cents / 100).toFixed(2)}, reference ${r.invoice.reference}) is received, and it is applied to your Squadron account.\n\nYour receipt: https://www.squadron.tel/api/billing?receipt=${r.invoice.id}\nBilling: https://www.squadron.tel/billing` }).catch((e) => console.error('[billing email]', e.message));
       } else notice = 'The card payment is not complete yet. If you finished it, wait a moment and reload this page.';
       st = await ledgerStatus(acc.id);
     } else if (body.action === 'check') {

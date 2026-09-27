@@ -9,6 +9,7 @@ import crypto from 'node:crypto';
 import { ensureSchema, sql, newId, readJson, bad } from './_lib/db.js';
 import { notifyOwner } from './_lib/email.js';
 import { humanMode, HUMAN_MODES } from './_lib/human.js';
+import { emitLater, contactFrom, integrationsOf } from './_lib/integrations.js';
 
 async function loadPublic(id) {
   const rows = await sql().query('SELECT * FROM businesses WHERE id = $1', [String(id || '')]);
@@ -38,7 +39,7 @@ export default async function handler(req, res) {
       if (!biz) return bad(res, 404, 'Chat is not turned on for this business.');
       const st = biz.settings || {};
       const mode = humanMode(st);
-      return res.status(200).json({ mode, label: HUMAN_MODES[mode].label, person: st.on_call_name || null, hours: st.hours || null });
+      return res.status(200).json({ mode, label: HUMAN_MODES[mode].label, person: st.on_call_name || null, hours: st.hours || null, booking: integrationsOf(biz).booking_url || null });
     }
     if (req.method !== 'POST') return bad(res, 405, 'GET or POST');
     const body = readJson(req);
@@ -89,6 +90,8 @@ export default async function handler(req, res) {
       emailed = !!(r && r.sent);
     } catch (e) { console.error('[handoff email]', e.message); }
 
+    const ct = contactFrom(contact);
+    await emitLater(biz, 'person.requested', { channel: 'chat', conversation_id: convo.id, message, contact: { name: name || null, email: ct.email, phone: ct.phone || (ct.email ? null : contact) }, transcript_text: history });
     const who = st.on_call_name || 'A person at the business';
     return res.status(200).json({ ok: true, id, conversationId: convo.id, emailed, reply: `${who} has your message and will contact you at ${contact}.${st.hours ? ` Business hours are ${st.hours}.` : ''}` });
   } catch (e) {

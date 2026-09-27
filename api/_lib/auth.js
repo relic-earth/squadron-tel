@@ -54,9 +54,11 @@ function sign(payload) {
   return crypto.createHmac('sha256', secret()).update(payload).digest('base64url');
 }
 
-export function sessionCookie(accountId) {
+// A colleague's login signs in to the owner's account: the session id is
+// "<accountId>~<loginId>", so the account is shared and the person is known.
+export function sessionCookie(accountId, loginId) {
   const exp = Date.now() + DAYS * 86400_000;
-  const payload = `${accountId}.${exp}`;
+  const payload = `${accountId}${loginId ? '~' + loginId : ''}.${exp}`;
   const value = `${payload}.${sign(payload)}`;
   return `${COOKIE}=${value}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${DAYS * 86400}`;
 }
@@ -76,7 +78,8 @@ export function readSession(req) {
   const want = sign(payload);
   if (want.length !== sig.length || !crypto.timingSafeEqual(Buffer.from(want), Buffer.from(sig))) return null;
   if (+exp < Date.now()) return null;
-  return { accountId: id };
+  const [accountId, loginId] = id.split('~');
+  return { accountId, loginId: loginId || null };
 }
 
 export async function currentAccount(req) {
@@ -84,7 +87,32 @@ export async function currentAccount(req) {
   if (!s) return null;
   await ensureAuthSchema();
   const rows = await sql().query('SELECT id, email, plan, trial_ends_at, created_at FROM accounts WHERE id = $1', [s.accountId]);
-  return rows[0] || null;
+  const acc = rows[0] || null;
+  if (!acc || !s.loginId) return acc;
+  await ensureLoginsSchema();
+  const m = await sql().query('SELECT id, email FROM logins WHERE id = $1 AND account_id = $2', [s.loginId, acc.id]);
+  if (!m[0]) return null; // a removed colleague is signed out
+  return { ...acc, member: { id: m[0].id, email: m[0].email } };
+}
+
+// One-click link in the weekly summary that switches it off.
+export function weeklyOffToken(accountId) { return `${accountId}.${crypto.createHmac('sha256', secret()).update('weekly-off:' + accountId).digest('base64url').slice(0, 24)}`; }
+
+let _logins = null;
+export function ensureLoginsSchema() {
+  if (!_logins) _logins = (async () => {
+    await sql().query(`CREATE TABLE IF NOT EXISTS logins (
+      id TEXT PRIMARY KEY, account_id TEXT NOT NULL, email TEXT NOT NULL UNIQUE, pass_hash TEXT,
+      invited_by TEXT, invite_hash TEXT, invite_expires TIMESTAMPTZ, accepted_at TIMESTAMPTZ, created_at TIMESTAMPTZ NOT NULL DEFAULT now())`);
+    await sql().query('CREATE INDEX IF NOT EXISTS logins_account_idx ON logins(account_id)');
+    await sql().query("ALTER TABLE accounts ADD COLUMN IF NOT EXISTS prefs JSONB NOT NULL DEFAULT '{}'::jsonb");
+  })().catch((e) => { _logins = null; throw e; });
+  return _logins;
+}
+export async function findLogin(email) {
+  await ensureLoginsSchema();
+  const r = await sql().query('SELECT * FROM logins WHERE email = $1', [String(email || '').toLowerCase()]);
+  return r[0] || null;
 }
 
 export async function createAccount(email, password) {

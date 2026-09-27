@@ -92,6 +92,8 @@ PHONE RULES (this reply is spoken aloud on a phone call):
 
 export async function answer({ business, agents, profile, history, message, channel = 'chat', settings = null, lastAgentId = null }) {
   const { chunks, voice } = knowledgeChunks(profile);
+  const booking = settings && settings.integrations && settings.integrations.booking_url;
+  if (booking) chunks.push({ id: `K${chunks.length + 1}`, text: `Customers book, schedule or reserve online at ${booking}. Give this link whenever a customer wants to book, schedule, reserve, reschedule or make an appointment.`, source: { kind: 'owner', title: 'Booking link set by the business' } });
   const instructions = buildInstructions({ business, agents, chunks, voice, channel, settings });
   const input = [
     ...history.slice(-16).map((h) => ({ role: h.role === 'customer' ? 'user' : 'assistant', content: h.role === 'customer' ? h.text : `[${h.agent_id || 'agent'}] ${h.text}` })),

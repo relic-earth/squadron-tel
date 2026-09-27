@@ -33,7 +33,7 @@ export async function runBilling() {
     const to = inv && await accountEmail(inv.account_id);
     const nb = inv && (await sql().query('SELECT token, status FROM businesses WHERE account_id = $1 ORDER BY created_at LIMIT 1', [inv.account_id]))[0];
     const next = nb ? (['new', 'crawled'].includes(nb.status) ? `\n\nNext step: open this link to build your Business Profile and team now: https://www.squadron.tel/start?t=${encodeURIComponent(nb.token)}` : `\n\nYour team is back on. Squadron HQ: https://www.squadron.tel/hq?t=${encodeURIComponent(nb.token)}`) : '';
-    if (to) await sendEmail({ to, subject: `Payment received: ${inv.label}`, text: `Thank you. Your wire for ${inv.label} ($${(inv.amount_cents / 100).toFixed(2)}, reference ${inv.reference}) has arrived, and it is applied to your Squadron account.${next}\n\nBilling: ${BILLING}` }).catch((e) => console.error('[billing-cron email]', e.message));
+    if (to) await sendEmail({ to, subject: `Payment received: ${inv.label}`, text: `Thank you. Your wire for ${inv.label} ($${(inv.amount_cents / 100).toFixed(2)}, reference ${inv.reference}) has arrived, and it is applied to your Squadron account.${next}\n\nYour receipt: https://www.squadron.tel/api/billing?receipt=${inv.id}\nBilling: ${BILLING}` }).catch((e) => console.error('[billing-cron email]', e.message));
   }
   const accounts = await sql().query("SELECT id, email, plan, paid_through FROM accounts WHERE paid_through IS NOT NULL AND paid_through > now() - interval '2 days'");
   out.care = { weekly: 0, half: 0, rate: 0, first: 0 };

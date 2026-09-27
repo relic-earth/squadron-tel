@@ -140,7 +140,7 @@ function render() {
   }
   if (paid.length) {
     h += '<h2 style="margin:34px 0 16px">Paid</h2>';
-    for (const i of paid) h += `<div class="inv paid"><h3>${esc(i.label)}: ${money(i.amount_cents)}</h3><p class="detail">Paid on ${date(i.paid_at)}. Reference ${esc(i.reference)}.</p></div>`;
+    for (const i of paid) h += `<div class="inv paid"><h3>${esc(i.label)}: ${money(i.amount_cents)}</h3><p class="detail">Paid on ${date(i.paid_at)}. Reference ${esc(i.reference)}. <a href="/api/billing?receipt=${encodeURIComponent(i.id)}" target="_blank" style="color:var(--signal);font-weight:700">Receipt</a></p></div>`;
   }
   $('invoices').innerHTML = h;
 

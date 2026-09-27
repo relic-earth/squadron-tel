@@ -12,6 +12,7 @@
 import { sql } from './db.js';
 import { noticeOnce, sendEmail } from './email.js';
 import { track } from './events.js';
+import { weeklyOffToken, ensureLoginsSchema } from './auth.js';
 
 const SITE = 'https://www.squadron.tel';
 export const OWNER_TO = (process.env.SUPPORT_TO || 'info@squadron.tel,info@island.contact').split(',').map((s) => s.trim()).filter(Boolean);
@@ -71,7 +72,10 @@ export async function careTick(a, st) {
   // Weekly summary: Mondays from 14:00 UTC (morning in the US), once a week,
   // and only after the account has had a full week.
   const ageDays = (now - new Date(st.periodStart)) / 86400000;
-  if (now.getUTCDay() === 1 && now.getUTCHours() >= 14 && biz.length) {
+  await ensureLoginsSchema();
+  const pref = await sql().query('SELECT prefs FROM accounts WHERE id = $1', [a.id]);
+  const weeklyOn = !(pref[0] && pref[0].prefs && pref[0].prefs.weekly === false);
+  if (weeklyOn && now.getUTCDay() === 1 && now.getUTCHours() >= 14 && biz.length) {
     const firstPaid = await sql().query("SELECT MIN(paid_at) AS t FROM invoices WHERE account_id = $1 AND kind = 'plan' AND status = 'paid'", [a.id]);
     if (firstPaid[0].t && (now - new Date(firstPaid[0].t)) / 86400000 >= 6) {
       const ids = biz.map((b) => b.id);
@@ -82,7 +86,7 @@ export async function careTick(a, st) {
       const end = new Date(st.periodEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
       const r = await noticeOnce(a.id, `weekly:${isoWeek(now)}`, {
         subject: `Your Squadron week: ${c[0].n} conversation${c[0].n === 1 ? '' : 's'}, ${gn[0].n} question${gn[0].n === 1 ? '' : 's'} to answer`,
-        text: `Here is your team's last seven days.\n\nConversations with real customers: ${c[0].n}${c[0].phone ? ` (${c[0].phone} by phone)` : ''}.\nCustomers who asked for a person: ${c[0].esc}.\nQuestions your team could not answer, waiting for you: ${gn[0].n}.${g.length ? `\n${g.map((x) => `- ${x.question}`).join('\n')}` : ''}\n\nPrepaid balance left: ${pct}%${st.metered ? '' : `, and ${st.minutesRemaining.toLocaleString()} of ${st.minutesIncluded.toLocaleString()} voice minutes`}. Your ${st.plan.name} period runs through ${end}, and it does not renew by itself.\n\n${gn[0].n ? 'Answer the waiting questions once in Squadron HQ, and your team answers them from then on' : 'Squadron HQ has every conversation and its sources'}: ${SITE}/hq?t=${encodeURIComponent(biz[0].token)}\n\nTo stop these weekly emails, reply "stop weekly" and a person will switch them off.`,
+        text: `Here is your team's last seven days.\n\nConversations with real customers: ${c[0].n}${c[0].phone ? ` (${c[0].phone} by phone)` : ''}.\nCustomers who asked for a person: ${c[0].esc}.\nQuestions your team could not answer, waiting for you: ${gn[0].n}.${g.length ? `\n${g.map((x) => `- ${x.question}`).join('\n')}` : ''}\n\nPrepaid balance left: ${pct}%${st.metered ? '' : `, and ${st.minutesRemaining.toLocaleString()} of ${st.minutesIncluded.toLocaleString()} voice minutes`}. Your ${st.plan.name} period runs through ${end}, and it does not renew by itself.\n\n${gn[0].n ? 'Answer the waiting questions once in Squadron HQ, and your team answers them from then on' : 'Squadron HQ has every conversation and its sources'}: ${SITE}/hq?t=${encodeURIComponent(biz[0].token)}\n\nTo stop these weekly emails, open this link, and you can switch them back on from your account page: ${SITE}/api/auth?weekly_off=${weeklyOffToken(a.id)}`,
       }).catch(() => ({}));
       if (r && r.sent) out.weekly++;
     }

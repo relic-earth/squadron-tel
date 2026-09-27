@@ -6,6 +6,7 @@ import { applyCorrections } from './_lib/profile.js';
 import { answer } from './_lib/answer.js';
 import { notifyOwner } from './_lib/email.js';
 import { firstRealAnswer } from './_lib/care.js';
+import { emitLater, contactFrom, transcriptText } from './_lib/integrations.js';
 import { requireFunds, recordSpend, textCostCents, HOLD, PaymentRequired } from './_lib/ledger.js';
 
 export default async function handler(req, res) {
@@ -76,7 +77,11 @@ export default async function handler(req, res) {
       const recentText = history.slice(-12).map((h) => `${h.role === 'customer' ? 'Customer' : (h.agent_name || 'AI team')}: ${h.text}`).join('\n');
       notifyOwner(biz.id, { subject: out.replyType === 'transfer' ? 'A customer asked for a person' : 'A customer left a message', text: `${out.messageForOwner}\n\nThe conversation so far (${channel}):\n${recentText}\n\nIt is in Squadron HQ under Escalations.` }).catch((e) => console.error('[converse notify]', e.message));
     }
-    if (!test) await firstRealAnswer(biz.id);
+    if (!test) {
+      await firstRealAnswer(biz.id);
+      if (['take_message', 'transfer'].includes(out.replyType) && out.messageForOwner) { const c = contactFrom(out.messageForOwner); await emitLater(biz, out.replyType === 'transfer' ? 'person.requested' : 'message.taken', { channel, conversation_id: convo.id, message: out.messageForOwner, contact: { name: null, email: c.email, phone: c.phone }, transcript_text: transcriptText(history) }); }
+      if (out.gapQuestion && ['refusal', 'take_message', 'transfer'].includes(out.replyType)) await emitLater(biz, 'question.unanswered', { channel, conversation_id: convo.id, question: out.gapQuestion });
+    }
     return res.status(200).json({
       conversationId: convo.id,
       agent: { id: out.agent.id, persona: out.agent.persona, title: out.agent.title, portrait: out.agent.portrait, voice: out.agent.voice, persona_idx: out.agent.persona_idx },
