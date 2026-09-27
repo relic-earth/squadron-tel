@@ -104,6 +104,15 @@
     },
     "api/bridge/twilio.js": {
       "maxDuration": 20
+    },
+    "api/bridge/turn.js": {
+      "maxDuration": 30
+    },
+    "api/bridge/audio.js": {
+      "maxDuration": 30
+    },
+    "api/bridge/status.js": {
+      "maxDuration": 30
     }
   },
   "routes": [
@@ -318,6 +327,18 @@
     {
       "src": "/api/bridge/twilio",
       "dest": "/api/bridge/twilio.js"
+    },
+    {
+      "src": "/api/bridge/turn",
+      "dest": "/api/bridge/turn.js"
+    },
+    {
+      "src": "/api/bridge/audio",
+      "dest": "/api/bridge/audio.js"
+    },
+    {
+      "src": "/api/bridge/status",
+      "dest": "/api/bridge/status.js"
     },
     {
       "src": "/(.*)",

@@ -1,44 +1,37 @@
 // /api/bridge/voice — Twilio's voice webhook for every Squadron number.
-// Squadron checks Twilio's signature, finds the business and places the
-// prepaid hold, then connects the call's audio to the phone bridge with a
-// signed stream ticket. The bridge therefore needs only BRIDGE_SECRET.
-import crypto from 'node:crypto';
+// Squadron checks Twilio's signature, finds the business, places the prepaid
+// hold for the whole call, greets the caller and starts listening. Each turn
+// then goes to /api/bridge/turn. Everything runs on Vercel and Twilio.
+import { sql, loadTeam, newId } from '../_lib/db.js';
+import { ensureBridgeSchema } from '../_lib/bridge.js';
 import { callContext } from './context.js';
-
-const PUBLIC = (process.env.PUBLIC_ORIGIN || 'https://www.squadron.tel').replace(/\/$/, '');
-function xml(s) { return String(s).replace(/[<>&"']/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&apos;' }[c])); }
-
-function validTwilio(url, params, signature) {
-  const token = process.env.TWILIO_AUTH_TOKEN;
-  if (!token || !signature) return false;
-  let data = url;
-  for (const k of Object.keys(params).sort()) data += k + params[k];
-  const want = crypto.createHmac('sha1', token).update(data).digest('base64');
-  return want.length === signature.length && crypto.timingSafeEqual(Buffer.from(want), Buffer.from(signature));
-}
-
-function ticket(businessId, callSid, demo, exp, limit, hold) {
-  return crypto.createHmac('sha256', process.env.BRIDGE_SECRET || '').update(`${businessId}|${callSid}|${demo}|${exp}|${limit}|${hold}`).digest('base64');
-}
+import { formParams, validTwilio, twiml, listen, speak, xml, TWILIO_VOICE } from '../_lib/phone.js';
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'text/xml');
-  const say = (t) => res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Say>${xml(t)}</Say><Hangup/></Response>`);
-  const params = typeof req.body === 'object' && req.body ? req.body : Object.fromEntries(new URLSearchParams(String(req.body || '')));
-  const raw = String(req.url || '');
-  const url = `${PUBLIC}/api/bridge/voice${raw.includes('?') ? raw.slice(raw.indexOf('?')) : ''}`;
-  if (!validTwilio(url, params, req.headers['x-twilio-signature'])) return res.status(403).send('<Response/>');
-  const host = process.env.BRIDGE_HOST;
-  if (!host) return say('This line is not connected yet. Please try again later. Goodbye.');
-  let ctx = null;
-  try { ctx = await callContext(String(params.To || ''), String(params.CallSid || '')); } catch (e) { console.error('[bridge/voice]', e); }
-  if (!ctx || !ctx.ok) return say(ctx && ctx.reason === 'paused' ? 'This business has reached its plan allowance, so its assistant is paused right now. Please try again later.' : 'This number is not assigned to a business right now. Goodbye.');
-  const demo = ctx.demo ? '1' : '0';
-  const exp = String(Date.now() + 5 * 60 * 1000);
-  const limit = String(Math.max(0, Math.floor(Number(ctx.limitSeconds) || 0)));
-  const hold = String(ctx.holdRef || '');
-  const tk = ticket(ctx.businessId, params.CallSid, demo, exp, limit, hold);
-  const notice = `This call is answered by an A I agent for ${ctx.businessName}. It is recorded for quality.`;
-  const p = { businessId: ctx.businessId, callSid: params.CallSid, from: params.From, to: params.To, demo, exp, limit, hold, ticket: tk };
-  return res.status(200).send(`<?xml version="1.0" encoding="UTF-8"?><Response><Say>${xml(notice)}</Say><Connect><Stream url="wss://${xml(host)}/media">${Object.entries(p).map(([k, v]) => `<Parameter name="${k}" value="${xml(v || '')}"/>`).join('')}</Stream></Connect></Response>`);
+  res.setHeader('Cache-Control', 'no-store');
+  const p = formParams(req);
+  if (!validTwilio(req, '/api/bridge/voice', p)) return res.status(403).send('<Response/>');
+  const bye = (t) => res.status(200).send(twiml(`<Say voice="${TWILIO_VOICE}">${xml(t)}</Say><Hangup/>`));
+  try {
+    const ctx = await callContext(String(p.To || ''), String(p.CallSid || ''));
+    if (!ctx || !ctx.ok) return bye(ctx && ctx.reason === 'paused' ? 'This business has reached its plan allowance, so its assistant is paused right now. Please try again later.' : 'This number is not assigned to a business right now. Goodbye.');
+    const biz = (await sql().query('SELECT * FROM businesses WHERE id = $1', [ctx.businessId]))[0];
+    const team = await loadTeam(biz.id);
+    const front = team.agents.agents.filter((a) => a.enabled !== false)[0];
+    const greeting = `This call is answered by an AI agent for ${ctx.businessName}, and it is recorded. ${front.greeting} You're dealing with top brass from the start: every agent on this line is a manager.`;
+    const convoId = newId('cnv');
+    const now = new Date().toISOString();
+    await sql().query("INSERT INTO conversations (id, business_id, channel, transcript, test, agent_id, agent_name, outcome) VALUES ($1, $2, 'phone', $3, $4, $5, $6, 'in progress')",
+      [convoId, biz.id, JSON.stringify([{ role: 'agent', agent_id: front.id, agent_name: `${front.persona} · ${front.title}`, text: greeting, at: now }]), !!ctx.demo, front.id, `${front.persona} · ${front.title}`]);
+    await ensureBridgeSchema();
+    await sql().query('ALTER TABLE calls ADD COLUMN IF NOT EXISTS hold_ref TEXT');
+    await sql().query(`INSERT INTO calls (call_sid, business_id, conversation_id, from_number, demo, hold_ref) VALUES ($1, $2, $3, $4, $5, $6)
+      ON CONFLICT (call_sid) DO UPDATE SET conversation_id = EXCLUDED.conversation_id, hold_ref = EXCLUDED.hold_ref`, [p.CallSid, biz.id, convoId, p.From || null, !!ctx.demo, ctx.holdRef]);
+    const state = { b: biz.id, c: convoId, h: ctx.holdRef, t: Date.now(), l: ctx.limitSeconds, d: ctx.demo ? 1 : 0, n: 0, r: 0 };
+    return res.status(200).send(twiml(listen(state, speak(greeting, biz.settings))));
+  } catch (e) {
+    console.error('[bridge/voice]', e);
+    return bye('Sorry, this line is having a problem right now. Please try again in a few minutes. Goodbye.');
+  }
 }

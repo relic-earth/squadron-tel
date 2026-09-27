@@ -161,9 +161,9 @@ export async function houseBuy({ businessId, number, voiceUrl }) {
   if (!biz) throw new Error('That business is not on the house account.');
   if (biz.phone_number) return { ok: true, number: biz.phone_number, already: true };
   if (!/^\+1\d{10}$/.test(String(number || ''))) throw new Error('Pass a +1 number from the available list.');
-  voiceUrl = `${ORIGIN}/api/bridge/voice`; // Squadron answers Twilio and hands the audio to the bridge.
+  voiceUrl = `${ORIGIN}/api/bridge/voice`; // Squadron answers Twilio directly; no bridge server.
   const t = twilio();
-  const bought = await t.call(`${t.base}/IncomingPhoneNumbers.json`, { method: 'POST', form: { PhoneNumber: number, VoiceUrl: voiceUrl, VoiceMethod: 'POST', FriendlyName: `Squadron house: ${biz.input_value}`.slice(0, 64) } });
+  const bought = await t.call(`${t.base}/IncomingPhoneNumbers.json`, { method: 'POST', form: { PhoneNumber: number, VoiceUrl: voiceUrl, VoiceMethod: 'POST', StatusCallback: `${ORIGIN}/api/bridge/status`, StatusCallbackMethod: 'POST', FriendlyName: `Squadron house: ${biz.input_value}`.slice(0, 64) } });
   const channels = { ...(biz.channels || {}), phone: { enabled: true, changed_at: new Date().toISOString() } };
   await sql().query('UPDATE businesses SET phone_number = $2, channels = $3, updated_at = now() WHERE id = $1', [biz.id, bought.phone_number, JSON.stringify(channels)]);
   return { ok: true, number: bought.phone_number, sid: bought.sid };
