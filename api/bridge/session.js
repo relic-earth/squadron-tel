@@ -4,7 +4,6 @@ import { sql, bad, loadProfile, loadTeam } from '../_lib/db.js';
 import { checkSecret, ensureBridgeSchema } from '../_lib/bridge.js';
 import { applyCorrections } from '../_lib/profile.js';
 import { voiceSession } from '../_lib/voice.js';
-import { deepgramToken } from '../_lib/tts.js';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -33,12 +32,11 @@ export default async function handler(req, res) {
     const csJson = JSON.parse(csText);
     const clientSecret = csJson.value || csJson.client_secret?.value;
     // Businesses with a Deepgram voice get text-only Realtime output, spoken by
-    // Deepgram Aura; the bridge falls back to the Realtime voice if this fails.
+    // Deepgram Aura through /api/bridge/speak.
     let tts = null;
     const tv = String((biz.settings && biz.settings.tts_voice) || '');
     if (tv.startsWith('deepgram:')) {
-      try { tts = { provider: 'deepgram', model: tv.slice(9), token: await deepgramToken() }; }
-      catch (e) { console.error('[bridge/session] deepgram token', e.message); }
+      tts = { provider: 'deepgram', model: tv.slice(9) };
     }
     return res.status(200).json({ ok: true, session, clientSecret, model, agent: session.speaker, settings: biz.settings || {}, businessName: business.name, tts });
   } catch (e) {

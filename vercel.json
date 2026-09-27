@@ -95,6 +95,15 @@
     },
     "api/handoff.js": {
       "maxDuration": 30
+    },
+    "api/bridge/voice.js": {
+      "maxDuration": 20
+    },
+    "api/bridge/speak.js": {
+      "maxDuration": 20
+    },
+    "api/bridge/twilio.js": {
+      "maxDuration": 20
     }
   },
   "routes": [
@@ -297,6 +306,18 @@
     {
       "src": "/api/voice-check",
       "dest": "/api/voice-check.js"
+    },
+    {
+      "src": "/api/bridge/voice",
+      "dest": "/api/bridge/voice.js"
+    },
+    {
+      "src": "/api/bridge/speak",
+      "dest": "/api/bridge/speak.js"
+    },
+    {
+      "src": "/api/bridge/twilio",
+      "dest": "/api/bridge/twilio.js"
     },
     {
       "src": "/(.*)",

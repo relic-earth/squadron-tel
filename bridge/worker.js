@@ -106,21 +106,28 @@ export class CallSession {
     const sendTw = (o) => { try { tw.send(JSON.stringify(o)); } catch {} };
     const sendOai = (o) => { if (oai && oaiReady) try { oai.send(JSON.stringify(o)); } catch {} };
     // Deepgram Aura voice (optional, per business): Realtime answers in text,
-    // and Deepgram speaks it as 8 kHz mu-law straight into the phone line.
-    let dg = null, ttsChars = 0, ttsModel = null;
-    const sendDg = (o) => { if (dg) try { dg.send(JSON.stringify(o)); } catch {} };
-    const openDeepgram = async (tts) => {
-      const r = await fetch(`https://api.deepgram.com/v1/speak?model=${encodeURIComponent(tts.model)}&encoding=mulaw&sample_rate=8000&container=none`, { headers: { Upgrade: 'websocket', Authorization: `Bearer ${tts.token}` } });
-      const s = r.webSocket;
-      if (!s) throw new Error(`Deepgram did not accept the WebSocket (${r.status})`);
-      s.accept();
-      s.addEventListener('message', (m) => {
-        if (typeof m.data === 'string') return;
-        if (streamSid) { sendTw({ event: 'media', streamSid, media: { payload: b64(m.data) } }); if (responseStartTs == null) responseStartTs = latestMediaTs; }
+    // each sentence is spoken through /api/bridge/speak as 8 kHz mu-law, and
+    // the audio plays in order. Speech for a sentence starts downloading as
+    // soon as the sentence is complete.
+    let tts = null, ttsChars = 0, ttsModel = null, ttsBuf = '', ttsGen = 0, ttsChain = Promise.resolve();
+    const speakText = (text) => {
+      text = text.trim(); if (!text || !tts) return;
+      const gen = ttsGen; ttsChars += text.length;
+      const origin = (env.SQUADRON_ORIGIN || 'https://www.squadron.tel').replace(/\/$/, '');
+      const audio = fetch(`${origin}/api/bridge/speak`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-bridge-secret': env.BRIDGE_SECRET }, body: JSON.stringify({ text, model: tts.model }) })
+        .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(`speak ${r.status}`))));
+      ttsChain = ttsChain.then(async () => {
+        let buf; try { buf = await audio; } catch (e) { console.log('tts failed', e.message); return; }
+        if (gen !== ttsGen || !streamSid) return;
+        const u = new Uint8Array(buf);
+        if (responseStartTs == null) responseStartTs = latestMediaTs;
+        for (let k = 0; k < u.length; k += 3200) sendTw({ event: 'media', streamSid, media: { payload: b64(u.slice(k, k + 3200)) } });
       });
-      s.addEventListener('close', () => { if (dg === s) dg = null; });
-      ttsModel = tts.model;
-      return s;
+    };
+    const feedText = (delta) => {
+      ttsBuf += delta;
+      const m = ttsBuf.match(/^([\s\S]*[.!?:;])(\s+)([\s\S]*)$/);
+      if (m && m[1].length >= 12) { speakText(m[1]); ttsBuf = m[3]; }
     };
 
     // Opens an OpenAI Realtime session for the call. as = 'front' starts the
@@ -139,11 +146,9 @@ export class CallSession {
       if (old) { try { old.close(); } catch {} }
       if (ctx) { next.from = ctx.from; next.to = ctx.to; }
       ctx = next;
-      if (!dg && ctx.tts && ctx.tts.provider === 'deepgram' && ctx.tts.token) {
-        try { dg = await openDeepgram(ctx.tts); } catch (e) { console.log('deepgram failed, using the Realtime voice', e.message); dg = null; }
-      }
+      if (!tts && ctx.tts && ctx.tts.provider === 'deepgram') { tts = ctx.tts; ttsModel = tts.model; }
       const input = { format: { type: 'audio/pcmu' }, transcription: { model: 'gpt-4o-mini-transcribe' }, turn_detection: { type: 'semantic_vad', eagerness: 'auto', interrupt_response: true } };
-      sendOai({ type: 'session.update', session: dg
+      sendOai({ type: 'session.update', session: tts
         ? { type: 'realtime', instructions: ctx.session.instructions, tools: ctx.session.tools, tool_choice: 'auto', output_modalities: ['text'], audio: { input } }
         : { type: 'realtime', instructions: ctx.session.instructions, tools: ctx.session.tools, tool_choice: 'auto', audio: { input, output: { format: { type: 'audio/pcmu' }, voice: ctx.session.audio.output.voice } } } });
       if (handoff) {
@@ -159,10 +164,10 @@ export class CallSession {
             if (streamSid) { sendTw({ event: 'media', streamSid, media: { payload: ev.delta } }); if (responseStartTs == null) responseStartTs = latestMediaTs; if (ev.item_id) lastAssistantItem = ev.item_id; }
             break;
           case 'response.output_text.delta':
-            if (dg && ev.delta) { sendDg({ type: 'Speak', text: ev.delta }); ttsChars += ev.delta.length; }
+            if (tts && ev.delta) feedText(ev.delta);
             break;
           case 'response.output_text.done':
-            if (dg) sendDg({ type: 'Flush' });
+            if (tts) { speakText(ttsBuf); ttsBuf = ''; }
             if (ev.text) transcript.push({ role: 'agent', text: ev.text, agent_id: ctx.agent.id, agent_name: `${ctx.agent.persona} · ${ctx.agent.title}`, at: new Date().toISOString() });
             break;
           case 'response.done':
@@ -175,7 +180,7 @@ export class CallSession {
             if (ev.transcript && ev.transcript.trim()) transcript.push({ role: 'customer', text: ev.transcript.trim(), at: new Date().toISOString() });
             break;
           case 'input_audio_buffer.speech_started':
-            if (dg) { sendOai({ type: 'response.cancel' }); sendDg({ type: 'Clear' }); }
+            if (tts) { sendOai({ type: 'response.cancel' }); ttsGen++; ttsBuf = ''; }
             if (lastAssistantItem && responseStartTs != null) sendOai({ type: 'conversation.item.truncate', item_id: lastAssistantItem, content_index: 0, audio_end_ms: Math.max(0, latestMediaTs - responseStartTs) });
             if (streamSid) sendTw({ event: 'clear', streamSid });
             lastAssistantItem = null; responseStartTs = null;
@@ -216,7 +221,7 @@ export class CallSession {
         const target = ctx.settings && ctx.settings.on_call_phone;
         if (target && !demo) {
           output = { ok: true, note: 'Say one short sentence that you are transferring now, then stop speaking.' };
-          setTimeout(() => twilio(env, `/Calls/${callSid}.json`, { Twiml: `<?xml version="1.0" encoding="UTF-8"?><Response><Say>Connecting you now.</Say><Dial>${xml(target)}</Dial></Response>` }).catch((e) => console.log('transfer failed', e.message)), 4000);
+          setTimeout(() => vercel(env, '/api/bridge/twilio', { action: 'transfer', callSid, target }).catch((e) => console.log('transfer failed', e.message)), 4000);
         } else {
           output = { ok: false, note: demo ? 'This is a demo call, so no transfer is possible. Say so and offer to take a message.' : 'No on-call number is set for this business. Say that no one is available to transfer to right now and offer to take a message.' };
         }
@@ -227,8 +232,8 @@ export class CallSession {
 
     const endForLimit = async () => {
       if (closed || !callSid) return;
-      try { await twilio(env, `/Calls/${callSid}.json`, { Twiml: '<?xml version="1.0" encoding="UTF-8"?><Response><Say>This call has reached its time limit. Goodbye.</Say><Hangup/></Response>' }); }
-      catch (e) { console.log('limit hangup failed', e.message); try { await twilio(env, `/Calls/${callSid}.json`, { Status: 'completed' }); } catch {} }
+      try { await vercel(env, '/api/bridge/twilio', { action: 'hangup', callSid }); }
+      catch (e) { console.log('limit hangup failed', e.message); }
       setTimeout(() => this.state.waitUntil(finish()), 12000);
     };
 
@@ -236,7 +241,6 @@ export class CallSession {
       if (closed) return; closed = true;
       if (limitTimer) clearTimeout(limitTimer);
       try { if (oai) oai.close(); } catch {}
-      try { if (dg) { dg.send(JSON.stringify({ type: 'Close' })); dg.close(); } } catch {}
       if (!verified) return;
       try {
         await vercel(env, '/api/bridge/call-ended', { businessId, callSid, from: ctx && ctx.from, demo, transcript, gaps, messages, transferRequested, durationS: Math.round((Date.now() - startedAt) / 1000), holdRef, model, usage, ttsChars, ttsModel, agentId: ctx && ctx.agent.id, agentName: ctx && `${ctx.agent.persona} · ${ctx.agent.title}` });
@@ -258,8 +262,7 @@ export class CallSession {
           return openOpenAI();
         }).then(() => {
           ctx.from = p.from; ctx.to = p.to;
-          const origin = (env.SQUADRON_ORIGIN || 'https://www.squadron.tel').replace(/\/$/, '');
-          return twilio(env, `/Calls/${callSid}/Recordings.json`, { RecordingStatusCallback: `${origin}/api/bridge/recording?secret=${encodeURIComponent(env.BRIDGE_SECRET)}&businessId=${encodeURIComponent(businessId)}`, RecordingStatusCallbackEvent: 'completed', RecordingChannels: 'dual' }).catch((e) => console.log('recording failed', e.message));
+          return vercel(env, '/api/bridge/twilio', { action: 'record', callSid, businessId }).catch((e) => console.log('recording failed', e.message));
         }).catch((e) => { console.log('session failed', e.message); try { tw.close(1011, 'session failed'); } catch {} }));
       } else if (msg.event === 'media') {
         latestMediaTs = Number(msg.media.timestamp) || latestMediaTs;

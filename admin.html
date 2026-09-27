@@ -134,7 +134,7 @@ dialog::backdrop{background:rgba(11,30,69,0.4)}
       <div class="row" style="margin-top:10px"><label class="note" for="hvoice">Phone voice</label><select id="hvoice" class="grow"><option value="deepgram:aura-2-pandora-en" selected>Pandora, British female (the House Legal podcast voice)</option><option value="">The team's own Squadron voices</option></select></div>
       <div id="hOut" class="note" style="margin-top:14px"></div>
       <div id="hNum" style="margin-top:14px;display:none">
-        <div class="row"><input id="ha" style="width:150px" placeholder="Area code"><input class="grow" id="hv" placeholder="Bridge voice webhook, ending in /twilio/voice"><button class="btn ghost" onclick="houseNums()">Find numbers</button></div>
+        <div class="row"><input id="ha" style="width:150px" placeholder="Area code"><input type="hidden" id="hv"><button class="btn ghost" onclick="houseNums()">Find numbers</button></div>
         <div id="hList" class="note" style="margin-top:12px"></div>
       </div>
     </div>
@@ -318,8 +318,6 @@ async function houseNums() {
   $('hList').textContent = 'Checking Twilio.';
   try {
     const r = await api({ action: 'house_numbers', areaCode: $('ha').value || undefined });
-    const bridge = r.owned.map((n) => n.voiceUrl).find((u) => /\/twilio\/voice$/.test(u || ''));
-    if (bridge && !$('hv').value) $('hv').value = bridge;
     const price = r.price && r.price.current ? `$${Number(r.price.current).toFixed(2)} a month` : 'Twilio did not return a price';
     $('hList').innerHTML = `<p>Numbers Squadron owns: ${r.owned.map((n) => `${esc(n.number)} (voice webhook: ${esc(n.voiceUrl || 'none')})`).join('; ') || 'none'}.</p><p>A new local number costs ${esc(price)}, billed by Twilio. Pressing Buy purchases that number right away.</p>` +
       r.available.map((n) => `<div class="row" style="margin-top:8px"><span class="grow">${esc(n.number)} · ${esc(n.locality || '')} ${esc(n.region || '')}</span><button class="btn sm" onclick="houseBuy('${esc(n.number)}', this)">Buy</button></div>`).join('');
