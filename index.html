@@ -1004,7 +1004,7 @@ details[open] .faq-q{color:var(--signal);}
 (function(){var s='<script src="https://www.squadron.tel/widget.js" data-business="your-id" async><\/script>',t=document.getElementById('hxType'),w=document.querySelector('.hx');if(!t)return;
 var st=document.getElementById('hxState'),sx=document.getElementById('hxStatusT'),sd=document.getElementById('hxStatus');
 function esc(x){return x.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function color(x){return esc(x).replace(/(&lt;\/?)(script)/g,'$1<b class="k">$2</b>').replace(/(src|data-business|async)/g,'<b class="a">$1</b>').replace(/(&quot;|")([^"]*?)\1/g,'<b class="v">"$2"</b>')}
+function color(x){return esc(x).replace(/(&lt;\/?)(script)|"[^"]*"|\b(data-business|src|async)\b/g,function(m,p,q,r){if(q)return p+'<b class="k">'+q+'</b>';if(m.charAt(0)=='"')return '<b class="v">'+m+'</b>';return '<b class="a">'+m+'</b>'})}
 function show(on){w.classList.toggle('on',on)}
 if(matchMedia('(prefers-reduced-motion:reduce)').matches){t.innerHTML=color(s);show(true);st.textContent='Live';sx.textContent='Installed. Ace is answering.';sd.classList.add('ok');return}
 function run(){show(false);sd.classList.remove('ok');st.textContent='Paste';sx.textContent='Waiting for your site';t.innerHTML='';var i=0;(function k(){if(i<=s.length){t.innerHTML=color(s.slice(0,i));i++;setTimeout(k,22+Math.random()*30)}else{st.textContent='Saved';sx.textContent='Installing...';setTimeout(function(){st.textContent='Live';sx.textContent='Installed. Ace is answering.';sd.classList.add('ok');show(true);setTimeout(run,7000)},900)}})()}
