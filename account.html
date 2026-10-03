@@ -84,7 +84,7 @@ async function api(body) {
 function note(html) { $('note').innerHTML = html; $('note').style.display = html ? 'block' : 'none'; }
 function loginForm() {
   $('body').innerHTML = `<div class="card"><p class="big">Log in to see your teams, Squadron HQ and billing.</p>
-    <form class="two" onsubmit="event.preventDefault();login()"><input class="input" id="email" type="email" placeholder="Email" autocomplete="email" required><input class="input" id="pass" type="password" placeholder="Password" autocomplete="current-password" required><button class="btn" type="submit" style="grid-column:1/-1">Log in</button></form>
+    <form class="two" onsubmit="event.preventDefault();login()"><input class="input" id="email" aria-label="Email" type="email" placeholder="Email" autocomplete="email" required><input class="input" id="pass" type="password" placeholder="Password" autocomplete="current-password" required><button class="btn" type="submit" style="grid-column:1/-1">Log in</button></form>
     <p class="detail" style="margin-top:18px"><a href="/reset" style="color:var(--signal);font-weight:700">Forgot your password?</a></p>
     <p class="detail" style="margin-top:10px">New to Squadron? <a href="/start" style="color:var(--signal);font-weight:700">Get started</a>. Plans start at $39 for 30 days, prepaid.</p></div>`;
 }

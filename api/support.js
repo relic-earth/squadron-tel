@@ -4,7 +4,7 @@
 // with the reference number. POST { action: 'helpful', id, yes } records a
 // Help Center vote. Nothing here calls an AI model, so nothing costs credit.
 import { sql, readJson, bad } from './_lib/db.js';
-import { accepted, recordAcceptance } from './_lib/terms.js';
+import { accepted, CODE, recordAcceptance } from './_lib/terms.js';
 import { currentAccount } from './_lib/auth.js';
 import { ensureSupportSchema, createTicket, ipHash, ticketRef } from './_lib/tickets.js';
 
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true });
     }
     if (body.website) return res.status(200).json({ ok: true, reference: ticketRef() }); // honeypot
-    if (!accepted(body, { cert: false })) return bad(res, 400, 'Please tick the box to agree to the Terms of Use and Privacy Policy before sending.');
+    if (!accepted(body, { cert: false })) return res.status(400).json({ error: 'Please tick the box to agree to the Terms of Use and Privacy Policy before sending.', code: CODE });
     const acc = await currentAccount(req).catch(() => null);
     await recordAcceptance(req, { accountId: acc && acc.id, email: String(body.email || '').slice(0, 200), kind: 'support', body });
     const out = await createTicket({ email: body.email, name: body.name, topic: body.topic, message: body.message, page: body.page, transcript: body.transcript, ip: ipHash(req), accountId: acc && acc.id, accountLine: acc ? `${acc.email} (${acc.id})` : null });

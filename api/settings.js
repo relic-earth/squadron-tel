@@ -1,7 +1,7 @@
 // /api/settings — business settings (on-call contact, business hours,
 // notification email) and channel deployment state, with honest per-channel
 // status. GET reads; POST updates.
-import { accepted, REFUSAL, recordAcceptance } from './_lib/terms.js';
+import { accepted, REFUSAL, CODE, recordAcceptance } from './_lib/terms.js';
 import { sql, loadBusiness, readJson, bad } from './_lib/db.js';
 import { ensureAuthSchema } from './_lib/auth.js';
 import { channelStatus } from './_lib/channels.js';
@@ -60,7 +60,7 @@ export default async function handler(req, res) {
       if (!acc || acc.id !== biz.account_id) return bad(res, 401, 'Log in to the account that owns this team first.');
       try {
         if (body.action === 'number_search') return res.status(200).json({ numbers: await searchNumbers(body.areaCode), monthlyCents: NUMBER_CENTS });
-        if (body.action === 'number_buy') { if (!accepted(body)) return bad(res, 400, REFUSAL); await recordAcceptance(req, { accountId: acc.id, email: acc.email, kind: 'number_buy', body }); }
+        if (body.action === 'number_buy') { if (!accepted(body)) return res.status(400).json({ error: REFUSAL, code: CODE }); await recordAcceptance(req, { accountId: acc.id, email: acc.email, kind: 'number_buy', body }); }
         const out = await buyNumber(biz, body.number);
         await track('number_bought', { accountId: acc.id, businessId: biz.id });
         const fresh = (await sql().query('SELECT * FROM businesses WHERE id = $1', [biz.id]))[0];

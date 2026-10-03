@@ -70,7 +70,7 @@ async function api(body) {
 }
 function askForm() {
   $('body').innerHTML = `<div class="card"><p class="big">Enter the email you use for Squadron, and we will email you a link to choose a new password.</p>
-    <form class="two" onsubmit="event.preventDefault();ask()"><input class="input" id="email" type="email" placeholder="Email" autocomplete="email" required><button class="btn" type="submit" id="go">Email me a reset link</button></form></div>`;
+    <form class="two" onsubmit="event.preventDefault();ask()"><input class="input" id="email" aria-label="Email" type="email" placeholder="Email" autocomplete="email" required><button class="btn" type="submit" id="go">Email me a reset link</button></form></div>`;
 }
 async function ask() {
   $('err').textContent = ''; $('go').disabled = true;

@@ -13,6 +13,7 @@ export function accepted(body, { cert = true, wire = false } = {}) {
   if (wire && body.wire !== true) return false;
   return true;
 }
+export const CODE = 'terms_required';
 export const REFUSAL = 'Please tick the boxes to agree to the Terms of Use and Privacy Policy and to confirm your consents before continuing.';
 
 export async function recordAcceptance(req, { accountId = null, email = null, kind, body }) {

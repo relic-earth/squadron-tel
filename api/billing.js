@@ -5,7 +5,7 @@
 // returns its URL; { action: 'confirm', session } confirms a finished card
 // payment by reading the session back from Stripe.
 // Top-ups can only be bought for a running paid period.
-import { accepted, REFUSAL, recordAcceptance } from './_lib/terms.js';
+import { accepted, REFUSAL, CODE, recordAcceptance } from './_lib/terms.js';
 import { sql, readJson, bad } from './_lib/db.js';
 import { currentAccount, PLANS } from './_lib/auth.js';
 import { ensureBillingSchema, PRICES, wireInstructions, reconcile, createInvoice, BENEFICIARY } from './_lib/billing.js';
@@ -39,7 +39,7 @@ export default async function handler(req, res) {
     const body = req.method === 'POST' ? readJson(req) : {};
     let notice = null;
     let st = await ledgerStatus(acc.id);
-    if ((body.action === 'invoice' || body.action === 'card') && !accepted(body, { wire: body.action === 'invoice' })) return bad(res, 400, REFUSAL);
+    if ((body.action === 'invoice' || body.action === 'card') && !accepted(body, { wire: body.action === 'invoice' })) return res.status(400).json({ error: REFUSAL, code: CODE });
     if (body.action === 'invoice' || body.action === 'card') await recordAcceptance(req, { accountId: acc.id, email: acc.email, kind: 'checkout:' + body.action, body });
     if (body.action === 'invoice') {
       const p = PRICES[body.item];
