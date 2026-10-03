@@ -989,7 +989,27 @@ details[open] .faq-q{color:var(--signal);}
       </form>
       <p class="hero-note">Squadron reads your site and shows what it found and the team it would build before you pay anything.</p>
     </div>
-    <div class="hero-art"><img src="https://cdn.midjourney.com/9625b87f-40d2-4b7d-a7f5-d58877d7dad2/0_2_640_N.webp" alt="Line drawing of a calm AI agent in a headset, with three jets flying past"><video class="hero-video" src="https://cdn.midjourney.com/video/1817c449-39ac-4212-b945-cf5255f9cb67/1.mp4" poster="https://cdn.midjourney.com/9625b87f-40d2-4b7d-a7f5-d58877d7dad2/0_2_640_N.webp" autoplay muted loop playsinline preload="auto" aria-hidden="true" oncanplay="this.classList.add('on')"></video></div>
+    <div class="hero-art hx" aria-label="Install Squadron with one line of code">
+  <div class="hx-glow"></div>
+  <div class="hx-win">
+    <div class="hx-bar"><i></i><i></i><i></i><span>theme.liquid</span><em id="hxState">Paste</em></div>
+    <div class="hx-code"><div class="hx-ln"><b>41</b><span>&lt;/main&gt;</span></div><div class="hx-ln"><b>42</b><span class="hx-c">&lt;!-- Squadron: one line --&gt;</span></div><div class="hx-ln hx-hot"><b>43</b><span id="hxType"></span><u class="hx-cur"></u></div><div class="hx-ln"><b>44</b><span>&lt;/body&gt;</span></div></div>
+    <div class="hx-status" id="hxStatus"><span class="hx-dot"></span><span id="hxStatusT">Waiting for your site</span></div>
+  </div>
+  <div class="hx-site" id="hxSite"><div class="hx-sbar"><i></i><i></i><i></i><span>yourshop.com</span></div><div class="hx-sbody"><div class="hx-l w60"></div><div class="hx-l w40"></div><div class="hx-l w80 t"></div><div class="hx-blk"></div></div>
+    <div class="hx-chat" id="hxChat"><div class="hx-ch"><span class="hx-dot"></span>Ace · Front Desk<em>Talk to a person</em></div><div class="hx-m" id="hxMsg">Hi, I'm Ace, an AI agent for Your Shop. We're open until 6pm today, and returns are free within 60 days.</div></div>
+    <div class="hx-fab" id="hxFab"></div></div>
+</div>
+<script>
+(function(){var s='<script src="https://www.squadron.tel/widget.js" data-business="your-id" async><\/script>',t=document.getElementById('hxType'),w=document.querySelector('.hx');if(!t)return;
+var st=document.getElementById('hxState'),sx=document.getElementById('hxStatusT'),sd=document.getElementById('hxStatus');
+function esc(x){return x.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function color(x){return esc(x).replace(/(&lt;\/?)(script)/g,'$1<b class="k">$2</b>').replace(/(src|data-business|async)/g,'<b class="a">$1</b>').replace(/(&quot;|")([^"]*?)\1/g,'<b class="v">"$2"</b>')}
+function show(on){w.classList.toggle('on',on)}
+if(matchMedia('(prefers-reduced-motion:reduce)').matches){t.innerHTML=color(s);show(true);st.textContent='Live';sx.textContent='Installed. Ace is answering.';sd.classList.add('ok');return}
+function run(){show(false);sd.classList.remove('ok');st.textContent='Paste';sx.textContent='Waiting for your site';t.innerHTML='';var i=0;(function k(){if(i<=s.length){t.innerHTML=color(s.slice(0,i));i++;setTimeout(k,22+Math.random()*30)}else{st.textContent='Saved';sx.textContent='Installing...';setTimeout(function(){st.textContent='Live';sx.textContent='Installed. Ace is answering.';sd.classList.add('ok');show(true);setTimeout(run,7000)},900)}})()}
+setTimeout(run,600)})();
+</script>
   </div>
 </section>
 
