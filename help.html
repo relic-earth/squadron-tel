@@ -115,6 +115,7 @@ footer{padding:40px 0 60px;font-size:16px;color:var(--ink-2)}
 footer a{color:var(--ink-2)}
 </style>
 <script src="https://island.contact/snippet.js" data-site="squadron" defer></script>
+<script src="/accept.js"></script>
 </head>
 <body>
 <nav>
@@ -192,6 +193,7 @@ footer a{color:var(--ink-2)}
       <div class="full"><label for="tTopic">Topic</label><select id="tTopic"><option>Setup</option><option>Testing</option><option>Going live</option><option>Billing</option><option>Something is broken</option><option>Sales question</option><option>Other</option></select></div>
       <div class="full"><label for="tMsg">What do you need?</label><textarea id="tMsg" required placeholder="Tell us what happened, what you expected, and the business or page it concerns."></textarea></div>
       <input class="hp" id="tWeb" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="full" id="tAccept"></div>
       <div class="full"><p class="ferr" id="tErr"></p><button class="btn" type="submit" id="tBtn">Send to a person</button></div>
     </form>
     <div class="done" id="tDone"><strong id="tRef"></strong><p>We have your request, and a copy is on its way to your inbox. A person at Squadron will reply to <span id="tTo"></span>. Keep the reference in the subject if you write again.</p></div>
@@ -286,10 +288,11 @@ async function ask(text) {
 $('aceForm').addEventListener('submit', (e) => { e.preventDefault(); const v = $('aceIn').value.trim(); if (!v) return; $('aceIn').value = ''; ask(v); });
 
 // Ticket
+$('tAccept').innerHTML = SQA.html('t'); SQA.bind('t', '#tBtn');
 $('tForm').addEventListener('submit', async (e) => {
   e.preventDefault(); $('tErr').textContent = ''; const btn = $('tBtn'); btn.disabled = true; btn.textContent = 'Sending';
   try {
-    const r = await fetch('/api/support', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'ticket', name: $('tName').value, email: $('tEmail').value, topic: $('tTopic').value, message: $('tMsg').value, website: $('tWeb').value, page: location.href, transcript: transcript.length > 1 ? transcript : null }) });
+    const r = await fetch('/api/support', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...SQA.flags('t'), action: 'ticket', name: $('tName').value, email: $('tEmail').value, topic: $('tTopic').value, message: $('tMsg').value, website: $('tWeb').value, page: location.href, transcript: transcript.length > 1 ? transcript : null }) });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error || 'Your request could not be sent.');
     $('tForm').style.display = 'none'; $('tDone').style.display = 'block';

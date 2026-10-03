@@ -35,6 +35,7 @@
 </style>
 <link rel="stylesheet" href="/theme.css">
 <script src="https://island.contact/snippet.js" data-site="squadron" defer></script>
+<script src="/accept.js"></script>
 </head>
 <body>
 <nav>
@@ -149,13 +150,14 @@ function renderAccount() {
   }
   $('acctBody').innerHTML = `<p class="detail">Create your account to deploy. Squadron is prepaid: plans start at $39 for 30 days.</p>
     <div class="row2 field"><div><label>Email</label><input id="a_email" type="email" autocomplete="email"></div><div><label>Password (8+ characters)</label><input id="a_pass" type="password" autocomplete="new-password"></div></div>
-    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn small" onclick="auth('signup')">Create account</button><button class="btn small ghost" onclick="auth('login')">I already have one, log in</button></div>
-    <label style="display:flex;gap:12px;align-items:flex-start;margin-top:16px;font-size:17px;line-height:1.5;color:#3D4C68;font-weight:500;cursor:pointer"><input type="checkbox" id="a_terms" style="width:22px;height:22px;margin-top:2px;flex:none;accent-color:#1F5FD1"><span>I agree to the <a href="/terms" target="_blank" style="color:var(--signal);font-weight:700">Terms of Service</a> and the <a href="/privacy" target="_blank" style="color:var(--signal);font-weight:700">Privacy Policy</a>, and I will follow the call-recording and consumer laws that apply to my business.</span></label>`;
+    ${SQA.html('a', { cert: true })}
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn small" id="a_create" onclick="auth('signup')">Create account</button><button class="btn small ghost" onclick="auth('login')">I already have one, log in</button></div>`;
+  SQA.bind('a', '#a_create', { cert: true });
 }
 async function auth(action) {
   err('');
-  if (action === 'signup' && !$('a_terms').checked) return err('Please agree to the Terms of Service and Privacy Policy to create your account.');
-  try { await api('/api/auth', { action, email: $('a_email').value.trim(), password: $('a_pass').value, token, terms: action === 'signup' ? true : undefined }); await load(); }
+  if (action === 'signup' && !SQA.ok('a', { cert: true })) return err('Please tick both boxes to create your account.');
+  try { await api('/api/auth', { action, email: $('a_email').value.trim(), password: $('a_pass').value, token, ...(action === 'signup' ? SQA.flags('a') : {}) }); await load(); }
   catch (e) { err(e.message); }
 }
 async function logout() { await api('/api/auth', { action: 'logout' }); location.reload(); }
@@ -188,13 +190,14 @@ async function findNumbers(b) {
   err(''); b.disabled = true; $('numList').innerHTML = '<p class="detail">Looking up numbers.</p>';
   try {
     const r = await api('/api/settings', { token, action: 'number_search', areaCode: ($('areaCode').value || '').trim() });
-    $('numList').innerHTML = r.numbers.length ? `<p class="detail" style="margin:12px 0">Pick one. The line rental is $${(r.monthlyCents / 100).toFixed(2)} a month, taken from your prepaid balance now and once each paid period, and call minutes count against your plan. Your team answers the number as soon as you pick it.</p><div style="display:flex;flex-wrap:wrap;gap:10px">${r.numbers.map((n) => `<button class="btn small ghost" onclick="buyNum('${n.number}', this)">${esc(n.pretty)}${n.locality ? ' · ' + esc(n.locality) + ', ' + esc(n.region) : ''}</button>`).join('')}</div>` : '<p class="detail">No numbers are free in that area code. Try another, or leave it empty.</p>';
+    $('numList').innerHTML = r.numbers.length ? `<p class="detail" style="margin:12px 0">Pick one. The line rental is $${(r.monthlyCents / 100).toFixed(2)} a month, taken from your prepaid balance now and once each paid period, and call minutes count against your plan. Your team answers the number as soon as you pick it.</p><div style="display:flex;flex-wrap:wrap;gap:10px">${r.numbers.map((n) => `<button class="btn small ghost" onclick="buyNum('${n.number}', this)">${esc(n.pretty)}${n.locality ? ' · ' + esc(n.locality) + ', ' + esc(n.region) : ''}</button>`).join('')}</div>${SQA.html('n', { cert: true })}` : '<p class="detail">No numbers are free in that area code. Try another, or leave it empty.</p>';
+    SQA.bind('n', '#numList .btn', { cert: true });
   } catch (e) { $('numList').innerHTML = ''; err(e.message); }
   b.disabled = false;
 }
 async function buyNum(number, b) {
-  err(''); document.querySelectorAll('#numList .btn').forEach((x) => (x.disabled = true)); b.textContent = 'Setting up ' + number;
-  try { await api('/api/settings', { token, action: 'number_buy', number }); await load(); }
+  err(''); if (!SQA.ok('n', { cert: true })) return err('Please tick both boxes below the numbers first.'); document.querySelectorAll('#numList .btn').forEach((x) => (x.disabled = true)); b.textContent = 'Setting up ' + number;
+  try { await api('/api/settings', { token, action: 'number_buy', number, ...SQA.flags('n') }); await load(); }
   catch (e) { err(e.message); document.querySelectorAll('#numList .btn').forEach((x) => (x.disabled = false)); }
 }
 function renderTools() {

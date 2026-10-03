@@ -41,6 +41,7 @@
 </style>
 <link rel="stylesheet" href="/theme.css">
 <script src="https://island.contact/snippet.js" data-site="squadron" defer></script>
+<script src="/accept.js"></script>
 </head>
 <body>
 <nav>
@@ -273,9 +274,9 @@ async function payGate() {
     <div class="planpick">${PLAN_CHOICES.map(([k, n, p, m]) => `<button type="button" class="planopt ${k === plan ? 'on' : ''}" data-k="${k}" onclick="pickPlan('${k}')"><span class="pn">${n}</span><span class="pp">$${p}</span><span class="pm">30 days · ${m} · web chat</span></button>`).join('')}</div>
     ${signedIn ? `<p style="font-size:18px;color:var(--ink-2);margin-top:16px">Signed in as <b style="color:var(--ink)">${esc(me.account.email)}</b>.</p>` : `<p style="font-size:20px;font-weight:700;color:var(--ink);margin-top:22px">Your account</p>
     <div class="payrow"><input class="input" id="p_email" type="email" placeholder="Email" autocomplete="email"><input class="input" id="p_pass" type="password" placeholder="Choose a password (8+ characters)" autocomplete="new-password"></div>
-    <label style="display:flex;gap:12px;align-items:flex-start;margin-top:14px;font-size:17px;line-height:1.5;color:#3D4C68;font-weight:500;cursor:pointer"><input type="checkbox" id="p_terms" style="width:22px;height:22px;margin-top:2px;flex:none;accent-color:#1F5FD1"><span>I agree to the <a href="/terms" target="_blank" style="color:var(--signal);font-weight:700">Terms of Service</a> and the <a href="/privacy" target="_blank" style="color:var(--signal);font-weight:700">Privacy Policy</a>, and I will follow the call-recording and consumer laws that apply to my business.</span></label>
     <p class="hint">Already have an account? <a href="#" onclick="loginMode();return false" style="color:var(--signal);font-weight:700">Log in instead</a>.</p>`}
-    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;align-items:center"><button class="btn" id="payBtn" onclick="pay('card')">Pay $39 by card and build my team →</button><button class="btn ghost" onclick="pay('wire')">Pay by bank transfer</button></div>
+    <p style="font-size:18px;line-height:1.5;font-weight:700;color:var(--ink);margin-top:20px">Prepaid for 30 days. Nothing renews by itself. Payments are final and not refunded, except where the law requires it.</p>${SQA.html('p', { cert: true, wire: true })}
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;align-items:center"><button class="btn" id="payBtn" onclick="pay('card')">Pay $39 by card and build my team →</button><button class="btn ghost" id="wireBtn" onclick="pay('wire')">Pay by bank transfer</button></div>
     <div class="trust">
       <div><b>What happens next</b>Card payments switch your team on at once: Squadron builds your profile and team in about two minutes, then you review, test and turn on chat. A bank transfer starts it when the money lands.</div>
       <div><b>No surprises</b>You pay for 30 days up front, and nothing renews by itself. We email a renewal invoice five days before the period ends, and you decide. If the prepaid amount runs out first, the team pauses; nothing is billed after the fact.</div>
@@ -284,6 +285,7 @@ async function payGate() {
       <div><b>How the price compares</b>Every competitor price is copied from its own pricing page, with a link to the source, in <a href="/#compare" target="_blank" style="color:var(--signal);font-weight:700">the sourced comparison</a>.</div>
     </div></div>`;
   pickPlan(plan);
+  SQA.bind('p', '#payBtn', { cert: true }); SQA.bind('p', '#wireBtn', { cert: true, wire: true });
 }
 function pickPlan(k) {
   plan = k;
@@ -293,32 +295,32 @@ function pickPlan(k) {
 }
 function loginMode() {
   $('p_pass').setAttribute('placeholder', 'Your password'); $('p_pass').setAttribute('autocomplete', 'current-password');
-  const lbl = $('p_terms').closest('label'); if (lbl) lbl.style.display = 'none';
   window._login = true;
 }
 async function ensureAccount() {
   if (me && me.account) return true;
   const email = $('p_email').value.trim(), password = $('p_pass').value;
-  if (!window._login && !$('p_terms').checked) { err('err2', 'Please agree to the Terms of Service and Privacy Policy to create your account.'); return false; }
-  await api('/api/auth', { action: window._login ? 'login' : 'signup', email, password, token, terms: window._login ? undefined : true });
+  
+  await api('/api/auth', { action: window._login ? 'login' : 'signup', email, password, token, ...(window._login ? {} : SQA.flags('p')) });
   me = await api('/api/auth').catch(() => ({ account: null }));
   if (me.account && me.account.active) { $('payBox').classList.add('hidden'); $('payBox').innerHTML = ''; reanalyze(); return false; }
   return !!me.account;
 }
 async function pay(method) {
   err('err2', '');
+  if (!SQA.ok('p', { cert: true, wire: method === 'wire' })) return err('err2', 'Please tick the boxes above the pay buttons first.');
   const btns = document.querySelectorAll('#payBox .btn'); btns.forEach((b) => (b.disabled = true));
   try {
     if (!(await ensureAccount())) return;
     if (window.sqTrack) sqTrack('pay_click', { k: plan + ':' + method });
     if (method === 'card') {
-      try { const j = await api('/api/billing', { action: 'card', item: plan, returnTo: '/start?t=' + encodeURIComponent(token) }); location.href = j.url; return; }
+      try { const j = await api('/api/billing', { action: 'card', item: plan, ...SQA.flags('p'), returnTo: '/start?t=' + encodeURIComponent(token) }); location.href = j.url; return; }
       catch (e) { err('err2', e.message + ' A bank-transfer invoice is ready instead.'); }
     }
-    await api('/api/billing', { action: 'invoice', item: plan });
+    await api('/api/billing', { action: 'invoice', item: plan, ...SQA.flags('p') });
     location.href = '/billing?from=start&t=' + encodeURIComponent(token);
   } catch (e) { err('err2', e.message); }
-  finally { btns.forEach((b) => (b.disabled = false)); }
+  finally { btns.forEach((b) => (b.disabled = false)); SQA.bind('p', '#payBtn', { cert: true }); SQA.bind('p', '#wireBtn', { cert: true, wire: true }); }
 }
 async function paidRetry(b) {
   b.disabled = true; err('err2', '');

@@ -2,6 +2,7 @@
 // A signup during onboarding attaches the current business (by token) to the
 // new account. 'forgot' emails a one-hour reset link; 'reset' sets the new
 // password. 'forgot' answers the same way whether or not the email exists.
+import { accepted, REFUSAL, recordAcceptance } from './_lib/terms.js';
 import { sql, loadBusiness, readJson, bad } from './_lib/db.js';
 import crypto from 'node:crypto';
 import { ADMIN_EMAILS, ensureAuthSchema, createAccount, findAccount, verifyPassword, hashPassword, sessionCookie, clearCookie, currentAccount, ensureLoginsSchema, findLogin, weeklyOffToken } from './_lib/auth.js';
@@ -61,8 +62,10 @@ export default async function handler(req, res) {
     if (action === 'accept') {
       const token = String(body.token || ''); const password = String(body.password || '');
       if (password.length < 8) return bad(res, 400, 'Use a password of at least 8 characters.');
+      if (!accepted(body)) return bad(res, 400, REFUSAL);
       const r = await sql().query("UPDATE logins SET pass_hash = $2, accepted_at = COALESCE(accepted_at, now()), invite_hash = NULL WHERE invite_hash = $1 AND invite_expires > now() RETURNING id, account_id", [sha(token), hashPassword(password)]);
       if (!r[0]) return bad(res, 400, 'This invitation has expired or was already used. Ask the account owner to send a new one.');
+      await recordAcceptance(req, { accountId: r[0].account_id, email: null, kind: 'invite', body });
       res.setHeader('Set-Cookie', sessionCookie(r[0].account_id, r[0].id));
       return res.status(200).json({ ok: true });
     }
@@ -205,11 +208,12 @@ export default async function handler(req, res) {
     }
     if (action === 'signup') {
       if (password.length < 8) return bad(res, 400, 'Use a password of at least 8 characters.');
-      if (body.terms !== true) return bad(res, 400, 'Please agree to the Terms of Service and Privacy Policy to create your account.');
+      if (!accepted(body)) return bad(res, 400, REFUSAL);
       if (await findAccount(email) || await findLogin(email)) return bad(res, 409, 'An account with that email already exists. Log in instead.');
       const id = await createAccount(email, password);
       await sql().query('ALTER TABLE accounts ADD COLUMN IF NOT EXISTS terms_accepted_at TIMESTAMPTZ');
       await sql().query("UPDATE accounts SET terms_accepted_at = now() WHERE id = $1", [id]);
+      await recordAcceptance(req, { accountId: id, email, kind: 'signup', body });
       if (body.token) { const biz = await loadBusiness(body.token); if (biz && !biz.account_id) await sql().query('UPDATE businesses SET account_id = $2 WHERE id = $1', [biz.id, id]); }
       await track('account_created', { accountId: id });
       res.setHeader('Set-Cookie', sessionCookie(id));

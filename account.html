@@ -31,6 +31,7 @@
 </style>
 <link rel="stylesheet" href="/theme.css">
 <script src="https://island.contact/snippet.js" data-site="squadron" defer></script>
+<script src="/accept.js"></script>
 </head>
 <body>
 <nav>
@@ -98,14 +99,15 @@ function inviteForm() {
   document.querySelector('h1').innerHTML = 'Join your <em>team.</em>';
   $('body').innerHTML = `<div class="card"><p class="big">You were invited to a Squadron account. Choose a password of at least eight characters to accept the invitation and sign in.</p>
     <p class="detail">You will sign in with the email address the invitation was sent to. You can see conversations in Squadron HQ, answer the knowledge queue, test the team and change settings. Inviting colleagues, changing the account email and deleting the account stay with the account owner.</p>
-    <form class="two" onsubmit="event.preventDefault();accept(this)"><input class="input" id="newpass" type="password" placeholder="New password" autocomplete="new-password" minlength="8" required><input class="input" id="newpass2" type="password" placeholder="Type it again" autocomplete="new-password" minlength="8" required><button class="btn" type="submit" style="grid-column:1/-1">Accept the invitation</button></form></div>`;
+    <form class="two" onsubmit="event.preventDefault();accept(this)"><input class="input" id="newpass" type="password" placeholder="New password" autocomplete="new-password" minlength="8" required><input class="input" id="newpass2" type="password" placeholder="Type it again" autocomplete="new-password" minlength="8" required><div style="grid-column:1/-1">${SQA.html('i', { cert: true })}</div><button class="btn" id="inviteBtn" type="submit" style="grid-column:1/-1">Accept the invitation</button></form></div>`;
+  SQA.bind('i', '#inviteBtn', { cert: true });
 }
 async function accept(f) {
   $('err').textContent = '';
   if ($('newpass').value !== $('newpass2').value) { $('err').textContent = 'The two passwords do not match. Please type them again.'; return; }
   const b = f.querySelector('button'); b.disabled = true; b.textContent = 'Accepting…';
   try {
-    await api({ action: 'accept', token: params.get('invite'), password: $('newpass').value });
+    await api({ action: 'accept', token: params.get('invite'), password: $('newpass').value, ...SQA.flags('i') });
     history.replaceState(null, '', '/account');
     document.querySelector('h1').innerHTML = 'Welcome <em>aboard.</em>';
     note('You accepted the invitation and you are signed in.');

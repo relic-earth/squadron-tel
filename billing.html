@@ -37,6 +37,7 @@
 </style>
 <link rel="stylesheet" href="/theme.css">
 <script src="https://island.contact/snippet.js" data-site="squadron" defer></script>
+<script src="/accept.js"></script>
 </head>
 <body>
 <nav>
@@ -76,6 +77,8 @@
   <div class="card" id="status"><p class="big">Loading your account.</p></div>
   <div id="invoices"></div>
   <h2 style="margin:34px 0 16px">Plans</h2>
+  <div id="acceptBox" style="margin:18px 0 8px"></div>
+  <p style="font-size:18px;font-weight:700;margin:6px 0 12px">Prepaid for 30 days. Nothing renews by itself. Payments are final and not refunded, except where the law requires it.</p>
   <div class="plans" id="plans"></div>
   <h2 style="margin:34px 0 16px">Extra voice minutes</h2>
   <p class="detail" style="margin-bottom:16px">On Basic, Pro and Command Center, extra minutes cost $0.25 each, prepaid in blocks of 100, and a block adds to your current paid period without renewing. On Battalion, minutes beyond 10,000 draw on prepaid overage credit at Squadron's cost plus 1¢ a minute.</p>
@@ -145,6 +148,7 @@ function render() {
   }
   $('invoices').innerHTML = h;
 
+  if (!$('p_t')) $('acceptBox').innerHTML = SQA.html('p', { cert: true, wire: true });
   $('plans').innerHTML = ['basic', 'pro', 'center', 'battalion'].map((k) => {
     const p = data.prices[k];
     const cur = st.active && st.plan === k;
@@ -160,16 +164,19 @@ function render() {
     const open = pending.some((i) => i.item === k);
     return `<div class="plan"><h3>${k === 'credit100' ? '$100 overage credit' : '100 extra minutes'}</h3>${k === 'credit100' ? `<p class="detail">Minutes beyond your 10,000 draw on this credit at Squadron's cost plus 1¢ a minute.${st.creditCents ? ` This period: ${(st.overageMinutes || 0).toLocaleString()} minutes beyond 10,000, ${money(st.creditUsedCents || 0)} of ${money(st.creditCents)} credit used.` : ''} <a href="/help#battalion-overage">What an extra minute costs</a></p>` : ''}<div class="price">${money(p.cents)}</div>${st.active ? `${data.cards ? `<button class="btn small" onclick="card('${k}', this)">Buy by card</button>` : ''}<button class="btn small ghost" ${open ? 'disabled' : ''} onclick="invoice('${k}', this)">${open ? 'Wire invoice waiting' : 'Buy by bank transfer'}</button>` : '<button class="btn small ghost" disabled>Needs a paid plan</button>'}</div>`;
   }).join('');
+  const gate = () => { SQA.bind('p', '#plans .btn[onclick^="card"], #packs .btn[onclick^="card"], .actions .btn[onclick^="card"]', { cert: true }); SQA.bind('p', '#plans .btn[onclick^="invoice"], #packs .btn[onclick^="invoice"]', { cert: true, wire: true }); };
+  gate();
+  if (!window._gb) { window._gb = 1; ['p_t', 'p_c', 'p_w'].forEach((i) => $(i).addEventListener('change', () => { gate(); })); }
 }
 
 async function card(item, b) {
   b.disabled = true; $('err').textContent = '';
-  const r = await fetch('/api/billing', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'card', item, returnTo: '/billing' }) });
+  const r = await fetch('/api/billing', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'card', item, ...SQA.flags('p'), returnTo: '/billing' }) });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || !j.url) { $('err').textContent = j.error || 'Card payment could not start. Please try again.'; b.disabled = false; return; }
   location.href = j.url;
 }
-async function invoice(item, b) { b.disabled = true; await call({ action: 'invoice', item }); window.scrollTo({ top: $('invoices').offsetTop - 100, behavior: 'smooth' }); }
+async function invoice(item, b) { b.disabled = true; await call({ action: 'invoice', item, ...SQA.flags('p') }); window.scrollTo({ top: $('invoices').offsetTop - 100, behavior: 'smooth' }); }
 async function check(b) { b.disabled = true; b.textContent = 'Checking…'; await call({ action: 'check' }); }
 async function cancelInv(id) { await call({ action: 'cancel', id }); }
 async function login() {
