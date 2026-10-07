@@ -3,14 +3,8 @@
     "api/voice.js": {
       "maxDuration": 10
     },
-    "api/gather.js": {
-      "maxDuration": 10
-    },
     "api/chat.js": {
       "maxDuration": 15
-    },
-    "api/signup.js": {
-      "maxDuration": 10
     },
     "api/tts.js": {
       "maxDuration": 30
@@ -128,20 +122,12 @@
       "dest": "/api/voice.js"
     },
     {
-      "src": "/api/gather",
-      "dest": "/api/gather.js"
-    },
-    {
       "src": "/api/chat",
       "dest": "/api/chat.js"
     },
     {
       "src": "/api/track",
       "dest": "/api/track.js"
-    },
-    {
-      "src": "/api/signup",
-      "dest": "/api/signup.js"
     },
     {
       "src": "/api/tts",

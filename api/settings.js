@@ -10,8 +10,6 @@ import { currentAccount } from './_lib/auth.js';
 import { track } from './_lib/events.js';
 import { searchNumbers, buyNumber, NUMBER_CENTS } from './_lib/numbers.js';
 import { PaymentRequired } from './_lib/ledger.js';
-import crypto from 'node:crypto';
-import { publicIntegrations, safeWebhook, cleanUrl, checkHubspot, sendTest, recentDeliveries } from './_lib/integrations.js';
 
 
 export default async function handler(req, res) {
@@ -24,35 +22,7 @@ export default async function handler(req, res) {
     const biz = await loadBusiness(token);
     if (!biz) return bad(res, 404, 'Unknown business');
     if (req.method === 'POST' && (body.action === 'integrations' || body.action === 'integrations_test')) {
-      // Connections hold credentials, so they need the owner's session.
-      const acc = await currentAccount(req);
-      if (!acc || acc.id !== biz.account_id) return bad(res, 401, 'Log in to the account that owns this team first.');
-      const settings = { ...(biz.settings || {}) };
-      const cur = { ...(settings.integrations || {}) };
-      if (body.action === 'integrations') {
-        const x = body.integrations || {};
-        if ('booking_url' in x) { const u = cleanUrl(x.booking_url); if (u === null) return bad(res, 400, 'Enter the full booking page address, like https://calendly.com/yourname.'); cur.booking_url = u; }
-        if ('webhook_url' in x) {
-          const u = String(x.webhook_url || '').trim() ? safeWebhook(x.webhook_url) : '';
-          if (u === null) return bad(res, 400, 'Enter a webhook address that starts with https:// and points to a public server, like the one Zapier or Make gives you.');
-          cur.webhook_url = u;
-          if (u && !cur.webhook_secret) cur.webhook_secret = 'whsec_' + crypto.randomBytes(18).toString('base64url');
-        }
-        if (x.hubspot_disconnect) { delete cur.hubspot_token; delete cur.hubspot_portal; }
-        if (x.hubspot_token) {
-          const tok = String(x.hubspot_token).trim();
-          try { const { portal } = await checkHubspot(tok); cur.hubspot_token = tok; cur.hubspot_portal = portal; }
-          catch (e) { return bad(res, 400, `HubSpot did not accept that token (${e.message}). Create a private app with the contacts read and write scopes, and paste its access token.`); }
-        }
-        settings.integrations = cur;
-        await sql().query('UPDATE businesses SET settings = $2, updated_at = now() WHERE id = $1', [biz.id, JSON.stringify(settings)]);
-        biz.settings = settings;
-        await track('integration_saved', { accountId: acc.id, businessId: biz.id, meta: { booking: !!cur.booking_url, webhook: !!cur.webhook_url, hubspot: !!cur.hubspot_token } });
-      } else {
-        const out = await sendTest(biz);
-        return res.status(200).json({ test: out, integrations: publicIntegrations(biz), deliveries: await recentDeliveries(biz.id) });
-      }
-      return res.status(200).json({ integrations: publicIntegrations(biz), deliveries: await recentDeliveries(biz.id) });
+      return bad(res, 410, 'Squadron is all-in-one: conversations, escalations and messages live in Squadron HQ, so there are no outside connections to set up.');
     }
     if (req.method === 'POST' && (body.action === 'number_search' || body.action === 'number_buy')) {
       // Buying a number spends prepaid balance, so it needs the owner's session.
@@ -99,8 +69,7 @@ export default async function handler(req, res) {
       suggested = { on_call_phone: prof ? v(prof.contact && prof.contact.phone) : '', notify_email: (acc && acc.email) || (prof ? v(prof.contact && prof.contact.email) : ''), hours: hours.slice(0, 400) };
     } catch (e) { console.error('[settings suggest]', e.message); }
     const { integrations: _hidden, ...safeSettings } = biz.settings || {};
-    const deliveries = await recentDeliveries(biz.id).catch(() => []);
-    return res.status(200).json({ integrations: publicIntegrations(biz), deliveries, suggested, business: { id: biz.id, status: biz.status, phone_number: biz.phone_number }, settings: safeSettings, channels: biz.channels || {}, status: channelStatus(biz), humanModes: HUMAN_MODES });
+    return res.status(200).json({ suggested, business: { id: biz.id, status: biz.status, phone_number: biz.phone_number }, settings: safeSettings, channels: biz.channels || {}, status: channelStatus(biz), humanModes: HUMAN_MODES });
   } catch (e) {
     console.error('[settings]', e);
     return bad(res, 500, e.message);

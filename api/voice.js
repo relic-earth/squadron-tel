@@ -1,27 +1,9 @@
-// /api/voice.js — Twilio inbound voice webhook
-// Uses Amazon Polly Generative voices — the most realistic voices available on Twilio.
-
+// /api/voice.js — old Twilio voice webhook address. Every Squadron number now
+// points at /api/bridge/voice, which answers with the business's own AI team
+// and transfers only to that business's on-call number. Any number still set
+// to this address is sent there, so no call reaches a placeholder line.
 export default function handler(req, res) {
   res.setHeader('Content-Type', 'text/xml');
-
-  const VOICE = 'Polly.Joanna-Generative';
-
-  const twiml = `<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <Say voice="${VOICE}">
-    Hey there, you've reached Squadron support. I'm Ace, an AI agent, and this call is recorded.
-    I can help you right now with pricing, setup, agent voices, or anything else on your mind.
-    Go ahead and tell me what you need.
-  </Say>
-  <Gather input="speech" action="/api/gather" speechTimeout="auto" language="en-US"
-    hints="billing, setup, agents, pricing, cancel, help, support, account, trial, deploy, phone number, escalate, human">
-    <Say voice="${VOICE}">I'm listening.</Say>
-  </Gather>
-  <Say voice="${VOICE}">I didn't catch that — let me get someone from our team for you.</Say>
-  <Dial>
-    <Number>+1${process.env.ESCALATION_PHONE || '8005551234'}</Number>
-  </Dial>
-</Response>`;
-
-  res.status(200).send(twiml);
+  res.setHeader('Cache-Control', 'no-store');
+  res.status(200).send('<?xml version="1.0" encoding="UTF-8"?><Response><Redirect method="POST">/api/bridge/voice</Redirect></Response>');
 }

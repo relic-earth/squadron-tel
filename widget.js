@@ -56,8 +56,6 @@
 .sqw-form{display:flex;gap:8px;padding:12px;border-top:1px solid rgba(255,255,255,0.12)}\
 .sqw-form input{flex:1;font:inherit;font-size:17px;padding:12px 14px;border-radius:4px;border:2px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.06);color:#fff;outline:none;min-width:0}\
 .sqw-form button{font:inherit;font-weight:800;font-size:16px;padding:0 18px;border-radius:4px;border:none;background:' + accent + ';color:#fff;cursor:pointer}\
-.sqw-book{font:inherit;font-size:14px;font-weight:800;padding:9px 12px;border-radius:999px;border:none;background:#fff;color:#0B1E45;text-decoration:none;white-space:nowrap;margin-right:6px}\
-.sqw-book:hover{background:#EAF2FC}\
 .sqw-m a{color:inherit;font-weight:800;text-decoration:underline}\
 .sqw-foot{font-size:13px;color:#C3CAE0;text-align:center;padding:0 12px 10px}';
   var style = document.createElement('style'); style.textContent = css; document.head.appendChild(style);
@@ -149,7 +147,6 @@
     .then(function (j) {
       if (!j) return;
       mode = j.mode || 'ai_first'; person = j.person || null;
-      if (j.booking) { var bk = el('a', { 'class': 'sqw-book', href: j.booking, target: '_blank', rel: 'noopener' }, 'Book a time'); personBtn.parentNode.insertBefore(bk, personBtn); }
       if (mode !== 'ai_only') personBtn.hidden = false;
       if (mode === 'person_first') box.querySelector('#sqw-sub').textContent = 'AI receptionist · a person will contact you';
       if (mode === 'ai_only') box.querySelector('#sqw-foot').textContent = 'Powered by Squadron. You are chatting with an AI agent, and it can take a message for the business.';

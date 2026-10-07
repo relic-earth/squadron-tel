@@ -87,24 +87,6 @@
   </div>
 
   <div id="channels"></div>
-  <div class="card" id="tools">
-    <h2>Connect your tools</h2>
-    <p class="detail">Send what your team learns to the tools you already use. Test conversations are never sent.</p>
-    <h3 style="font-size:22px;margin-top:22px;color:var(--ink)">Booking</h3>
-    <p class="detail">Paste your booking page from Calendly, Cal.com, Acuity, Square, OpenTable, Resy, Vagaro, Booksy, Jobber or any other tool. Every agent gives it to customers who want to book, and your website chat shows a Book a time button.</p>
-    <div class="field"><label>Booking page</label><input id="i_booking" placeholder="https://calendly.com/yourbusiness"></div>
-    <h3 style="font-size:22px;margin-top:26px;color:var(--ink)">HubSpot</h3>
-    <p class="detail">When a customer leaves an email or phone number, Squadron adds or updates the HubSpot contact and attaches the message and chat as a note. In HubSpot, open Settings, Integrations, Private Apps, create an app with the contacts read and write scopes, and paste its access token here.</p>
-    <div id="i_hs"></div>
-    <h3 style="font-size:22px;margin-top:26px;color:var(--ink)">Any other CRM, by webhook</h3>
-    <p class="detail">Squadron posts each event as JSON to your address, signed so you can check it came from Squadron. Use a Zapier or Make catch hook to reach Salesforce, Pipedrive, Zoho, GoHighLevel, Google Sheets, Slack or anything else. Events: a customer asked for a person, the team took a message, a phone call ended, and a question the team could not answer.</p>
-    <div class="field"><label>Webhook address</label><input id="i_webhook" placeholder="https://hooks.zapier.com/hooks/catch/..."></div>
-    <div id="i_secret"></div>
-    <div style="margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn small" onclick="saveTools()">Save connections</button><button class="btn small ghost" onclick="testTools(this)">Send a test</button><span class="ok" id="i_saved"></span></div>
-    <div class="error" id="i_err" style="margin-top:16px"></div>
-    <div id="i_log"></div>
-  </div>
-
   <div class="card">
     <h2>The human layer</h2>
     <p class="detail">Choose how your AI team and your people share the work. Every channel follows this choice.</p>
@@ -178,7 +160,6 @@ function render() {
   const pre = !st.notify_email && (sg.notify_email || sg.on_call_phone || sg.hours);
   $('saved').textContent = pre ? 'Filled in from your website and account. Check them and press Save.' : '';
   if (data.channels.chat && data.channels.chat.enabled) askRating();
-  renderTools();
   renderHuman(data.humanModes || {}, st.human_mode || 'ai_first');
 }
 async function toggle(key, enabled) {
@@ -199,38 +180,6 @@ async function buyNum(number, b) {
   err(''); if (!SQA.ok('n', { cert: true })) return err('Please tick both boxes below the numbers first.'); document.querySelectorAll('#numList .btn').forEach((x) => (x.disabled = true)); b.textContent = 'Setting up ' + number;
   try { await api('/api/settings', { token, action: 'number_buy', number, ...SQA.flags('n') }); await load(); }
   catch (e) { err(e.message); document.querySelectorAll('#numList .btn').forEach((x) => (x.disabled = false)); }
-}
-function renderTools() {
-  const i = data.integrations || {};
-  if (document.activeElement !== $('i_booking')) $('i_booking').value = i.booking_url || '';
-  if (document.activeElement !== $('i_webhook')) $('i_webhook').value = i.webhook_url || '';
-  $('i_hs').innerHTML = i.hubspot && i.hubspot.connected
-    ? `<p class="detail"><b style="color:var(--green)">Connected</b>${i.hubspot.portal ? ' to HubSpot account ' + esc(i.hubspot.portal) : ''}, token ending ${esc(i.hubspot.hint)}. <a href="#" onclick="hsOff();return false" style="color:var(--signal);font-weight:700">Disconnect</a></p>`
-    : `<div class="field"><label>HubSpot private app access token</label><input id="i_hstoken" type="password" autocomplete="off" placeholder="pat-na1-..."></div>`;
-  $('i_secret').innerHTML = i.webhook_url && i.webhook_secret ? `<p class="detail" style="margin-top:10px">Signing secret: <code style="font-size:15px;background:var(--pale);padding:3px 6px;border-radius:6px">${esc(i.webhook_secret)}</code>. Each request carries <code>X-Squadron-Signature: sha256=</code> followed by the HMAC-SHA256 of the raw body with this secret.</p>` : '';
-  const d = data.deliveries || [];
-  $('i_log').innerHTML = d.length ? `<p style="font-size:18px;font-weight:700;color:var(--ink);margin-top:20px">Latest deliveries</p>${d.map((x) => `<p class="detail" style="margin-top:6px"><b style="color:${x.ok ? 'var(--green)' : 'var(--red)'}">${x.ok ? 'Delivered' : 'Failed'}</b> · ${esc(x.target === 'hubspot' ? 'HubSpot' : 'Webhook')} · ${esc(x.event)} · ${new Date(x.created_at).toLocaleString()}${x.detail ? ' · ' + esc(x.detail) : ''}</p>`).join('')}` : '';
-}
-function toolErr(m) { const e = $('i_err'); e.textContent = m || ''; e.style.display = m ? 'block' : 'none'; }
-async function saveTools() {
-  toolErr(''); $('i_saved').textContent = 'Saving…';
-  const integrations = { booking_url: $('i_booking').value, webhook_url: $('i_webhook').value };
-  if ($('i_hstoken') && $('i_hstoken').value.trim()) integrations.hubspot_token = $('i_hstoken').value.trim();
-  try { const r = await api('/api/settings', { token, action: 'integrations', integrations }); data.integrations = r.integrations; data.deliveries = r.deliveries; renderTools(); $('i_saved').textContent = 'Saved.'; }
-  catch (e) { $('i_saved').textContent = ''; toolErr(e.message); }
-}
-async function hsOff() { try { const r = await api('/api/settings', { token, action: 'integrations', integrations: { hubspot_disconnect: true } }); data.integrations = r.integrations; renderTools(); } catch (e) { toolErr(e.message); } }
-async function testTools(b) {
-  toolErr(''); b.disabled = true; $('i_saved').textContent = 'Sending a test…';
-  try {
-    const r = await api('/api/settings', { token, action: 'integrations_test' });
-    data.deliveries = r.deliveries; renderTools();
-    const t = r.test || {};
-    $('i_saved').textContent = !t.webhook && !t.hubspot ? 'Save a webhook address or a HubSpot token first.' : [t.webhook && (t.webhook.ok ? 'Webhook delivered.' : 'Webhook failed.'), t.hubspot && t.hubspot.ok && 'HubSpot token works.'].filter(Boolean).join(' ');
-    const fails = [t.webhook && !t.webhook.ok && `The webhook test failed${t.webhook.status ? ` with status ${t.webhook.status}` : ''}${t.webhook.error ? `: ${t.webhook.error}` : ''}. Check the address and that the receiver is switched on.`, t.hubspot && !t.hubspot.ok && `HubSpot refused the token: ${t.hubspot.error || 'no reason given'}. Create a new private app token with the contacts read and write scopes, paste it above and save.`].filter(Boolean);
-    toolErr(fails.join(' '));
-  } catch (e) { $('i_saved').textContent = ''; toolErr(e.message); }
-  b.disabled = false;
 }
 async function askRating() {
   if (window._rated) return; window._rated = 1;

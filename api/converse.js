@@ -6,7 +6,6 @@ import { applyCorrections } from './_lib/profile.js';
 import { answer } from './_lib/answer.js';
 import { notifyOwner } from './_lib/email.js';
 import { firstRealAnswer } from './_lib/care.js';
-import { emitLater, contactFrom, transcriptText } from './_lib/integrations.js';
 import { requireFunds, recordSpend, textCostCents, HOLD, PaymentRequired } from './_lib/ledger.js';
 
 export default async function handler(req, res) {
@@ -79,8 +78,6 @@ export default async function handler(req, res) {
     }
     if (!test) {
       await firstRealAnswer(biz.id);
-      if (['take_message', 'transfer'].includes(out.replyType) && out.messageForOwner) { const c = contactFrom(out.messageForOwner); await emitLater(biz, out.replyType === 'transfer' ? 'person.requested' : 'message.taken', { channel, conversation_id: convo.id, message: out.messageForOwner, contact: { name: null, email: c.email, phone: c.phone }, transcript_text: transcriptText(history) }); }
-      if (out.gapQuestion && ['refusal', 'take_message', 'transfer'].includes(out.replyType)) await emitLater(biz, 'question.unanswered', { channel, conversation_id: convo.id, question: out.gapQuestion });
     }
     return res.status(200).json({
       conversationId: convo.id,
