@@ -106,7 +106,7 @@ const $ = (id) => document.getElementById(id);
 const token = new URLSearchParams(location.search).get('t');
 let agents = [], notes = '';
 let audio = null, playingBtn = null;
-$('backLink').href = '/start?t=' + encodeURIComponent(token || '');
+$('backLink').href = '/profile?t=' + encodeURIComponent(token || '');
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 function err(msg) { const e = $('err'); e.textContent = msg || ''; e.style.display = msg ? 'block' : 'none'; }
 async function api(path, body, method) {

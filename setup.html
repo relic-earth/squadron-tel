@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Set up Squadron</title>
+<meta name="description" content="Set up your AI customer-service team in a few minutes.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#F5F7FA">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#F5F7FA;--card:#fff;--pale:#EAF2FC;--ink:#0B1E45;--ink-2:#44536F;--ink-3:#6B7A94;--blue:#1F5FD1;--blue-2:#174BAA;--line:#DCE4EF;--green:#16804A;--red:#B42318;--display:'Inter Tight','Inter',system-ui,sans-serif;--text:'Inter',system-ui,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--text);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:var(--blue)}
+button{font:inherit;cursor:pointer}
+.top{position:fixed;inset:0 0 auto 0;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;z-index:5;background:linear-gradient(var(--bg) 70%,rgba(245,247,250,0))}
+.back{background:none;border:none;color:var(--blue);font-weight:600;font-size:17px;padding:10px 4px;visibility:hidden}
+.back.on{visibility:visible}
+.dots{display:flex;gap:6px}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--line);transition:background .3s,width .3s}
+.dots i.on{background:var(--ink);width:20px;border-radius:4px}
+.dots i.done{background:var(--ink-3)}
+.help{background:none;border:none;color:var(--ink-3);font-size:15px;font-weight:500;padding:10px 4px;text-decoration:none}
+main{min-height:100%;display:flex;justify-content:center;padding:88px 20px 40px}
+.screen{width:100%;max-width:520px;display:none;flex-direction:column;animation:in .35s ease}
+.screen.on{display:flex}
+@keyframes in{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+.screen.backward{animation:inb .35s ease}
+@keyframes inb{from{opacity:0;transform:translateX(-24px)}to{opacity:1;transform:none}}
+.icon{width:64px;height:64px;border-radius:18px;background:var(--ink);display:flex;align-items:center;justify-content:center;margin:12px auto 22px;color:#fff}
+.icon svg{width:32px;height:32px}
+.icon.blue{background:var(--blue)}.icon.green{background:var(--green)}
+h1{font-family:var(--display);font-weight:600;font-size:34px;line-height:1.08;letter-spacing:-.025em;text-align:center}
+.sub{color:var(--ink-2);text-align:center;margin:12px auto 0;max-width:420px}
+.body{margin-top:30px;flex:1}
+.input{width:100%;font:inherit;font-size:18px;padding:16px 18px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);outline:none;transition:border-color .2s}
+.input:focus{border-color:var(--blue)}
+textarea.input{min-height:120px;resize:vertical;line-height:1.45}
+label.lbl{display:block;font-size:14px;font-weight:600;color:var(--ink-2);margin:18px 0 8px}
+.actions{margin-top:28px;display:flex;flex-direction:column;gap:10px;align-items:stretch}
+.btn{background:var(--ink);color:#fff;border:none;border-radius:999px;padding:17px 24px;font-size:17px;font-weight:600;transition:background .2s,opacity .2s}
+.btn:hover{background:var(--blue)}
+.btn:disabled{opacity:.45;cursor:default;background:var(--ink)}
+.link{background:none;border:none;color:var(--blue);font-weight:600;font-size:16px;padding:10px}
+.link.quiet{color:var(--ink-3);font-weight:500}
+.note{font-size:14px;color:var(--ink-3);text-align:center;margin-top:14px}
+.err{display:none;margin-top:16px;padding:14px 16px;border-radius:12px;background:#FDECEA;color:var(--red);font-size:15px;font-weight:500}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 20px}
+.card+.card{margin-top:12px}
+.list{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.list .row{display:flex;align-items:center;gap:14px;padding:14px 18px;border-top:1px solid var(--line)}
+.list .row:first-child{border-top:none}
+.list .row img{width:44px;height:44px;border-radius:50%;background:var(--pale);flex:none}
+.list .row b{display:block;font-weight:600}
+.list .row span{display:block;font-size:14px;color:var(--ink-2);line-height:1.35}
+.check{list-style:none}
+.check li{display:flex;align-items:center;gap:14px;padding:12px 0;font-size:17px;color:var(--ink-3);transition:color .3s}
+.check li .m{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center}
+.check li.now{color:var(--ink)}
+.check li.now .m{border-color:var(--blue);border-top-color:transparent;animation:spin .9s linear infinite}
+.check li.ok{color:var(--ink)}
+.check li.ok .m{background:var(--green);border-color:var(--green)}
+.check li.ok .m::after{content:'';width:10px;height:6px;border:2.5px solid #fff;border-top:none;border-right:none;transform:rotate(-45deg) translate(1px,-1px)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.stat b{font-family:var(--display);font-size:30px;font-weight:600;display:block;line-height:1.1}
+.stat span{font-size:14px;color:var(--ink-2)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--pale);color:var(--ink);border:none;border-radius:999px;padding:8px 14px;font-size:15px;font-weight:500}
+button.chip:hover{background:#DCE8F8}
+.sec{font-size:13px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3);margin:22px 4px 10px}
+.plans{display:flex;flex-direction:column;gap:10px}
+.plan{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:16px 18px;color:var(--ink)}
+.plan.on{border-color:var(--blue);background:#F7FAFF}
+.plan b{font-family:var(--display);font-size:20px;font-weight:600;display:block}
+.plan span{font-size:14px;color:var(--ink-2)}
+.plan .p{font-family:var(--display);font-size:22px;font-weight:600;white-space:nowrap;text-align:right}
+.plan .p small{display:block;font-family:var(--text);font-size:13px;font-weight:500;color:var(--ink-3)}
+.tag{display:inline-block;margin-left:6px;font-family:var(--text);font-size:12px;font-weight:600;color:var(--blue);background:var(--pale);border-radius:999px;padding:2px 8px;vertical-align:middle}
+.summary{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.summary b{font-weight:600}
+.legal{margin-top:6px}
+.legal label{font-size:14px!important;line-height:1.45!important;font-weight:500!important}
+.legal input{width:20px!important;height:20px!important}
+.chat{background:var(--card);border:1px solid var(--line);border-radius:18px;display:flex;flex-direction:column;height:380px;overflow:hidden}
+.msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.b{max-width:82%;padding:10px 14px;border-radius:18px;font-size:16px;line-height:1.4;white-space:pre-wrap}
+.b.me{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:6px}
+.b.ai{align-self:flex-start;background:var(--pale);color:var(--ink);border-bottom-left-radius:6px}
+.b.ai small{display:block;font-size:12px;font-weight:600;color:var(--ink-3);margin-bottom:2px}
+.b.typing{color:var(--ink-3)}
+.compose{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+.compose input{flex:1;min-width:0;border:none;outline:none;font:inherit;font-size:16px;padding:10px 12px;background:var(--bg);border-radius:999px}
+.compose button{flex:none;background:var(--blue);color:#fff;border:none;border-radius:999px;padding:0 18px;font-weight:600}
+.snip{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;word-break:break-all;margin-top:12px;color:var(--ink)}
+.row2{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.btn.small{padding:11px 18px;font-size:15px}
+.btn.ghost{background:var(--pale);color:var(--ink)}
+.btn.ghost:hover{background:#DCE8F8}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:600;color:var(--green)}
+.status::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--green)}
+.status.off{color:var(--ink-3)}.status.off::before{background:var(--line)}
+.ch{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.ch h3{font-family:var(--display);font-size:20px;font-weight:600}
+.ch p{font-size:15px;color:var(--ink-2);margin-top:2px}
+details{margin-top:12px;font-size:15px;color:var(--ink-2)}
+details summary{cursor:pointer;color:var(--blue);font-weight:600;list-style:none}
+details summary::-webkit-details-marker{display:none}
+details ul{margin:10px 0 0 18px}
+details li{margin:4px 0}
+.nums{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.num{display:flex;justify-content:space-between;align-items:center;background:var(--bg);border:2px solid transparent;border-radius:12px;padding:12px 14px;font-weight:600;color:var(--ink);text-align:left}
+.num.on{border-color:var(--blue);background:#F7FAFF}
+.num span{font-weight:500;font-size:14px;color:var(--ink-2)}
+.qcount{text-align:center;font-size:14px;font-weight:600;color:var(--ink-3);margin-bottom:4px}
+.gap{background:var(--pale);border-radius:14px;padding:14px 16px;font-size:16px;color:var(--ink);margin-bottom:6px}
+.done-list li{color:var(--ink)}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:18px;text-align:center;color:var(--ink-2);font-size:15px;cursor:pointer;background:var(--card)}
+.files{font-size:14px;color:var(--ink-2);margin-top:8px}
+.hidden{display:none!important}
+@media (max-width:480px){h1{font-size:29px}main{padding-top:76px}.top{height:56px;padding:0 14px}.stat b{font-size:26px}}
+@media (prefers-reduced-motion:reduce){.screen,.screen.backward{animation:none}.check li.now .m{animation:none}}
+</style>
+<script src="/accept.js"></script>
+</head>
+<body>
+<div class="top">
+  <button class="back" id="back" onclick="goBack()" aria-label="Back">‹ Back</button>
+  <div class="dots" id="dots" aria-hidden="true"></div>
+  <a class="help" href="/help" target="_blank" rel="noopener">Help</a>
+</div>
+<main>
+
+<!-- 1. Hello -->
+<section class="screen" id="hello" data-dot="0">
+  <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Z"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg></div>
+  <h1>Hello. What's your website?</h1>
+  <p class="sub">Squadron reads it and builds your customer-service team from what it says.</p>
+  <div class="body">
+    <input class="input" id="url" type="url" inputmode="url" autocomplete="url" placeholder="yourbusiness.com" autofocus onkeydown="if(event.key==='Enter')start()">
+    <div class="err" id="helloErr"></div>
+    <div class="actions">
+      <button class="btn" id="startBtn" onclick="start()">Continue</button>
+      <button class="link quiet" onclick="go('docs')">I don't have a website</button>
+    </div>
+    <p class="note">An App Store link works too. Reading your site is free.</p>
+  </div>
+</section>
+
+<!-- 1b. Documents -->
+<section class="screen" id="docs" data-dot="0">
+  <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></div>
+  <h1>Tell us about your business</h1>
+  <p class="sub">Paste what customers ask about: your services, prices, hours and policies.</p>
+  <div class="body">
+    <textarea class="input" id="paste" placeholder="We're open Monday to Friday, 9 to 5. A cleaning is $120…"></textarea>
+    <div class="drop" onclick="document.getElementById('file').click()">Or add text files (.txt, .md, .csv, .html)</div>
+    <input type="file" id="file" class="hidden" multiple accept=".txt,.md,.csv,.html,.htm,.json,text/*" onchange="addFiles(this.files)">
+    <div class="files" id="fileList"></div>
+    <div class="err" id="docsErr"></div>
+    <div class="actions"><button class="btn" onclick="startDocs()">Continue</button></div>
+  </div>
+</section>
+
+<!-- 2. Reading -->
+<section class="screen" id="reading" data-dot="1">
+  <div class="icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></div>
+  <h1>Reading your site</h1>
+  <p class="sub" id="readingSub">This takes a few seconds.</p>
+  <div class="body">
+    <ul class="check" id="readList"></ul>
+    <div class="err" id="readErr"></div>
+    <div class="actions hidden" id="readRetry"><button class="btn" onclick="retryRead()">Try again</button><button class="link quiet" onclick="restart()">Use a different website</button></div>
+  </div>
+</section>
+
+<!-- 3. Meet your team -->
+<section class="screen" id="meet" data-dot="1">
+  <h1>Here's what we found</h1>
+  <p class="sub" id="meetSub"></p>
+  <div class="body">
+    <div class="stats" id="meetStats"></div>
+    <div class="sec">Your team</div>
+    <div class="list" id="meetTeam"></div>
+    <div id="meetGapsWrap"><div class="sec">We'll ask you about</div><div class="chips" id="meetGaps"></div></div>
+    <div class="actions"><button class="btn" onclick="go('plan')">Continue</button></div>
+  </div>
+</section>
+
+<!-- 4. Plan -->
+<section class="screen" id="plan" data-dot="2">
+  <h1>Choose a plan</h1>
+  <p class="sub">Every plan includes your whole team, web chat and a phone line. Pay for 30 days at a time. Nothing renews by itself.</p>
+  <div class="body">
+    <div class="plans" id="plans"></div>
+    <div class="actions"><button class="btn" onclick="go('pay')">Continue</button></div>
+    <p class="note">Need more minutes later? Add them anytime, or switch plans when your 30 days end.</p>
+  </div>
+</section>
+
+<!-- 5. Account + pay -->
+<section class="screen" id="pay" data-dot="2">
+  <h1 id="payTitle">Create your account</h1>
+  <p class="sub" id="paySub">You'll use it to sign in to Squadron HQ.</p>
+  <div class="body">
+    <div id="acctFields">
+      <input class="input" id="email" type="email" autocomplete="email" placeholder="Email">
+      <input class="input" id="pass" type="password" autocomplete="new-password" placeholder="Password (8 or more characters)" style="margin-top:10px">
+      <button class="link quiet" id="loginToggle" onclick="toggleLogin()" style="padding-left:2px">I already have an account</button>
+    </div>
+    <div id="signedIn" class="card hidden" style="margin-bottom:6px"></div>
+    <div class="card summary" style="margin-top:12px"><div><b id="sumName">Basic</b><br><span style="font-size:14px;color:var(--ink-2)" id="sumDetail"></span></div><div style="text-align:right"><b id="sumPrice" style="font-family:var(--display);font-size:24px"></b><br><button class="link" style="padding:0;font-size:14px" onclick="go('plan')">Change</button></div></div>
+    <div class="legal" id="legal"></div>
+    <div class="err" id="payErr"></div>
+    <div class="actions">
+      <button class="btn" id="payBtn" onclick="pay('card')">Pay by card</button>
+      <button class="link quiet" id="wireLink" onclick="showWire()">Pay by bank transfer instead</button>
+    </div>
+    <p class="note">Prepaid for 30 days. Payments are final and not refunded, except where the law requires it.</p>
+  </div>
+</section>
+
+<!-- 6. Building -->
+<section class="screen" id="building" data-dot="3">
+  <div class="icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 7h7l-5.5 4.5L18.5 21 12 16.5 5.5 21l2-7.5L2 9h7z"/></svg></div>
+  <h1>Setting up your team</h1>
+  <p class="sub">About two minutes. You can leave this page open.</p>
+  <div class="body">
+    <ul class="check" id="buildList"></ul>
+    <div class="err" id="buildErr"></div>
+    <div class="actions hidden" id="buildRetry"><button class="btn" onclick="build()">Try again</button></div>
+  </div>
+</section>
+
+<!-- 7. Quick questions -->
+<section class="screen" id="ask" data-dot="4">
+  <p class="qcount" id="qCount"></p>
+  <h1 id="qTitle"></h1>
+  <p class="sub" id="qSub"></p>
+  <div class="body">
+    <div id="qBody"></div>
+    <div class="err" id="qErr"></div>
+    <div class="actions">
+      <button class="btn" id="qNext" onclick="answerQ()">Continue</button>
+      <button class="link quiet" id="qSkip" onclick="skipQ()">Skip</button>
+    </div>
+  </div>
+</section>
+
+<!-- 8. Try it -->
+<section class="screen" id="try" data-dot="5">
+  <h1>Say hello to your team</h1>
+  <p class="sub">Ask what your customers ask. This is a private test; nothing goes live yet.</p>
+  <div class="body">
+    <div class="chat"><div class="msgs" id="msgs"></div><div class="compose"><input id="say" placeholder="Ask anything" onkeydown="if(event.key==='Enter')say()"><button onclick="say()">Send</button></div></div>
+    <div class="chips" id="tryChips" style="margin-top:12px"></div>
+    <div class="err" id="tryErr"></div>
+    <div class="actions">
+      <button class="btn" onclick="go('live')">Looks good</button>
+      <button class="link quiet" onclick="goFix()">Something's wrong</button>
+    </div>
+  </div>
+</section>
+
+<!-- 9. Go live -->
+<section class="screen" id="live" data-dot="6">
+  <h1>Go live</h1>
+  <p class="sub">Turn on the ways customers reach you. You can do either one later from Squadron HQ.</p>
+  <div class="body">
+    <div class="card" id="chatCard"></div>
+    <div class="card" id="phoneCard"></div>
+    <div class="err" id="liveErr"></div>
+    <div class="actions"><button class="btn" onclick="finish()">Done</button></div>
+  </div>
+</section>
+
+<!-- 10. Done -->
+<section class="screen" id="done" data-dot="7">
+  <div class="icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+  <h1>You're all set</h1>
+  <p class="sub">Your team is ready. Every conversation, message and escalation shows up in Squadron HQ.</p>
+  <div class="body">
+    <ul class="check done-list" id="doneList"></ul>
+    <div class="actions">
+      <button class="btn" onclick="location.href='/hq?t='+encodeURIComponent(token)">Open Squadron HQ</button>
+      <button class="link quiet" onclick="location.href='/team?t='+encodeURIComponent(token)">Fine-tune your team</button>
+    </div>
+  </div>
+</section>
+
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const PLANS = [
+  ['basic', 'Basic', 39, '250 voice minutes', 'Most businesses start here'],
+  ['pro', 'Pro', 79, '650 voice minutes', ''],
+  ['center', 'Command Center', 199, '2,000 voice minutes', ''],
+  ['battalion', 'Battalion', 999, '10,000 voice minutes', ''],
+];
+const DOTS = 8;
+let token = null, me = null, preview = null, plan = 'basic', login = false, wire = false, docs = [];
+let screen = 'hello', trail = [];
+let qs = [], qi = 0, settingsData = null, profile = null, conversationId = null, busy = false;
+
+// ---------- plumbing ----------
+async function api(path, body, method) {
+  const r = await fetch(path, { method: method || (body ? 'POST' : 'GET'), headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined, credentials: 'same-origin' });
+  const j = await r.json().catch(() => ({ error: 'Something went wrong. Please try again.' }));
+  if (!r.ok) { const e = new Error(j.error || 'Something went wrong. Please try again.'); e.status = r.status; e.code = j.code; throw e; }
+  return j;
+}
+function err(id, msg) { const e = $(id); if (!e) return; e.textContent = msg || ''; e.style.display = msg ? 'block' : 'none'; }
+function track(ev, meta) { try { if (window.sqTrack) window.sqTrack(ev, meta); } catch (e) {} }
+function store(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
+function read(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function remember(t) { token = t; store('sqToken', t); history.replaceState(null, '', '/start?t=' + encodeURIComponent(t)); }
+function stage(s) { if (token) store('sqSetup:' + token, s); }
+const NO_BACK = new Set(['hello', 'reading', 'building', 'done']);
+function go(id, opts) {
+  opts = opts || {};
+  const from = screen;
+  if (!opts.back && from !== id && !NO_BACK.has(from) && !['reading', 'building'].includes(id)) trail.push(from);
+  if (['building', 'reading'].includes(id) || id === 'ask' && from === 'building') trail = [];
+  document.querySelectorAll('.screen').forEach((s) => { s.classList.remove('on', 'backward'); });
+  const el = $(id); el.classList.add('on'); if (opts.back) el.classList.add('backward');
+  screen = id;
+  const d = +el.dataset.dot;
+  $('dots').innerHTML = Array.from({ length: DOTS }, (_, i) => `<i class="${i === d ? 'on' : i < d ? 'done' : ''}"></i>`).join('');
+  $('back').classList.toggle('on', trail.length > 0 && !NO_BACK.has(id));
+  window.scrollTo({ top: 0 });
+  if (id === 'plan') renderPlans();
+  if (id === 'pay') renderPay();
+  if (id === 'try') startTry();
+  if (id === 'live') renderLive();
+  if (['ask', 'try', 'live', 'done'].includes(id)) stage(id);
+  const f = el.querySelector('input:not([type=checkbox]):not([type=file]),textarea'); if (f && matchMedia('(min-width:700px)').matches) setTimeout(() => f.focus(), 360);
+  track('setup_' + id);
+}
+function goBack() {
+  if (screen === 'ask' && qi > 0) { qi--; return renderQ(); }
+  const prev = trail.pop(); if (prev) go(prev, { back: true });
+}
+function restart() { store('sqToken', null); token = null; history.replaceState(null, '', '/start'); trail = []; go('hello'); }
+function checklist(id, items) { $(id).innerHTML = items.map((t, i) => `<li id="${id}_${i}"><span class="m"></span>${esc(t)}</li>`).join(''); }
+function tick(id, i, state) { const li = $(id + '_' + i); if (li) { li.classList.remove('now', 'ok'); if (state) li.classList.add(state); } }
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const prettyNum = (n) => { const d = String(n || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''); return d.length === 10 ? `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}` : String(n || ''); };
+
+// ---------- 1. hello ----------
+async function start() {
+  err('helloErr', '');
+  let url = $('url').value.trim();
+  if (!url) return err('helloErr', 'Enter your website, like yourbusiness.com.');
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  $('startBtn').disabled = true;
+  try {
+    const r = await api('/api/business', { kind: 'url', url });
+    remember(r.token); track('url_entered');
+    await read_();
+  } catch (e) { err('helloErr', e.message); }
+  finally { $('startBtn').disabled = false; }
+}
+function addFiles(files) {
+  for (const f of files) {
+    if (f.size > 2_000_000) { err('docsErr', f.name + ' is larger than 2 MB.'); continue; }
+    const rd = new FileReader();
+    rd.onload = () => { docs.push({ name: f.name, text: String(rd.result) }); $('fileList').textContent = docs.map((d) => d.name).join(', '); };
+    rd.readAsText(f);
+  }
+}
+async function startDocs() {
+  err('docsErr', '');
+  const list = docs.slice(); const t = $('paste').value.trim();
+  if (t) list.push({ name: 'About my business', text: t });
+  if (!list.length) return err('docsErr', 'Paste a few lines about your business, or add a file.');
+  try {
+    const r = await api('/api/business', { kind: 'docs', documents: list });
+    remember(r.token); preview = null;
+    await afterRead();
+  } catch (e) { err('docsErr', e.message); }
+}
+
+// ---------- 2. reading ----------
+async function read_() {
+  go('reading'); err('readErr', ''); $('readRetry').classList.add('hidden');
+  const steps = ['Opening your website', 'Finding prices, hours and policies', 'Picking the right team for you'];
+  checklist('readList', steps); tick('readList', 0, 'now');
+  let i = 0; const timer = setInterval(() => { if (i < steps.length - 1) { tick('readList', i, 'ok'); i++; tick('readList', i, 'now'); } }, 1400);
+  try {
+    const c = await api('/api/ingest/crawl', { token });
+    preview = c.preview || null; track('site_read');
+    clearInterval(timer);
+    for (let k = 0; k < steps.length; k++) { tick('readList', k, 'ok'); await wait(220); }
+    $('readingSub').textContent = preview ? `Read ${preview.pagesRead} page${preview.pagesRead === 1 ? '' : 's'}.` : 'Done.';
+    await wait(450);
+    await afterRead();
+  } catch (e) {
+    clearInterval(timer); tick('readList', i, null);
+    err('readErr', e.message || "We couldn't read that website."); $('readRetry').classList.remove('hidden');
+  }
+}
+function retryRead() { read_(); }
+async function afterRead() {
+  me = await api('/api/auth').catch(() => ({ account: null }));
+  if (me.account) await api('/api/auth', { action: 'claim', token }).catch(() => {});
+  if (me.account && me.account.active) return build();
+  if (preview) { renderMeet(); go('meet'); } else go('plan');
+}
+
+// ---------- 3. meet ----------
+function renderMeet() {
+  const p = preview;
+  $('meetSub').textContent = p.host ? `On ${p.host}` : '';
+  $('meetStats').innerHTML = `<div class="stat"><b>${p.pagesRead}</b><span>page${p.pagesRead === 1 ? '' : 's'} read</span></div><div class="stat"><b>${p.factCount}</b><span>fact${p.factCount === 1 ? '' : 's'} found</span></div>`;
+  $('meetTeam').innerHTML = (p.team || []).map((a) => `<div class="row"><img src="${esc(a.portrait)}" alt=""><div><b>${esc(a.persona)}</b><span>${esc(a.title)}</span></div></div>`).join('');
+  const gaps = p.gaps || [];
+  $('meetGapsWrap').classList.toggle('hidden', !gaps.length);
+  $('meetGaps').innerHTML = gaps.map((g) => `<span class="chip">${esc(g)}</span>`).join('');
+}
+
+// ---------- 4. plan ----------
+function renderPlans() {
+  $('plans').innerHTML = PLANS.map(([k, n, p, m, tag]) => `<button class="plan ${k === plan ? 'on' : ''}" onclick="pickPlan('${k}')" aria-pressed="${k === plan}"><div><b>${esc(n)}${tag ? `<span class="tag">${esc(tag)}</span>` : ''}</b><span>${esc(m)} · unlimited web chat</span></div><div class="p">$${p}<small>30 days</small></div></button>`).join('');
+}
+function pickPlan(k) { plan = k; renderPlans(); }
+
+// ---------- 5. account + pay ----------
+function renderPay() {
+  const p = PLANS.find((x) => x[0] === plan);
+  $('sumName').textContent = p[1]; $('sumDetail').textContent = `${p[3]} · 30 days`; $('sumPrice').textContent = '$' + p[2];
+  const signed = me && me.account;
+  $('acctFields').classList.toggle('hidden', !!signed);
+  $('signedIn').classList.toggle('hidden', !signed);
+  if (signed) $('signedIn').innerHTML = `Signed in as <b>${esc(me.account.email)}</b>`;
+  $('payTitle').textContent = signed ? 'Pay for your first 30 days' : 'Create your account';
+  $('paySub').textContent = signed ? 'Your team is built the moment payment goes through.' : 'You’ll use it to sign in to Squadron HQ. Your team is built the moment payment goes through.';
+  $('legal').innerHTML = SQA.html('p', { cert: true, wire }); track('pay_view');
+  updatePayBtn();
+  ['p_t', 'p_c', 'p_w'].forEach((id) => { const e = $(id); if (e) e.addEventListener('change', updatePayBtn); });
+}
+function updatePayBtn() {
+  const p = PLANS.find((x) => x[0] === plan);
+  const ok = SQA.ok('p', { cert: true, wire });
+  $('payBtn').disabled = !ok;
+  $('payBtn').textContent = wire ? `Get a $${p[2]} bank-transfer invoice` : `Pay $${p[2]} by card`;
+  $('wireLink').textContent = wire ? 'Pay by card instead' : 'Pay by bank transfer instead';
+}
+function showWire() { wire = !wire; renderPay(); }
+function toggleLogin() {
+  login = !login;
+  $('pass').placeholder = login ? 'Password' : 'Password (8 or more characters)';
+  $('pass').autocomplete = login ? 'current-password' : 'new-password';
+  $('loginToggle').textContent = login ? 'Create a new account instead' : 'I already have an account';
+}
+async function pay() {
+  err('payErr', '');
+  if (!SQA.ok('p', { cert: true, wire })) return err('payErr', 'Tick the boxes above to continue.');
+  $('payBtn').disabled = true;
+  try {
+    if (!(me && me.account)) {
+      const email = $('email').value.trim(), password = $('pass').value;
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Enter your email address.');
+      if (!login && password.length < 8) throw new Error('Choose a password of at least 8 characters.');
+      await api('/api/auth', { action: login ? 'login' : 'signup', email, password, token, ...(login ? {} : SQA.flags('p')) });
+      me = await api('/api/auth').catch(() => ({ account: null }));
+      if (me.account) await api('/api/auth', { action: 'claim', token }).catch(() => {});
+      if (me.account && me.account.active) return build();
+    }
+    track('pay_click', { k: plan + ':' + (wire ? 'wire' : 'card') });
+    if (!wire) {
+      const j = await api('/api/billing', { action: 'card', item: plan, ...SQA.flags('p'), returnTo: '/start?t=' + encodeURIComponent(token) });
+      location.href = j.url; return;
+    }
+    await api('/api/billing', { action: 'invoice', item: plan, ...SQA.flags('p') });
+    location.href = '/billing?from=start&t=' + encodeURIComponent(token);
+  } catch (e) {
+    err('payErr', e.status === 409 ? 'That email already has an account. Tap “I already have an account” and sign in.' : e.message);
+    if (e.status === 409 && !login) toggleLogin();
+  } finally { updatePayBtn(); }
+}
+
+// ---------- 6. building ----------
+async function build() {
+  go('building'); err('buildErr', ''); $('buildRetry').classList.add('hidden');
+  const steps = ['Payment received', 'Reading every page closely', 'Writing your Business Profile', 'Recruiting your team', 'Briefing every agent'];
+  checklist('buildList', steps); tick('buildList', 0, 'ok');
+  let at = 1;
+  try {
+    let pr = await api('/api/profile?token=' + encodeURIComponent(token));
+    if (!pr.profile) {
+      tick('buildList', 1, 'now');
+      const t1 = setTimeout(() => { tick('buildList', 1, 'ok'); tick('buildList', 2, 'now'); at = 2; }, 5000);
+      await api('/api/ingest/extract', { token });
+      clearTimeout(t1);
+    }
+    tick('buildList', 1, 'ok'); tick('buildList', 2, 'ok'); at = 3;
+    const team = await api('/api/team?token=' + encodeURIComponent(token));
+    if (!team.agents) {
+      tick('buildList', 3, 'now');
+      const t2 = setTimeout(() => { tick('buildList', 3, 'ok'); tick('buildList', 4, 'now'); at = 4; }, 9000);
+      await api('/api/team', { token });
+      clearTimeout(t2);
+    }
+    tick('buildList', 3, 'ok'); tick('buildList', 4, 'ok');
+    track('setup_built');
+    await wait(600);
+    await startQuestions();
+  } catch (e) {
+    tick('buildList', at, null);
+    if (e.status === 402) { me = await api('/api/auth').catch(() => ({ account: null })); return go('plan'); }
+    err('buildErr', e.message); $('buildRetry').classList.remove('hidden');
+  }
+}
+
+// ---------- 7. quick questions ----------
+const HOURS_GAP = /hour|open|close|schedule/i;
+async function startQuestions() {
+  const [st, pr] = await Promise.all([api('/api/settings?token=' + encodeURIComponent(token)), api('/api/profile?token=' + encodeURIComponent(token))]);
+  settingsData = st; profile = pr.profile;
+  const s = st.settings || {}, sg = st.suggested || {};
+  qs = [
+    { kind: 'email', title: 'Where should we send customer messages?', sub: 'When a customer leaves a message or asks for a person, we email it here right away.', value: s.notify_email || sg.notify_email || '' },
+    { kind: 'phone', title: 'Who should take calls that need a person?', sub: 'If a caller asks for a person, your team transfers them to this number. Skip it and your team takes a message instead.', value: s.on_call_phone || sg.on_call_phone || '', name: s.on_call_name || '' },
+    { kind: 'hours', title: 'What are your hours?', sub: sg.hours ? 'We found these on your website. Fix anything that’s off.' : 'Your website doesn’t say. Customers ask this more than anything.', value: s.hours || sg.hours || '' },
+  ];
+  const answered = new Set(Object.values(pr.corrections || {}).filter(Boolean));
+  const gaps = ((profile && profile.gaps) || []).filter((g) => g && !HOURS_GAP.test(g)).slice(0, 4);
+  for (const g of gaps) if (!answered.has(g)) qs.push({ kind: 'gap', title: 'Your website doesn’t say', sub: 'How should your team answer this? Write it the way you’d tell a new employee.', gap: g, value: '' });
+  qi = 0; go('ask'); renderQ();
+}
+function renderQ() {
+  const q = qs[qi]; err('qErr', '');
+  $('qCount').textContent = `${qi + 1} of ${qs.length}`;
+  $('qTitle').textContent = q.title; $('qSub').textContent = q.sub;
+  $('back').classList.toggle('on', qi > 0);
+  let h = '';
+  if (q.kind === 'email') h = `<input class="input" id="qa" type="email" autocomplete="email" placeholder="you@yourbusiness.com" value="${esc(q.value)}">`;
+  if (q.kind === 'phone') h = `<input class="input" id="qa" type="tel" autocomplete="tel" placeholder="(555) 123-4567" value="${esc(q.value)}"><label class="lbl" for="qn">Their name (optional)</label><input class="input" id="qn" placeholder="Front desk" value="${esc(q.name)}">`;
+  if (q.kind === 'hours') h = `<textarea class="input" id="qa" placeholder="Mon–Fri 9am–5pm, Sat 10am–2pm, closed Sunday">${esc(q.value)}</textarea>`;
+  if (q.kind === 'gap') h = `<div class="gap">${esc(q.gap)}</div><textarea class="input" id="qa" placeholder="Type your answer">${esc(q.value)}</textarea>`;
+  $('qBody').innerHTML = h;
+  $('qSkip').textContent = q.kind === 'phone' ? 'Skip, take messages instead' : 'Skip';
+  $('qSkip').classList.toggle('hidden', q.kind === 'email');
+  $('qNext').textContent = qi === qs.length - 1 ? 'Finish' : 'Continue';
+  const a = $('qa'); a.oninput = () => { q.value = a.value; };
+  if (q.kind !== 'hours' && q.kind !== 'gap') a.onkeydown = (e) => { if (e.key === 'Enter') answerQ(); };
+  if (matchMedia('(min-width:700px)').matches) setTimeout(() => a.focus(), 50);
+}
+async function answerQ() {
+  const q = qs[qi]; const v = ($('qa').value || '').trim(); err('qErr', '');
+  if (q.kind === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return err('qErr', 'Enter an email address so you never miss a customer.');
+  if (q.kind === 'phone' && v && v.replace(/\D/g, '').length < 10) return err('qErr', 'Enter the full phone number, including the area code.');
+  if (q.kind !== 'email' && !v) return skipQ();
+  $('qNext').disabled = true;
+  try {
+    if (q.kind === 'email') await api('/api/settings', { token, settings: { notify_email: v } });
+    if (q.kind === 'phone') await api('/api/settings', { token, settings: { on_call_phone: v, on_call_name: ($('qn').value || '').trim(), human_mode: 'ai_first' } });
+    if (q.kind === 'hours') await api('/api/settings', { token, settings: { hours: v } });
+    if (q.kind === 'gap') {
+      const n = ((profile && profile.faqs) || []).length;
+      const r = await api('/api/profile', { token, corrections: { [`faqs.${n}.question`]: q.gap, [`faqs.${n}.answer`]: v } });
+      profile = r.profile || profile;
+    }
+    q.value = v; nextQ();
+  } catch (e) { err('qErr', e.message); }
+  finally { $('qNext').disabled = false; }
+}
+async function skipQ() {
+  const q = qs[qi];
+  if (q.kind === 'phone') { await api('/api/settings', { token, settings: { on_call_phone: '' } }).catch(() => {}); }
+  nextQ();
+}
+function nextQ() { if (qi < qs.length - 1) { qi++; renderQ(); } else go('try'); }
+
+// ---------- 8. try ----------
+function startTry() {
+  if ($('msgs').children.length) return;
+  const name = profile && profile.company && profile.company.name && profile.company.name.value;
+  bubble('ai', `Hi! I'm your new team${name ? ' for ' + name : ''}. Ask me something a customer would ask.`, 'Your team');
+  const chips = ['What are your hours?', 'How much does it cost?', 'Can I talk to a person?'];
+  const faq = profile && (profile.faqs || []).find((f) => f.question && f.question.value && f.question.value.length < 60);
+  if (faq) chips.splice(1, 0, faq.question.value);
+  $('tryChips').innerHTML = chips.map((c) => `<button class="chip" onclick="say(this.textContent)">${esc(c)}</button>`).join('');
+}
+function bubble(who, text, label) {
+  const d = document.createElement('div'); d.className = 'b ' + who;
+  d.innerHTML = (label ? `<small>${esc(label)}</small>` : '') + esc(text);
+  $('msgs').appendChild(d); $('msgs').scrollTop = $('msgs').scrollHeight; return d;
+}
+async function say(text) {
+  const msg = (text || $('say').value).trim(); if (!msg || busy) return;
+  busy = true; $('say').value = ''; err('tryErr', '');
+  bubble('me', msg); const t = bubble('ai typing', 'Typing…');
+  try {
+    const r = await api('/api/converse', { token, conversationId, message: msg, channel: 'chat', test: true });
+    conversationId = r.conversationId; t.remove();
+    const who = r.agent ? `${r.agent.persona}${r.agent.title ? ' · ' + r.agent.title : ''}` : 'Your team';
+    bubble('ai', r.reply, who);
+    if (r.followUp) { await wait(700); bubble('ai', r.followUp, who); }
+  } catch (e) { t.remove(); err('tryErr', e.status === 402 ? 'Your prepaid balance is used up. Add minutes in Billing to keep testing.' : e.message); }
+  finally { busy = false; }
+}
+function goFix() { location.href = '/profile?t=' + encodeURIComponent(token); }
+
+// ---------- 9. go live ----------
+async function renderLive(fresh) {
+  if (fresh || !settingsData) settingsData = await api('/api/settings?token=' + encodeURIComponent(token)).catch(() => settingsData);
+  const s = settingsData || {}; const st = s.status || {}; const ch = s.channels || {};
+  const chatOn = !!(ch.chat && ch.chat.enabled);
+  const snippet = (st.chat && st.chat.snippet) || '';
+  $('chatCard').innerHTML = `<div class="ch"><div><h3>Website chat</h3><p>A chat button on every page of your site.</p></div><span class="status ${chatOn ? '' : 'off'}">${chatOn ? 'On' : 'Off'}</span></div>
+    ${chatOn ? `<p style="font-size:15px;color:var(--ink-2);margin-top:12px">Paste this one line into your site, just before <code>&lt;/body&gt;</code>:</p><div class="snip" id="snip">${esc(snippet)}</div>
+      <div class="row2"><button class="btn small" onclick="copySnip(this)">Copy</button><a class="btn small ghost" style="text-decoration:none" href="mailto:?subject=${encodeURIComponent('Please add our Squadron chat to the website')}&body=${encodeURIComponent('Hi,\n\nPlease paste this one line into our website, just before the closing </body> tag, on every page:\n\n' + snippet + '\n\nThank you!')}">Email it to my web person</a></div>
+      <details><summary>Where do I paste it?</summary><ul><li><b>Shopify:</b> Online Store → Themes → Edit code → theme.liquid, just above &lt;/body&gt;.</li><li><b>WordPress:</b> a header-and-footer plugin, in the footer box.</li><li><b>Squarespace:</b> Settings → Advanced → Code Injection → Footer.</li><li><b>Wix:</b> Settings → Custom Code → Add Code, all pages, body end.</li></ul></details>`
+    : `<div class="row2"><button class="btn small" onclick="chatOn(this)">Turn on chat</button></div>`}`;
+  const num = s.business && s.business.phone_number;
+  const area = ((s.settings && s.settings.on_call_phone) || (s.suggested && s.suggested.on_call_phone) || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, '').slice(0, 3);
+  $('phoneCard').innerHTML = `<div class="ch"><div><h3>Phone number</h3><p>${num ? 'Your team answers every call to this number.' : 'A local number your team answers. $1.15 a month from your balance; calls use your minutes.'}</p></div><span class="status ${num ? '' : 'off'}">${num ? 'On' : 'Off'}</span></div>
+    ${num ? `<p style="font-family:var(--display);font-size:26px;font-weight:600;margin-top:10px">${esc(prettyNum(num))}</p><p style="font-size:14px;color:var(--ink-2)">To keep your current number, forward it here with your phone carrier.</p>`
+    : `<div class="row2"><input class="input" id="area" inputmode="numeric" maxlength="3" placeholder="Area code" value="${esc(area)}" style="width:140px;padding:11px 14px;font-size:16px"><button class="btn small" onclick="findNums(this)">Find a number</button></div><div id="numBox"></div>`}`;
+}
+function copySnip(b) { const t = $('snip').textContent; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { b.textContent = 'Copied'; setTimeout(() => (b.textContent = 'Copy'), 1800); }).catch(() => { const r = document.createRange(); r.selectNodeContents($('snip')); getSelection().removeAllRanges(); getSelection().addRange(r); b.textContent = 'Selected, press Copy'; }); }
+async function chatOn(b) { err('liveErr', ''); b.disabled = true; try { settingsData = await api('/api/settings', { token, channels: { chat: { enabled: true } } }); renderLive(); } catch (e) { err('liveErr', e.message); b.disabled = false; } }
+let pickedNum = null;
+async function findNums(b) {
+  err('liveErr', ''); b.disabled = true; $('numBox').innerHTML = '<p style="font-size:15px;color:var(--ink-2);margin-top:12px">Looking…</p>';
+  try {
+    const r = await api('/api/settings', { token, action: 'number_search', areaCode: ($('area').value || '').trim() });
+    if (!r.numbers.length) { $('numBox').innerHTML = '<p style="font-size:15px;color:var(--ink-2);margin-top:12px">No numbers in that area code right now. Try a nearby one, or leave it empty for any US number.</p>'; return; }
+    pickedNum = r.numbers[0].number || r.numbers[0];
+    $('numBox').innerHTML = `<div class="nums">${r.numbers.slice(0, 4).map((n) => { const v = n.number || n; return `<button class="num ${v === pickedNum ? 'on' : ''}" onclick="pickNum('${esc(v)}')" data-n="${esc(v)}">${esc(n.pretty || v)}<span>${esc(n.locality || n.region || '')}</span></button>`; }).join('')}</div><div class="legal">${SQA.html('n', { cert: true })}</div><div class="row2"><button class="btn small" id="buyBtn" onclick="buyNum()">Get this number</button></div>`;
+    SQA.bind('n', '#buyBtn', { cert: true });
+  } catch (e) { $('numBox').innerHTML = ''; err('liveErr', e.message); }
+  finally { b.disabled = false; }
+}
+function pickNum(n) { pickedNum = n; document.querySelectorAll('.num').forEach((x) => x.classList.toggle('on', x.dataset.n === n)); }
+async function buyNum() {
+  err('liveErr', ''); if (!SQA.ok('n', { cert: true })) return err('liveErr', 'Tick the boxes to continue.');
+  $('buyBtn').disabled = true; $('buyBtn').textContent = 'Setting it up…';
+  try { await api('/api/settings', { token, action: 'number_buy', number: pickedNum, ...SQA.flags('n') }); await renderLive(true); }
+  catch (e) { err('liveErr', e.message); $('buyBtn').disabled = false; $('buyBtn').textContent = 'Get this number'; }
+}
+
+// ---------- 10. done ----------
+async function finish() {
+  await renderLive(true).catch(() => {});
+  const s = settingsData || {}; const ch = s.channels || {}; const num = s.business && s.business.phone_number; const st = s.settings || {};
+  const items = [
+    ['Your team is built and briefed', true],
+    [ch.chat && ch.chat.enabled ? 'Website chat is on' : 'Website chat: turn it on anytime in Squadron HQ', !!(ch.chat && ch.chat.enabled)],
+    [num ? `Answering calls on ${prettyNum(num)}` : 'Phone: add a number anytime in Squadron HQ', !!num],
+    [st.notify_email ? `Messages go to ${st.notify_email}` : 'Add an email for customer messages in Squadron HQ', !!st.notify_email],
+  ];
+  $('doneList').innerHTML = items.map(([t, ok]) => `<li class="${ok ? 'ok' : ''}"><span class="m"></span>${esc(t)}</li>`).join('');
+  go('done');
+}
+
+// ---------- resume ----------
+(async () => {
+  const qp = new URLSearchParams(location.search);
+  const t = qp.get('t') || null, cs = qp.get('stripe_session'), u = qp.get('url');
+  if (u) $('url').value = u;
+  if (!t) { go('hello'); if (u) start(); return; }
+  token = t;
+  try {
+    me = await api('/api/auth').catch(() => ({ account: null }));
+    if (cs) {
+      history.replaceState(null, '', '/start?t=' + encodeURIComponent(t));
+      go('building'); checklist('buildList', ['Confirming your payment']); tick('buildList', 0, 'now');
+      try { await api('/api/billing', { action: 'confirm', session: cs }); } catch (e) {}
+      me = await api('/api/auth').catch(() => ({ account: null }));
+      if (me.account) await api('/api/auth', { action: 'claim', token }).catch(() => {});
+      if (me.account && me.account.active) return build();
+      go('pay'); return err('payErr', 'Your card payment hasn’t gone through yet. If you finished paying, wait a moment and reload this page.');
+    }
+    const pr = await api('/api/profile?token=' + encodeURIComponent(t));
+    if (me.account) await api('/api/auth', { action: 'claim', token }).catch(() => {});
+    const active = me.account && me.account.active;
+    if (!pr.profile) {
+      if (active) return build();
+      if (pr.business.kind === 'docs') return go('plan');
+      return read_();
+    }
+    const team = await api('/api/team?token=' + encodeURIComponent(t));
+    if (!team.agents) return active ? build() : go('plan');
+    profile = pr.profile;
+    const s = read('sqSetup:' + t) || 'live';
+    if (s === 'ask') return startQuestions();
+    if (s === 'done') return finish();
+    go(s === 'try' ? 'try' : 'live');
+  } catch (e) {
+    go('hello');
+    err('helloErr', e.status === 404 ? 'We couldn’t find that setup. Enter your website to start again.' : e.message);
+  }
+})();
+</script>
+<script src="/funnel.js" data-event="start_view" defer></script>
+</body>
+</html>

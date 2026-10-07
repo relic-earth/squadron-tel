@@ -181,7 +181,7 @@ async function api(path, body, method) {
   if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status));
   return j;
 }
-function remember(t) { token = t; try { localStorage.setItem('sqToken', t); } catch (e) {} history.replaceState(null, '', '/start?t=' + encodeURIComponent(t)); }
+function remember(t) { token = t; try { localStorage.setItem('sqToken', t); } catch (e) {} history.replaceState(null, '', '/profile?t=' + encodeURIComponent(t)); }
 
 async function startUrl() { const url = $('urlInput').value.trim(); if (!url) return err('err1', 'Enter your website address.'); await create({ kind: 'url', url }); }
 async function startApp() { const url = $('appInput').value.trim(); if (!url) return err('err1', 'Enter your App Store link.'); await create({ kind: 'url', url }); }
@@ -314,7 +314,7 @@ async function pay(method) {
     if (!(await ensureAccount())) return;
     if (window.sqTrack) sqTrack('pay_click', { k: plan + ':' + method });
     if (method === 'card') {
-      try { const j = await api('/api/billing', { action: 'card', item: plan, ...SQA.flags('p'), returnTo: '/start?t=' + encodeURIComponent(token) }); location.href = j.url; return; }
+      try { const j = await api('/api/billing', { action: 'card', item: plan, ...SQA.flags('p'), returnTo: '/profile?t=' + encodeURIComponent(token) }); location.href = j.url; return; }
       catch (e) { err('err2', e.message + ' A bank-transfer invoice is ready instead.'); }
     }
     await api('/api/billing', { action: 'invoice', item: plan, ...SQA.flags('p') });
@@ -422,7 +422,7 @@ function renderProfile() {
   if (u) { $('urlInput').value = u; }
   const cs = params.get('stripe_session');
   if (t && cs) {
-    token = t; history.replaceState(null, '', '/start?t=' + encodeURIComponent(t));
+    token = t; history.replaceState(null, '', '/profile?t=' + encodeURIComponent(t));
     show(2); $('log').innerHTML = ''; logLine('Confirming your card payment', true);
     try { await api('/api/billing', { action: 'confirm', session: cs }); } catch (e) {}
     const me = await api('/api/auth').catch(() => ({ account: null }));

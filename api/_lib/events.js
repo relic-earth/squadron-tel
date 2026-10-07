@@ -14,7 +14,9 @@ export const STEPS = [
   ['team_built', 'Team built'],
   ['chat_deployed', 'Chat turned on'],
 ];
-export const CLIENT_EVENTS = new Set(['landing', 'url_entered', 'site_read', 'pay_view', 'pay_click', 'start_view']);
+export const CLIENT_EVENTS = new Set(['landing', 'url_entered', 'site_read', 'pay_view', 'pay_click', 'start_view',
+  // Guided setup screens, so BOSS can see where owners stop.
+  'setup_hello', 'setup_docs', 'setup_reading', 'setup_meet', 'setup_plan', 'setup_pay', 'setup_building', 'setup_built', 'setup_ask', 'setup_try', 'setup_live', 'setup_done']);
 
 let _ready = null;
 export function ensureEventsSchema() {
