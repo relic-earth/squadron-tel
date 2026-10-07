@@ -43,6 +43,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true, log, sources: rows, preview });
   } catch (e) {
     console.error('[crawl]', e);
+    if (e.code === 'site_blocked' || e.code === 'site_unreachable') return res.status(422).json({ error: e.message, code: e.code });
     return bad(res, 500, e.message);
   }
 }

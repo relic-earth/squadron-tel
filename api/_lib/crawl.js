@@ -101,9 +101,25 @@ function scoreLink(url) {
 export async function crawlSite(startUrl, log = () => {}) {
   const pages = [];
   const seen = new Set();
-  const first = await fetchWithTimeout(startUrl);
+  let first = await fetchWithTimeout(startUrl).catch((e) => ({ ok: false, status: 0, type: '', error: e }));
+  if (!first.ok) {
+    // Many sites answer only on www (or only without it). Try the other one
+    // before giving up. Squadron identifies itself honestly and does not try
+    // to get around a site that blocks automated readers.
+    try {
+      const u = new URL(startUrl);
+      u.hostname = u.hostname.startsWith('www.') ? u.hostname.slice(4) : 'www.' + u.hostname;
+      const alt = await fetchWithTimeout(u.toString()).catch(() => null);
+      if (alt && alt.ok) first = alt;
+    } catch {}
+  }
   if (!first.ok || !/html|xml|text/i.test(first.type)) {
-    throw new Error(`Could not read ${startUrl} (HTTP ${first.status}).`);
+    const blocked = [401, 403, 406, 429, 503].includes(first.status);
+    const e = new Error(blocked
+      ? 'This website blocks automated readers, so Squadron could not read it.'
+      : first.status ? `Could not read ${startUrl} (HTTP ${first.status}).` : `Could not reach ${startUrl}. Check the address and try again.`);
+    e.code = blocked ? 'site_blocked' : 'site_unreachable';
+    throw e;
   }
   seen.add(first.url);
   const home = htmlToText(first.text);

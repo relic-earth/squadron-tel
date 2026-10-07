@@ -174,7 +174,7 @@ details li{margin:4px 0}
   <div class="body">
     <ul class="check" id="readList"></ul>
     <div class="err" id="readErr"></div>
-    <div class="actions hidden" id="readRetry"><button class="btn" onclick="retryRead()">Try again</button><button class="link quiet" onclick="restart()">Use a different website</button></div>
+    <div class="actions hidden" id="readRetry"><button class="btn" id="readPrimary" onclick="retryRead()">Try again</button><button class="link quiet" id="readSecondary" onclick="restart()">Use a different website</button></div>
   </div>
 </section>
 
@@ -345,7 +345,7 @@ function goBack() {
   if (screen === 'ask' && qi > 0) { qi--; return renderQ(); }
   const prev = trail.pop(); if (prev) go(prev, { back: true });
 }
-function restart() { store('sqToken', null); token = null; history.replaceState(null, '', '/start'); trail = []; go('hello'); }
+function restart() { store('sqToken', null); token = null; history.replaceState(null, '', '/start'); trail = []; go('hello'); const u = $('url'); if (u) { u.focus(); u.select(); } }
 function checklist(id, items) { $(id).innerHTML = items.map((t, i) => `<li id="${id}_${i}"><span class="m"></span>${esc(t)}</li>`).join(''); }
 function tick(id, i, state) { const li = $(id + '_' + i); if (li) { li.classList.remove('now', 'ok'); if (state) li.classList.add(state); } }
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -401,7 +401,24 @@ async function read_() {
     await afterRead();
   } catch (e) {
     clearInterval(timer); tick('readList', i, null);
-    err('readErr', e.message || "We couldn't read that website."); $('readRetry').classList.remove('hidden');
+    $('readRetry').classList.remove('hidden');
+    if (e.code === 'site_blocked') {
+      // The site turns away automated readers. Don't leave the owner stuck:
+      // a few lines about the business work just as well.
+      $('readingSub').textContent = 'Your website doesn\u2019t let automated readers in. No problem.';
+      err('readErr', 'Tell us about your business in a few lines instead: what you offer, prices, hours and policies. Your team learns from that the same way.');
+      $('readPrimary').textContent = 'Tell us about your business'; $('readPrimary').onclick = () => go('docs');
+      $('readSecondary').textContent = 'Use a different website'; $('readSecondary').onclick = restart;
+    } else if (e.code === 'site_unreachable') {
+      $('readingSub').textContent = 'We couldn\u2019t reach that website.';
+      err('readErr', 'Check the address for typos, or tell us about your business in a few lines instead.');
+      $('readPrimary').textContent = 'Fix the address'; $('readPrimary').onclick = restart;
+      $('readSecondary').textContent = 'Tell us about your business instead'; $('readSecondary').onclick = () => go('docs');
+    } else {
+      err('readErr', e.message || "We couldn't read that website.");
+      $('readPrimary').textContent = 'Try again'; $('readPrimary').onclick = retryRead;
+      $('readSecondary').textContent = 'Use a different website'; $('readSecondary').onclick = restart;
+    }
   }
 }
 function retryRead() { read_(); }
@@ -415,9 +432,10 @@ async function afterRead() {
 // ---------- 3. meet ----------
 function renderMeet() {
   const p = preview;
-  $('meetSub').textContent = p.host ? `On ${p.host}` : '';
+  const kind = p.kindLabel && p.kind !== 'general' ? p.kindLabel : '';
+  $('meetSub').textContent = kind && p.host ? `${kind} \u00b7 ${p.host}` : (p.host || kind);
   $('meetStats').innerHTML = `<div class="stat"><b>${p.pagesRead}</b><span>page${p.pagesRead === 1 ? '' : 's'} read</span></div><div class="stat"><b>${p.factCount}</b><span>fact${p.factCount === 1 ? '' : 's'} found</span></div>`;
-  $('meetTeam').innerHTML = (p.team || []).map((a) => `<div class="row"><img src="${esc(a.portrait)}" alt=""><div><b>${esc(a.persona)}</b><span>${esc(a.title)}</span></div></div>`).join('');
+  $('meetTeam').innerHTML = (p.team || []).map((a) => `<div class="row"><img src="${esc(a.portrait)}" alt=""><div><b>${esc(a.title)}</b><span>${esc(a.persona)}${a.why ? ' \u00b7 ' + esc(a.why) : ''}</span></div></div>`).join('');
   const gaps = p.gaps || [];
   $('meetGapsWrap').classList.toggle('hidden', !gaps.length);
   $('meetGaps').innerHTML = gaps.map((g) => `<span class="chip">${esc(g)}</span>`).join('');
