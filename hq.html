@@ -43,6 +43,19 @@ tr.row-c:hover td{background:#fff}
 .gapa{width:100%;font:inherit;font-size:16px;font-weight:500;padding:12px 14px;border-radius:12px;border:2px solid rgba(11,30,69,0.2);background:#fff;color:var(--white);outline:none;margin-top:10px;min-height:70px}
 .gapa:focus{border-color:var(--signal)}
 .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.today-h{font-family:'Inter Tight',sans-serif;font-size:40px;font-weight:700;letter-spacing:-0.02em;color:#0B1E45;margin:6px 0 6px}
+.today-s{font-size:18px;color:var(--slate);font-weight:500;margin-bottom:22px}
+.need{border-radius:16px;background:#fff;border:2px solid rgba(11,30,69,0.1);padding:20px 22px;margin-bottom:14px}
+.need .top{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:15px;font-weight:700;color:var(--slate)}
+.need .words{font-size:18px;line-height:1.5;color:#0B1E45;margin-top:10px;white-space:pre-wrap}
+.need .sum{font-size:16px;color:var(--slate);margin-top:6px}
+.need .acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;align-items:center}
+.need textarea{width:100%;margin-top:12px;font:inherit;font-size:17px;padding:12px 14px;border-radius:12px;border:2px solid rgba(11,30,69,0.15);min-height:84px}
+.clear{border-radius:16px;background:#fff;border:2px solid rgba(11,30,69,0.1);padding:34px 24px;text-align:center;font-size:18px;color:var(--slate);font-weight:600}
+.clear b{display:block;font-family:'Inter Tight',sans-serif;font-size:26px;color:#0B1E45;margin-bottom:6px}
+.minirow{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:16px;color:var(--slate);font-weight:600;margin-top:26px;padding-top:18px;border-top:1px solid rgba(11,30,69,0.1)}
+.minirow b{color:#0B1E45}
+@media(max-width:640px){.tabs2{flex-wrap:nowrap!important;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}.tab2{flex:none;white-space:nowrap}.today-h{font-size:32px}.need .acts .btn{font-size:15px;padding:10px 16px}}
 .empty{font-size:18px;color:var(--slate);font-weight:600;padding:30px 0}
 .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .f{font-size:15px;font-weight:800;padding:8px 12px;border-radius:12px;border:2px solid rgba(11,30,69,0.18);background:transparent;color:var(--white);cursor:pointer}
@@ -92,7 +105,8 @@ tr.row-c:hover td{background:#fff}
   <div class="error" id="err"></div>
   <div class="stats" id="stats"></div>
   <div class="tabs2">
-    <button class="tab2 on" data-t="conversations" onclick="setTab('conversations')">Conversations <span class="n" id="nConv">0</span></button>
+    <button class="tab2 on" data-t="today" onclick="setTab('today')">Today <span class="n" id="nToday">0</span></button>
+    <button class="tab2" data-t="conversations" onclick="setTab('conversations')">Conversations <span class="n" id="nConv">0</span></button>
     <button class="tab2" data-t="escalations" onclick="setTab('escalations')">Escalations <span class="n" id="nEsc">0</span></button>
     <button class="tab2" data-t="queue" onclick="setTab('queue')">Knowledge queue <span class="n" id="nGap">0</span></button>
     <button class="tab2" data-t="settings" onclick="setTab('settings')">Settings</button>
@@ -103,7 +117,7 @@ tr.row-c:hover td{background:#fff}
 <script>
 const $ = (id) => document.getElementById(id);
 const token = new URLSearchParams(location.search).get('t');
-let d = null, tab = 'conversations', filter = 'all', openId = null, convoCache = {};
+let d = null, tab = 'today', filter = 'all', openId = null, convoCache = {};
 $('deployLink').href = '/deploy?t=' + encodeURIComponent(token || '');
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 function err(msg) { const e = $('err'); e.textContent = msg || ''; e.style.display = msg ? 'block' : 'none'; }
@@ -127,7 +141,7 @@ function stats() {
     <div class="stat"><div class="k">Conversations this period</div><div class="v">${u.conversations}</div><div class="s">Chat has no conversation limit</div></div>
     <div class="stat"><div class="k">Escalations</div><div class="v">${u.escalations}</div><div class="s">this period, live channels</div></div>
     <div class="stat"><div class="k">Status</div><div class="v" style="font-size:30px;color:${u.paused ? 'var(--amber)' : 'var(--green)'}">${u.paused ? 'Paused' : 'Active'}</div><div class="s">${!p.active ? 'Squadron is prepaid. Pay for a plan in Billing to switch your team on.' : u.paused ? 'This period\'s prepaid amount is used. Pay the top-up invoice in Billing to resume.' : u.voicePaused ? 'Chat is answering. Voice minutes are used up; add 100 minutes in Billing.' : 'Squadron never bills after the fact. When the prepaid amount is used, your team pauses and we email you.'}</div></div>`;
-  $('nConv').textContent = d.conversations.length; $('nEsc').textContent = d.conversations.filter((c) => c.escalated).length; $('nGap').textContent = d.gaps.filter((g) => g.status === 'open' || g.status === 'message').length;
+  $('nToday').textContent = needsYou().length + openQs().length; $('nConv').textContent = d.conversations.length; $('nEsc').textContent = d.conversations.filter((c) => c.escalated).length; $('nGap').textContent = d.gaps.filter((g) => g.status === 'open' || g.status === 'message').length;
   $('lead').textContent = `${d.business.name} · ${d.account ? d.account.email : 'no account yet'} · ${d.channels.phone.label} · Chat ${d.channels.chat.label.toLowerCase()}`;
 }
 function convRows(list) {
@@ -173,9 +187,59 @@ async function saveSettings() {
   try { await api('/api/settings', { token, settings: { on_call_name: $('s_name').value, on_call_phone: $('s_phone').value, notify_email: $('s_email').value, hours: $('s_hours').value, after_hours: $('s_after').value } }); $('saved').textContent = 'Saved.'; }
   catch (e) { $('saved').textContent = e.message; }
 }
+// ---- Today: only what needs the owner, each with one action ----
+const EMAIL_RE = /[^\s@<>()]+@[^\s@<>()]+\.[a-z]{2,}/i;
+const PHONE_RE = /(?:\+?1[\s.-]?)?\(?\b[2-9]\d{2}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/;
+function needsYou() { return d.conversations.filter((c) => c.escalated && !c.test && !c.handled_at); }
+function openQs() { return d.gaps.filter((g) => g.status === 'open' || g.status === 'message'); }
+function ago(s) { const m = Math.round((Date.now() - new Date(s)) / 60000); if (m < 1) return 'just now'; if (m < 60) return m + ' min ago'; const h = Math.round(m / 60); if (h < 24) return h + ' hour' + (h > 1 ? 's' : '') + ' ago'; const dd = Math.round(h / 24); return dd === 1 ? 'yesterday' : dd + ' days ago'; }
+function prettyPhone(n) { const x = String(n || '').replace(/\D/g, '').replace(/^1(?=\d{10}$)/, ''); return x.length === 10 ? `(${x.slice(0, 3)}) ${x.slice(3, 6)}-${x.slice(6)}` : String(n || ''); }
+function today() {
+  const n = needsYou(), q = openQs();
+  const total = n.length + q.length;
+  const week = d.conversations.filter((c) => !c.test && Date.now() - new Date(c.started_at) < 7 * 86400000);
+  const solo = week.filter((c) => !c.escalated).length;
+  const u = d.usage, p = d.plan;
+  let h = '';
+  if (u.paused) h += `<div class="need" style="border-color:var(--amber)"><div class="top"><span style="color:var(--amber)">Your team is paused</span></div><div class="words">${p.active ? 'This period’s prepaid balance is used up, so customers aren’t being answered.' : 'There’s no paid plan, so customers aren’t being answered.'}</div><div class="acts"><a class="btn small" href="/billing">${p.active ? 'Add minutes' : 'Choose a plan'}</a></div></div>`;
+  h += `<div class="today-h">${total ? `${total} thing${total === 1 ? '' : 's'} need${total === 1 ? 's' : ''} you` : 'All clear'}</div>`;
+  h += `<div class="today-s">${week.length ? `This week your team handled ${solo} of ${week.length} conversation${week.length === 1 ? '' : 's'} on its own.` : (d.channels.chat.state === 'live' || d.business.phone_number ? 'No customer conversations yet this week. They’ll show up here.' : 'Your team isn’t taking customers yet. <a href="/start?t=' + encodeURIComponent(token) + '" style="color:var(--signal);font-weight:700">Turn on chat or a phone number</a>.')}</div>`;
+  for (const c of n) {
+    const t = c.customer_text || '';
+    const email = (t.match(EMAIL_RE) || [])[0];
+    const phone = c.caller || (t.match(PHONE_RE) || [])[0];
+    const words = t.split('\n').filter(Boolean).slice(-2).join('\n').slice(0, 320);
+    const kind = c.channel === 'phone' ? 'Phone call' : c.channel === 'voice-web' ? 'Voice chat' : 'Website chat';
+    h += `<div class="need" id="need_${c.id}"><div class="top"><span><span class="pill esc">${c.outcome === 'message taken' ? 'Left a message' : 'Wants a person'}</span> &nbsp;${kind} · ${ago(c.started_at)}</span></div>
+      ${words ? `<div class="words">“${esc(words)}”</div>` : ''}${c.summary ? `<div class="sum">${esc(c.summary)}</div>` : ''}
+      <div class="acts">${phone ? `<a class="btn small" href="tel:${esc(String(phone).replace(/[^\d+]/g, ''))}">Call ${esc(prettyPhone(phone))}</a>` : ''}${email ? `<a class="btn small${phone ? ' ghost' : ''}" href="mailto:${esc(email)}">Email ${esc(email)}</a>` : ''}
+        <button class="btn small ghost" onclick="tab='conversations';openId='${c.id}';setTab('conversations')">Read the conversation</button>
+        <button class="btn small ghost" onclick="handled('${c.id}', this)">Mark handled</button></div></div>`;
+  }
+  for (const g of q) {
+    if (g.status === 'message') {
+      h += `<div class="need"><div class="top"><span><span class="pill gap">Message</span> &nbsp;${ago(g.created_at)}</span></div><div class="words">${esc(g.question.replace(/^Message taken:\s*/, ''))}</div>${g.proposed_answer ? `<div class="sum">${esc(g.proposed_answer)}</div>` : ''}<div class="acts"><button class="btn small ghost" onclick="gap(${g.id},'done')">Mark handled</button></div></div>`;
+    } else {
+      h += `<div class="need"><div class="top"><span><span class="pill gap">Your team couldn’t answer</span> &nbsp;${ago(g.created_at)}</span></div><div class="words">${esc(g.question)}</div>
+        <textarea id="ans_${g.id}" placeholder="How should your team answer this from now on?"></textarea>
+        <div class="acts"><button class="btn small" onclick="gap(${g.id},'approve')">Teach the team</button><button class="btn small ghost" onclick="gap(${g.id},'dismiss')">Not needed</button></div></div>`;
+    }
+  }
+  if (!total) h += `<div class="clear"><b>Nothing waiting on you.</b>When a customer asks for a person or your team can’t answer something, it shows up here.</div>`;
+  const end = p.periodEnd ? new Date(p.periodEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) : '';
+  h += `<div class="minirow"><span><b>${u.minutes}</b> of ${p.active ? p.minutes.toLocaleString() : 0} voice minutes used</span><span><b>${p.active ? u.balancePercent + '%' : '0%'}</b> prepaid balance left</span>${p.active ? `<span>Paid through <b>${end}</b></span>` : ''}<a href="/billing" style="color:var(--signal)">Billing</a></div>`;
+  return h;
+}
+async function handled(id, b) {
+  err(''); b.disabled = true;
+  try { await api('/api/hq', { token, action: 'handled', id }); const c = d.conversations.find((x) => x.id === id); if (c) c.handled_at = new Date().toISOString(); stats(); render(); }
+  catch (e) { err(e.message); b.disabled = false; }
+}
 function render() {
   const v = $('view');
-  if (tab === 'conversations') {
+  $('stats').style.display = tab === 'today' ? 'none' : '';
+  if (tab === 'today') v.innerHTML = today();
+  else if (tab === 'conversations') {
     const list = d.conversations.filter((c) => filter === 'all' ? true : filter === 'live' ? !c.test : filter === 'test' ? c.test : c.channel === filter);
     v.innerHTML = `<div class="filters">${[['all', 'All'], ['live', 'Live'], ['test', 'Tests'], ['chat', 'Chat'], ['voice-web', 'Voice'], ['phone', 'Phone']].map(([k, l]) => `<button class="f ${filter === k ? 'on' : ''}" onclick="filter='${k}';render()">${l}</button>`).join('')}</div>` + convRows(list);
   } else if (tab === 'escalations') v.innerHTML = convRows(d.conversations.filter((c) => c.escalated));
