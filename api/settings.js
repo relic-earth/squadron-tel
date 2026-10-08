@@ -7,7 +7,7 @@ import { ensureAuthSchema } from './_lib/auth.js';
 import { channelStatus } from './_lib/channels.js';
 import { HUMAN_MODES } from './_lib/human.js';
 import { cleanDirectory, EDITIONS, editionOf } from './_lib/directory.js';
-import { currentAccount } from './_lib/auth.js';
+import { currentAccount, ownerGate } from './_lib/auth.js';
 import { track } from './_lib/events.js';
 import { searchNumbers, buyNumber, NUMBER_CENTS } from './_lib/numbers.js';
 import { PaymentRequired } from './_lib/ledger.js';
@@ -43,6 +43,7 @@ export default async function handler(req, res) {
       }
     }
     if (req.method === 'POST') {
+      const gate = await ownerGate(req, biz); if (gate) return res.status(gate.status).json(gate);
       const settings = { ...(biz.settings || {}) };
       const s = body.settings || {};
       if ('on_call_phone' in s) settings.on_call_phone = String(s.on_call_phone || '').slice(0, 40);

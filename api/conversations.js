@@ -1,6 +1,7 @@
 // /api/conversations — GET lists a business's conversations (for HQ);
 // POST stores or updates a voice conversation's transcript and outcome.
 import { ensureSchema, sql, loadBusiness, newId, readJson, bad } from './_lib/db.js';
+import { ownerGate } from './_lib/auth.js';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -11,6 +12,7 @@ export default async function handler(req, res) {
     await ensureSchema();
     const biz = await loadBusiness(token);
     if (!biz) return bad(res, 404, 'Unknown business');
+    const gate = await ownerGate(req, biz); if (gate) return res.status(gate.status).json(gate);
     if (req.method === 'GET') {
       if (req.query?.id) {
         const rows = await sql().query('SELECT * FROM conversations WHERE id = $1 AND business_id = $2', [req.query.id, biz.id]);

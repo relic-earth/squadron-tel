@@ -145,3 +145,14 @@ export const PLANS = {
 // Earlier plan ids map to the current plans.
 const ALIASES = { scout: 'basic', commander: 'pro', hq: 'center', trial: 'none' };
 export function planKey(k) { return PLANS[k] ? k : (ALIASES[k] || 'none'); }
+
+// Changing a team or reading its conversations needs the owner's session (or
+// a colleague's), not just the business token: tokens travel in emailed links
+// and setup addresses, so on their own they are not proof of who is asking.
+// Before an account exists (the free preview) the token is enough.
+export async function ownerGate(req, biz) {
+  if (!biz || !biz.account_id) return null;
+  const acc = await currentAccount(req).catch(() => null);
+  if (acc && acc.id === biz.account_id) return null;
+  return { status: 401, error: 'Log in to the account that owns this team to do that.', code: 'login_required' };
+}

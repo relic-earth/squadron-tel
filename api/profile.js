@@ -3,6 +3,7 @@
 // extraction and its sources are never lost.
 import { ensureSchema, sql, loadBusiness, loadProfile, readJson, bad } from './_lib/db.js';
 import { applyCorrections } from './_lib/profile.js';
+import { ownerGate } from './_lib/auth.js';
 
 export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
@@ -13,6 +14,7 @@ export default async function handler(req, res) {
     const biz = await loadBusiness(token);
     if (!biz) return bad(res, 404, 'Unknown business');
     if (req.method === 'POST') {
+      const gate = await ownerGate(req, biz); if (gate) return res.status(gate.status).json(gate);
       const { corrections } = readJson(req);
       if (!corrections || typeof corrections !== 'object') return bad(res, 400, 'corrections object required');
       const clean = {};

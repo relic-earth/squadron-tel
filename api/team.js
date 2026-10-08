@@ -5,6 +5,7 @@ import { applyCorrections } from './_lib/profile.js';
 import { generateTeam } from './_lib/team.js';
 import { requireFunds, recordSpend, textCostCents, HOLD, PaymentRequired } from './_lib/ledger.js';
 import { track } from './_lib/events.js';
+import { ownerGate } from './_lib/auth.js';
 
 const EDITABLE = ['title', 'job_description', 'scope', 'out_of_scope', 'escalation_rule', 'greeting', 'enabled'];
 
@@ -17,6 +18,7 @@ export default async function handler(req, res) {
     await ensureSchema();
     const biz = await loadBusiness(token);
     if (!biz) return bad(res, 404, 'Unknown business');
+    if (req.method !== 'GET') { const gate = await ownerGate(req, biz); if (gate) return res.status(gate.status).json(gate); }
     if (req.method === 'POST') {
       const row = await loadProfile(biz.id);
       if (!row) return bad(res, 400, 'Your Business Profile is built as soon as your first 30 days are paid. Create your account and choose a plan in Billing, then come back here.');

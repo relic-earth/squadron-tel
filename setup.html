@@ -331,6 +331,7 @@ let qs = [], qi = 0, settingsData = null, profile = null, conversationId = null,
 async function api(path, body, method) {
   const r = await fetch(path, { method: method || (body ? 'POST' : 'GET'), headers: { 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined, credentials: 'same-origin' });
   const j = await r.json().catch(() => ({ error: 'Something went wrong. Please try again.' }));
+  if (r.status === 401 && j.code === 'login_required') { location.href = '/account?next=' + encodeURIComponent(location.pathname + location.search); throw new Error('Taking you to log in\u2026'); }
   if (!r.ok) { const e = new Error(j.error || 'Something went wrong. Please try again.'); e.status = r.status; e.code = j.code; throw e; }
   return j;
 }

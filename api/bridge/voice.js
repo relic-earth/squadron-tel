@@ -5,6 +5,7 @@
 import { sql, loadTeam, newId } from '../_lib/db.js';
 import { ensureBridgeSchema } from '../_lib/bridge.js';
 import { callContext } from './context.js';
+import { phoneGreeting } from '../_lib/answer.js';
 import { formParams, validTwilio, twiml, listen, speak, xml, TWILIO_VOICE } from '../_lib/phone.js';
 
 export default async function handler(req, res) {
@@ -19,7 +20,7 @@ export default async function handler(req, res) {
     const biz = (await sql().query('SELECT * FROM businesses WHERE id = $1', [ctx.businessId]))[0];
     const team = await loadTeam(biz.id);
     const front = team.agents.agents.filter((a) => a.enabled !== false)[0];
-    const greeting = `This call is answered by an AI agent for ${ctx.businessName}, and it is recorded. ${front.greeting} You're dealing with top brass from the start: every agent on this line is a manager.`;
+    const greeting = phoneGreeting(front, { name: ctx.businessName }, biz.settings || {});
     const convoId = newId('cnv');
     const now = new Date().toISOString();
     await sql().query("INSERT INTO conversations (id, business_id, channel, transcript, test, agent_id, agent_name, outcome) VALUES ($1, $2, 'phone', $3, $4, $5, $6, 'in progress')",

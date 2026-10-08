@@ -2,7 +2,7 @@
 // against the plan allowance, the knowledge queue, settings and channel
 // status. ?export=csv returns the conversation log as a file.
 import { sql, loadBusiness, loadProfile, readJson, bad } from './_lib/db.js';
-import { ensureAuthSchema, currentAccount } from './_lib/auth.js';
+import { ensureAuthSchema, currentAccount, ownerGate } from './_lib/auth.js';
 import { ledgerStatus } from './_lib/ledger.js';
 import { channelStatus } from './_lib/channels.js';
 
@@ -23,6 +23,7 @@ export default async function handler(req, res) {
       await ensureHandled();
       const biz = await loadBusiness(body.token);
       if (!biz) return bad(res, 404, 'Unknown business');
+      const gate = await ownerGate(req, biz); if (gate) return res.status(gate.status).json(gate);
       const r = await sql().query(`UPDATE conversations SET handled_at = ${body.handled === false ? 'NULL' : 'now()'} WHERE id = $1 AND business_id = $2 RETURNING id, handled_at`, [String(body.id), biz.id]);
       if (!r[0]) return bad(res, 404, 'Unknown conversation');
       return res.status(200).json({ ok: true, id: r[0].id, handled_at: r[0].handled_at });
@@ -34,6 +35,7 @@ export default async function handler(req, res) {
     await ensureAuthSchema();
     const biz = await loadBusiness(token);
     if (!biz) return bad(res, 404, 'Unknown business');
+    const gate = await ownerGate(req, biz); if (gate) return res.status(gate.status).json(gate);
     const acc = await currentAccount(req);
     await ensureHandled();
     const conversations = await sql().query(

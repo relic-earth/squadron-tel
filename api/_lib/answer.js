@@ -175,3 +175,21 @@ export function starterQuestions(profile) {
   if (profile && (profile.locations || []).some((l) => v(l.address))) out.push('Where are you located?');
   return [...new Set(out)].slice(0, 3);
 }
+
+// The first thing a caller hears. It must say it is an AI and that the call
+// is recorded, then end on one question so the caller knows it is their turn.
+// The front agent's own greeting (which the owner can edit) is kept when it
+// already names the AI; Switchboard asks who to put the caller through to.
+export function phoneGreeting(agent, business, settings) {
+  const name = (business && business.name) || 'us';
+  const persona = (agent && agent.persona) || 'the assistant';
+  const switchboard = settings && (settings.edition === 'switchboard' || (Array.isArray(settings.directory) && settings.directory.length));
+  const own = String((agent && agent.greeting) || '').replace(/\s+/g, ' ').trim();
+  const statements = own.replace(/[^.!?]*\?/g, '').trim();
+  const ownQuestion = (own.match(/[^.!?]*\?/g) || []).pop();
+  const intro = /\bAI\b/.test(statements) && statements.length <= 220
+    ? statements.replace(/[.!]?$/, '.')
+    : `Thanks for calling ${name}. I'm ${persona}, ${switchboard ? 'the AI operator' : 'an AI assistant'}.`;
+  const question = switchboard ? 'Who can I put you through to, or how can I help?' : (ownQuestion ? ownQuestion.trim() : 'How can I help?');
+  return `${intro} This call is recorded. ${question}`;
+}
