@@ -121,11 +121,26 @@ details li{margin:4px 0}
 .done-list li{color:var(--ink)}
 .drop{border:2px dashed var(--line);border-radius:14px;padding:18px;text-align:center;color:var(--ink-2);font-size:15px;cursor:pointer;background:var(--card)}
 .files{font-size:14px;color:var(--ink-2);margin-top:8px}
+.edition{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:14px}
+.edition b{display:block;font-family:var(--display);font-size:18px;font-weight:600}
+.edition span{font-size:14px;color:var(--ink-2)}
+.edition .badge{flex:none;width:38px;height:38px;border-radius:10px;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-family:var(--display)}
+.dir{display:flex;flex-direction:column;gap:10px}
+.dirrow{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 36px;gap:8px;align-items:center}
+.dirrow .input{padding:11px 12px;font-size:16px;border-radius:10px;min-width:0}
+.dirrow [data-f=name]{grid-column:1 / 3;font-weight:600}
+.dirrow .rm{grid-column:3;background:none;border:none;color:var(--ink-3);font-size:22px;width:36px;height:36px;border-radius:50%}
+.dirrow .rm:hover{background:var(--pale)}
+.dirrow [data-f=phone]{grid-column:1 / 2}.dirrow [data-f=email]{grid-column:2 / 4}
+.dirrow [data-f=handles]{grid-column:1 / 4}
+@media (max-width:480px){.dirrow [data-f=phone],.dirrow [data-f=email]{grid-column:1 / 4}}
 .hidden{display:none!important}
 @media (max-width:480px){h1{font-size:29px}main{padding-top:76px}.top{height:56px;padding:0 14px}.stat b{font-size:26px}}
 @media (prefers-reduced-motion:reduce){.screen,.screen.backward{animation:none}.check li.now .m{animation:none}}
 </style>
+<script src="/brands.js"></script>
 <script src="/accept.js"></script>
+<script>document.title = "Set up " + SQ_BRAND.name; if (SQ_BRAND.key !== "squadron") document.documentElement.style.setProperty("--blue", SQ_BRAND.accent);</script>
 </head>
 <body>
 <div class="top">
@@ -139,7 +154,7 @@ details li{margin:4px 0}
 <section class="screen" id="hello" data-dot="0">
   <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Z"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg></div>
   <h1>Hello. What's your website?</h1>
-  <p class="sub">Squadron reads it and builds your customer-service team from what it says.</p>
+  <p class="sub"><span class="brandname">Squadron</span> reads it and builds your customer-service team from what it says.</p>
   <div class="body">
     <input class="input" id="url" type="url" inputmode="url" autocomplete="url" placeholder="yourbusiness.com" autofocus onkeydown="if(event.key==='Enter')start()">
     <div class="err" id="helloErr"></div>
@@ -183,6 +198,7 @@ details li{margin:4px 0}
   <h1>Here's what we found</h1>
   <p class="sub" id="meetSub"></p>
   <div class="body">
+    <div id="meetEdition"></div>
     <div class="stats" id="meetStats"></div>
     <div class="sec">Your team</div>
     <div class="list" id="meetTeam"></div>
@@ -205,7 +221,7 @@ details li{margin:4px 0}
 <!-- 5. Account + pay -->
 <section class="screen" id="pay" data-dot="2">
   <h1 id="payTitle">Create your account</h1>
-  <p class="sub" id="paySub">You'll use it to sign in to Squadron HQ.</p>
+  <p class="sub" id="paySub">You'll use it to sign in to <span class="hqname">Squadron HQ</span>.</p>
   <div class="body">
     <div id="acctFields">
       <input class="input" id="email" type="email" autocomplete="email" placeholder="Email">
@@ -269,7 +285,7 @@ details li{margin:4px 0}
 <!-- 9. Go live -->
 <section class="screen" id="live" data-dot="6">
   <h1>Go live</h1>
-  <p class="sub">Turn on the ways customers reach you. You can do either one later from Squadron HQ.</p>
+  <p class="sub">Turn on the ways customers reach you. You can do either one later from <span class="hqname">Squadron HQ</span>.</p>
   <div class="body">
     <div class="card" id="chatCard"></div>
     <div class="card" id="phoneCard"></div>
@@ -282,11 +298,11 @@ details li{margin:4px 0}
 <section class="screen" id="done" data-dot="7">
   <div class="icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
   <h1>You're all set</h1>
-  <p class="sub">Your team is ready. Every conversation, message and escalation shows up in Squadron HQ.</p>
+  <p class="sub">Your team is ready. Every conversation, message and escalation shows up in <span class="hqname">Squadron HQ</span>.</p>
   <div class="body">
     <ul class="check done-list" id="doneList"></ul>
     <div class="actions">
-      <button class="btn" onclick="location.href='/hq?t='+encodeURIComponent(token)">Open Squadron HQ</button>
+      <button class="btn" onclick="location.href='/hq?t='+encodeURIComponent(token)">Open <span class="hqname">Squadron HQ</span></button>
       <button class="link quiet" onclick="location.href='/team?t='+encodeURIComponent(token)">Fine-tune your team</button>
     </div>
   </div>
@@ -295,6 +311,9 @@ details li{margin:4px 0}
 </main>
 <script>
 const $ = (id) => document.getElementById(id);
+const HQ = SQ_BRAND.name + ' HQ';
+document.querySelectorAll('.brandname').forEach((e) => { e.textContent = SQ_BRAND.name; });
+document.querySelectorAll('.hqname').forEach((e) => { e.textContent = HQ; });
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const PLANS = [
   ['basic', 'Basic', 39, '250 voice minutes', 'Most businesses start here'],
@@ -305,6 +324,7 @@ const PLANS = [
 const DOTS = 8;
 let token = null, me = null, preview = null, plan = 'basic', login = false, wire = false, docs = [];
 let screen = 'hello', trail = [];
+let edition = null;
 let qs = [], qi = 0, settingsData = null, profile = null, conversationId = null, busy = false;
 
 // ---------- plumbing ----------
@@ -393,7 +413,7 @@ async function read_() {
   let i = 0; const timer = setInterval(() => { if (i < steps.length - 1) { tick('readList', i, 'ok'); i++; tick('readList', i, 'now'); } }, 1400);
   try {
     const c = await api('/api/ingest/crawl', { token });
-    preview = c.preview || null; track('site_read');
+    preview = c.preview || null; track('site_read'); if (preview && preview.kind) store('sqKind:' + token, preview.kind);
     clearInterval(timer);
     for (let k = 0; k < steps.length; k++) { tick('readList', k, 'ok'); await wait(220); }
     $('readingSub').textContent = preview ? `Read ${preview.pagesRead} page${preview.pagesRead === 1 ? '' : 's'}.` : 'Done.';
@@ -430,8 +450,25 @@ async function afterRead() {
 }
 
 // ---------- 3. meet ----------
+const EDITION_INFO = {
+  frontdesk: { name: 'Frontdesk', line: 'An AI receptionist: answers every call and chat, books visits, takes messages, and passes callers to your on-call person.', other: 'Need calls routed to several departments or people? Use Switchboard' },
+  switchboard: { name: 'Switchboard', line: 'An AI operator: answers every call and puts each caller through to the right department or person, and takes messages for them.', other: 'Just one team taking calls? Use Frontdesk' },
+};
+function editionLabel(e) { return SQ_BRAND.key === 'squadron' ? 'Squadron ' + EDITION_INFO[e].name : SQ_BRAND.name; }
+function pickEdition(kind) {
+  if (SQ_BRAND.edition) return SQ_BRAND.edition;
+  const saved = token && read('sqEdition:' + token); if (saved && EDITION_INFO[saved]) return saved;
+  return kind === 'hotel' ? 'switchboard' : 'frontdesk';
+}
+function setEdition(e) { edition = e; if (token) store('sqEdition:' + token, e); if (preview) renderMeet(); }
+function renderEdition() {
+  const e = edition, info = EDITION_INFO[e];
+  $('meetEdition').innerHTML = `<div class="edition"><div class="badge">${e === 'switchboard' ? 'S' : 'F'}</div><div><b>${esc(editionLabel(e))}</b><span>${esc(info.line)}</span>${SQ_BRAND.edition ? '' : `<br><button class="link" style="padding:6px 0 0;font-size:14px" onclick="setEdition('${e === 'switchboard' ? 'frontdesk' : 'switchboard'}')">${esc(info.other)}</button>`}</div></div>`;
+}
 function renderMeet() {
   const p = preview;
+  if (!edition) edition = pickEdition(p.kind);
+  renderEdition();
   const kind = p.kindLabel && p.kind !== 'general' ? p.kindLabel : '';
   $('meetSub').textContent = kind && p.host ? `${kind} \u00b7 ${p.host}` : (p.host || kind);
   $('meetStats').innerHTML = `<div class="stat"><b>${p.pagesRead}</b><span>page${p.pagesRead === 1 ? '' : 's'} read</span></div><div class="stat"><b>${p.factCount}</b><span>fact${p.factCount === 1 ? '' : 's'} found</span></div>`;
@@ -456,7 +493,7 @@ function renderPay() {
   $('signedIn').classList.toggle('hidden', !signed);
   if (signed) $('signedIn').innerHTML = `Signed in as <b>${esc(me.account.email)}</b>`;
   $('payTitle').textContent = signed ? 'Pay for your first 30 days' : 'Create your account';
-  $('paySub').textContent = signed ? 'Your team is built the moment payment goes through.' : 'You’ll use it to sign in to Squadron HQ. Your team is built the moment payment goes through.';
+  $('paySub').textContent = signed ? 'Your team is built the moment payment goes through.' : 'You’ll use it to sign in to ' + HQ + '. Your team is built the moment payment goes through.';
   $('legal').innerHTML = SQA.html('p', { cert: true, wire }); track('pay_view');
   updatePayBtn();
   ['p_t', 'p_c', 'p_w'].forEach((id) => { const e = $(id); if (e) e.addEventListener('change', updatePayBtn); });
@@ -541,9 +578,13 @@ async function startQuestions() {
   const [st, pr] = await Promise.all([api('/api/settings?token=' + encodeURIComponent(token)), api('/api/profile?token=' + encodeURIComponent(token))]);
   settingsData = st; profile = pr.profile;
   const s = st.settings || {}, sg = st.suggested || {};
+  if (!edition) edition = pickEdition(read('sqKind:' + token));
+  await api('/api/settings', { token, settings: { edition, brand: SQ_BRAND.key } }).catch(() => {});
   qs = [
     { kind: 'email', title: 'Where should we send customer messages?', sub: 'When a customer leaves a message or asks for a person, we email it here right away.', value: s.notify_email || sg.notify_email || '' },
-    { kind: 'phone', title: 'Who should take calls that need a person?', sub: 'If a caller asks for a person, your team transfers them to this number. Skip it and your team takes a message instead.', value: s.on_call_phone || sg.on_call_phone || '', name: s.on_call_name || '' },
+    edition === 'switchboard'
+      ? { kind: 'directory', title: 'Who should calls go to?', sub: 'Add the departments and people callers ask for. Your operator puts each caller through to the right one, and emails them messages. Numbers are never read out.', rows: (s.directory && s.directory.length ? s.directory : defaultDirectory(sg.on_call_phone)).map((r) => ({ ...r })) }
+      : { kind: 'phone', title: 'Who should take calls that need a person?', sub: 'If a caller asks for a person, your team transfers them to this number. Skip it and your team takes a message instead.', value: s.on_call_phone || sg.on_call_phone || '', name: s.on_call_name || '' },
     { kind: 'hours', title: 'What are your hours?', sub: sg.hours ? 'We found these on your website. Fix anything that’s off.' : 'Your website doesn’t say. Customers ask this more than anything.', value: s.hours || sg.hours || '' },
   ];
   const answered = new Set(Object.values(pr.corrections || {}).filter(Boolean));
@@ -559,18 +600,22 @@ function renderQ() {
   let h = '';
   if (q.kind === 'email') h = `<input class="input" id="qa" type="email" autocomplete="email" placeholder="you@yourbusiness.com" value="${esc(q.value)}">`;
   if (q.kind === 'phone') h = `<input class="input" id="qa" type="tel" autocomplete="tel" placeholder="(555) 123-4567" value="${esc(q.value)}"><label class="lbl" for="qn">Their name (optional)</label><input class="input" id="qn" placeholder="Front desk" value="${esc(q.name)}">`;
+  if (q.kind === 'directory') h = `<div class="dir" id="dir">${q.rows.map(dirRow).join('')}</div><button class="link" style="padding:12px 2px 0" onclick="addDirRow()">+ Add a department or person</button>`;
   if (q.kind === 'hours') h = `<textarea class="input" id="qa" placeholder="Mon–Fri 9am–5pm, Sat 10am–2pm, closed Sunday">${esc(q.value)}</textarea>`;
   if (q.kind === 'gap') h = `<div class="gap">${esc(q.gap)}</div><textarea class="input" id="qa" placeholder="Type your answer">${esc(q.value)}</textarea>`;
   $('qBody').innerHTML = h;
-  $('qSkip').textContent = q.kind === 'phone' ? 'Skip, take messages instead' : 'Skip';
+  $('qSkip').textContent = q.kind === 'phone' || q.kind === 'directory' ? 'Skip, take messages instead' : 'Skip';
   $('qSkip').classList.toggle('hidden', q.kind === 'email');
   $('qNext').textContent = qi === qs.length - 1 ? 'Finish' : 'Continue';
+  if (q.kind === 'directory') { const f = document.querySelector('#dir input'); if (f && matchMedia('(min-width:700px)').matches) setTimeout(() => f.focus(), 50); return; }
   const a = $('qa'); a.oninput = () => { q.value = a.value; };
   if (q.kind !== 'hours' && q.kind !== 'gap') a.onkeydown = (e) => { if (e.key === 'Enter') answerQ(); };
   if (matchMedia('(min-width:700px)').matches) setTimeout(() => a.focus(), 50);
 }
 async function answerQ() {
-  const q = qs[qi]; const v = ($('qa').value || '').trim(); err('qErr', '');
+  const q = qs[qi]; err('qErr', '');
+  if (q.kind === 'directory') return saveDirectory(q);
+  const v = ($('qa').value || '').trim();
   if (q.kind === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return err('qErr', 'Enter an email address so you never miss a customer.');
   if (q.kind === 'phone' && v && v.replace(/\D/g, '').length < 10) return err('qErr', 'Enter the full phone number, including the area code.');
   if (q.kind !== 'email' && !v) return skipQ();
@@ -591,7 +636,37 @@ async function answerQ() {
 async function skipQ() {
   const q = qs[qi];
   if (q.kind === 'phone') { await api('/api/settings', { token, settings: { on_call_phone: '' } }).catch(() => {}); }
+  if (q.kind === 'directory') { await api('/api/settings', { token, settings: { directory: [], on_call_phone: '' } }).catch(() => {}); }
   nextQ();
+}
+// ---- Switchboard directory ----
+function defaultDirectory(mainPhone) {
+  const kind = (preview && preview.kind) || read('sqKind:' + token);
+  const names = kind === 'hotel' ? [['Front desk', 'Check-in, rooms, general questions'], ['Reservations', 'Booking, changing or cancelling a stay'], ['Restaurant', 'Table bookings and dining'], ['Housekeeping', 'Towels, cleaning, room requests'], ['Events', 'Weddings, meetings and groups']]
+    : [['Reception', 'General questions and anything else'], ['Sales', 'New customers, quotes and pricing'], ['Accounts', 'Invoices, payments and billing'], ['Human resources', 'Jobs, staff and HR questions'], ['IT support', 'Technical problems and access']];
+  return names.map(([name, handles], i) => ({ id: 'd' + i, name, handles, phone: i === 0 ? (mainPhone || '') : '', email: '', kind: 'department' }));
+}
+function dirRow(r, i) {
+  return `<div class="dirrow" data-i="${i}"><input class="input full" data-f="name" placeholder="Department or person" value="${esc(r.name)}" aria-label="Name"><button class="rm" onclick="rmDirRow(${i})" aria-label="Remove">\u00d7</button>
+    <input class="input ph" data-f="phone" type="tel" placeholder="Phone (for transfers)" value="${esc(r.phone)}" aria-label="Phone"><input class="input" data-f="email" type="email" placeholder="Email (for messages)" value="${esc(r.email)}" aria-label="Email">
+    <input class="input full" data-f="handles" placeholder="What they handle (helps the operator route)" value="${esc(r.handles || '')}" aria-label="What they handle"></div>`;
+}
+function readDir() { const q = qs[qi]; document.querySelectorAll('#dir .dirrow').forEach((row) => { const r = q.rows[+row.dataset.i]; row.querySelectorAll('input').forEach((inp) => { r[inp.dataset.f] = inp.value.trim(); }); }); return q.rows; }
+function addDirRow() { const q = qs[qi]; readDir(); q.rows.push({ id: 'd' + Date.now().toString(36), name: '', handles: '', phone: '', email: '', kind: 'department' }); renderQ(); const rows = document.querySelectorAll('#dir .dirrow'); const f = rows[rows.length - 1].querySelector('input'); f.focus(); }
+function rmDirRow(i) { const q = qs[qi]; readDir(); q.rows.splice(i, 1); renderQ(); }
+async function saveDirectory(q) {
+  const rows = readDir().filter((r) => r.name);
+  const bad = rows.find((r) => r.phone && r.phone.replace(/\D/g, '').length < 10);
+  if (bad) return err('qErr', `Enter the full phone number for ${bad.name}, including the area code.`);
+  const reachable = rows.filter((r) => r.phone || r.email);
+  if (!reachable.length) return err('qErr', 'Add a phone number or email for at least one, or tap \u201cSkip\u201d to have your operator take messages.');
+  $('qNext').disabled = true;
+  try {
+    const main = rows.find((r) => r.phone);
+    await api('/api/settings', { token, settings: { directory: rows.map((r) => ({ ...r, kind: /\b(mr|ms|mrs|dr)\.?\s|^[A-Z][a-z]+ [A-Z][a-z]+$/.test(r.name) ? 'person' : 'department' })), on_call_phone: main ? main.phone : '', on_call_name: main ? main.name : '', human_mode: 'ai_first' } });
+    nextQ();
+  } catch (e) { err('qErr', e.message); }
+  finally { $('qNext').disabled = false; }
 }
 function nextQ() { if (qi < qs.length - 1) { qi++; renderQ(); } else go('try'); }
 
@@ -669,10 +744,10 @@ async function finish() {
   await renderLive(true).catch(() => {});
   const s = settingsData || {}; const ch = s.channels || {}; const num = s.business && s.business.phone_number; const st = s.settings || {};
   const items = [
-    ['Your team is built and briefed', true],
-    [ch.chat && ch.chat.enabled ? 'Website chat is on' : 'Website chat: turn it on anytime in Squadron HQ', !!(ch.chat && ch.chat.enabled)],
-    [num ? `Answering calls on ${prettyNum(num)}` : 'Phone: add a number anytime in Squadron HQ', !!num],
-    [st.notify_email ? `Messages go to ${st.notify_email}` : 'Add an email for customer messages in Squadron HQ', !!st.notify_email],
+    [`${editionLabel(edition || 'frontdesk')} is set up and your team is briefed`, true],
+    [ch.chat && ch.chat.enabled ? 'Website chat is on' : 'Website chat: turn it on anytime in ' + HQ, !!(ch.chat && ch.chat.enabled)],
+    [num ? `Answering calls on ${prettyNum(num)}` : 'Phone: add a number anytime in ' + HQ, !!num],
+    [st.notify_email ? `Messages go to ${st.notify_email}` : 'Add an email for customer messages in ' + HQ, !!st.notify_email],
   ];
   $('doneList').innerHTML = items.map(([t, ok]) => `<li class="${ok ? 'ok' : ''}"><span class="m"></span>${esc(t)}</li>`).join('');
   go('done');

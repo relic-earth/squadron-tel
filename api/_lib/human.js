@@ -2,6 +2,8 @@
 // and its people share the work, and every channel (chat, browser voice,
 // phone) follows the same choice.
 
+import { directoryOf } from './directory.js';
+
 export const HUMAN_MODES = {
   ai_first: {
     label: 'AI first, a person on request',
@@ -52,7 +54,7 @@ export function chatHumanRule(settings, name) {
 export function voiceHumanRules(settings, name) {
   const mode = humanMode(settings);
   const { who, phone } = target(settings);
-  const canTransfer = !!phone;
+  const canTransfer = !!phone || directoryOf(settings).some((d) => d.phone);
   const noLine = `If the transfer cannot go through, say that ${who} is not available right now and take a message with take_message.`;
   if (mode === 'ai_only') {
     return `- HUMAN LAYER, AI ONLY: no person is available live on this line. Never call request_transfer. If the caller asks for a person, say plainly that no one at ${name} is available live on this line and offer to take a message with take_message. For an emergency, tell the caller to hang up and call emergency services.`;

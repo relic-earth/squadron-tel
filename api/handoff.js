@@ -51,7 +51,8 @@ export default async function handler(req, res) {
         starters = starterQuestions(profile);
       } catch (e) { console.error('[handoff greeting]', e.message); }
       res.setHeader('Cache-Control', 'public, max-age=60');
-      return res.status(200).json({ mode, label: HUMAN_MODES[mode].label, person: st.on_call_name || null, hours: st.hours || null, name, greeting, agent, starters });
+      const brand = { squadron: 'Squadron', frontdesk: 'Frontdesk', switchboard: 'Switchboard' }[st.brand] || 'Squadron';
+      return res.status(200).json({ mode, label: HUMAN_MODES[mode].label, person: st.on_call_name || null, hours: st.hours || null, name, greeting, agent, starters, brand });
     }
     if (req.method !== 'POST') return bad(res, 405, 'GET or POST');
     const body = readJson(req);

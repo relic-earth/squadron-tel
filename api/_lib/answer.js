@@ -2,6 +2,7 @@
 // cites knowledge chunks built from the Business Profile; a question the
 // profile does not answer gets an honest refusal, a message, or a transfer.
 
+import { directoryRule, findEntry } from './directory.js';
 import { structured, CHAT_MODEL } from './openai.js';
 import { personaByName, managerize } from './personas.js';
 import { chatHumanRule } from './human.js';
@@ -51,8 +52,9 @@ const REPLY_SCHEMA = {
     citations: { type: 'array', items: { type: 'string' }, description: 'Knowledge ids (like K3) that support every factual claim in the reply. Required for reply_type fact.' },
     gap_question: { type: ['string', 'null'], description: 'For refusal, take_message or transfer: the customer question the profile could not answer, in one sentence.' },
     message_for_owner: { type: ['string', 'null'], description: 'For take_message: the message to pass to the business, including any contact details the customer gave.' },
+    transfer_to: { type: ['string', 'null'], description: 'For transfer or take_message when a DIRECTORY is given: the id of the directory entry. Null otherwise.' },
   },
-  required: ['agent_id', 'handoff', 'reply_type', 'reply', 'follow_up', 'citations', 'gap_question', 'message_for_owner'],
+  required: ['agent_id', 'handoff', 'reply_type', 'reply', 'follow_up', 'citations', 'gap_question', 'message_for_owner', 'transfer_to'],
 };
 
 function agentBrief(a) {
@@ -71,6 +73,7 @@ ${agents.map(agentBrief).join('\n')}
 KNOWLEDGE (the only facts you may state; cite ids for every factual claim):
 ${chunks.map((c) => `[${c.id}] ${c.text}`).join('\n')}
 ${voice ? `\nBRAND VOICE: ${voice}` : ''}
+${directoryRule(settings, name)}
 ${settings && settings.extra_rules ? `\nBUSINESS RULES (these override everything below when they conflict):\n${String(settings.extra_rules).slice(0, 2000)}\n` : ''}
 RULES:
 1. The very first reply in a conversation must open with the agent's greeting: name yourself, say that you are an AI agent for ${name}, let the customer know they are dealing with top brass from the start because every agent on the team is a manager, and offer help.
@@ -144,7 +147,8 @@ export async function answer({ business, agents, profile, history, message, chan
     else if (!/top brass/i.test(reply)) reply = reply.replace(/^([^.!]*[.!])\s*/, `$1 ${brass} `);
   }
   const cited = citations.map((id) => { const c = chunks.find((x) => x.id === id); return { id, text: c.text, source: c.source }; });
-  return { agent, reply, replyType, citations: cited, gapQuestion: data.gap_question, messageForOwner: data.message_for_owner, handoff: !!data.handoff, followUp, model, usage };
+  const transferTo = ['transfer', 'take_message'].includes(replyType) ? findEntry(settings, data.transfer_to) : null;
+  return { agent, reply, replyType, citations: cited, gapQuestion: data.gap_question, messageForOwner: data.message_for_owner, transferTo, handoff: !!data.handoff, followUp, model, usage };
 }
 
 // The greeting the chat widget shows the moment a customer opens it, before

@@ -4,7 +4,7 @@
 import { ensureSchema, sql, loadBusiness, loadProfile, loadTeam, newId, readJson, bad } from './_lib/db.js';
 import { applyCorrections } from './_lib/profile.js';
 import { answer, openingGreeting } from './_lib/answer.js';
-import { notifyOwner } from './_lib/email.js';
+import { notifyOwner, sendEmail } from './_lib/email.js';
 import { firstRealAnswer } from './_lib/care.js';
 import { requireFunds, recordSpend, textCostCents, HOLD, PaymentRequired } from './_lib/ledger.js';
 
@@ -80,7 +80,8 @@ export default async function handler(req, res) {
     }
     if (!test && ['take_message', 'transfer'].includes(out.replyType) && out.messageForOwner) {
       const recentText = history.slice(-12).map((h) => `${h.role === 'customer' ? 'Customer' : (h.agent_name || 'AI team')}: ${h.text}`).join('\n');
-      notifyOwner(biz.id, { subject: out.replyType === 'transfer' ? 'A customer asked for a person' : 'A customer left a message', text: `${out.messageForOwner}\n\nThe conversation so far (${channel}):\n${recentText}\n\nIt is in Squadron HQ under Escalations.` }).catch((e) => console.error('[converse notify]', e.message));
+      if (out.transferTo && out.transferTo.email) sendEmail({ to: out.transferTo.email, subject: out.replyType === 'transfer' ? `A customer asked for ${out.transferTo.name}` : `A customer left a message for ${out.transferTo.name}`, text: `${out.messageForOwner}\n\nThe conversation so far (${channel}):\n${recentText}` }).catch((e) => console.error('[converse directory email]', e.message));
+      notifyOwner(biz.id, { subject: out.replyType === 'transfer' ? `A customer asked for ${out.transferTo ? out.transferTo.name : 'a person'}` : `A customer left a message${out.transferTo ? ' for ' + out.transferTo.name : ''}`, text: `${out.messageForOwner}\n\nThe conversation so far (${channel}):\n${recentText}\n\nIt is in Squadron HQ under Escalations.` }).catch((e) => console.error('[converse notify]', e.message));
     }
     if (!test) {
       await firstRealAnswer(biz.id);
@@ -95,6 +96,7 @@ export default async function handler(req, res) {
       citations: out.citations,
       gapQuestion: out.gapQuestion,
       messageForOwner: out.messageForOwner,
+      transferTo: out.transferTo ? { id: out.transferTo.id, name: out.transferTo.name } : null,
       model: out.model,
     });
   } catch (e) {

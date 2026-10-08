@@ -138,6 +138,14 @@
       "dest": "/api/session.js"
     },
     {
+      "src": "/frontdesk",
+      "dest": "/frontdesk.html"
+    },
+    {
+      "src": "/switchboard",
+      "dest": "/switchboard.html"
+    },
+    {
       "src": "/start",
       "dest": "/setup.html"
     },

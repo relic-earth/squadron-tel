@@ -99,7 +99,7 @@ tr.row-c:hover td{background:#fff}
   <span class="nav-right" style="display:flex;gap:22px"><a href="/account" style="color:inherit;text-decoration:none">Account</a><a href="/billing" style="color:inherit;text-decoration:none">Billing</a><a href="#" id="deployLink" style="color:inherit;text-decoration:none">Deploy screen →</a></span>
 </nav>
 <main>
-  <p class="eyebrow">Squadron HQ</p>
+  <p class="eyebrow" id="hqName">Squadron HQ</p>
   <h1 id="title">Your <em>team</em> at work.</h1>
   <p class="lead" id="lead"></p>
   <div class="error" id="err"></div>
@@ -176,9 +176,24 @@ async function gap(id, action) {
     d.gaps = r.gaps; stats(); render();
   } catch (e) { err(e.message); }
 }
+function dirPanel(s) {
+  const rows = (s.directory || []);
+  if (!rows.length && s.edition !== 'switchboard') return `<div class="panel"><h2>Directory</h2><p style="font-size:17px;color:var(--slate);font-weight:500;line-height:1.55">Want callers put through to different departments or people? Add a directory and your team becomes a switchboard operator.</p><div class="acts" style="margin-top:12px"><button class="btn small" onclick="d.settings.edition='switchboard';d.settings.directory=[{id:'d0',name:'',phone:'',email:'',handles:''}];render()">Add a directory</button></div></div>`;
+  return `<div class="panel"><h2>Directory</h2><p style="font-size:16px;color:var(--slate);font-weight:500;line-height:1.5;margin-bottom:12px">Your operator puts callers through to these numbers and emails them messages. Numbers and emails are never read out to callers.</p>
+    <div id="dirRows">${rows.map((r, i) => `<div class="row2 field" data-i="${i}" style="align-items:end;border-top:1px solid rgba(11,30,69,0.08);padding-top:12px;margin-top:12px"><div><label>Name</label><input data-f="name" value="${esc(r.name)}" placeholder="Reservations or Sarah Kim"></div><div><label>What they handle</label><input data-f="handles" value="${esc(r.handles || '')}" placeholder="Booking, changing a stay"></div><div><label>Phone (transfers)</label><input data-f="phone" value="${esc(r.phone || '')}"></div><div><label>Email (messages)</label><input data-f="email" value="${esc(r.email || '')}"></div><input type="hidden" data-f="id" value="${esc(r.id)}"></div>`).join('')}</div>
+    <div class="acts" style="margin-top:14px"><button class="btn small ghost" onclick="dirAdd()">Add a department or person</button><button class="btn small" onclick="dirSave()">Save directory</button><span class="ok" id="dirSaved"></span></div></div>`;
+}
+function dirRead() { return [...document.querySelectorAll('#dirRows [data-i]')].map((row) => Object.fromEntries([...row.querySelectorAll('input')].map((i) => [i.dataset.f, i.value.trim()]))); }
+function dirAdd() { d.settings.directory = dirRead().concat([{ id: 'd' + Date.now().toString(36), name: '', handles: '', phone: '', email: '' }]); render(); }
+async function dirSave() {
+  const rows = dirRead().filter((r) => r.name);
+  $('dirSaved').textContent = 'Saving\u2026';
+  try { const r = await api('/api/settings', { token, settings: { directory: rows, edition: rows.length ? 'switchboard' : 'frontdesk' } }); d.settings = r.settings; $('dirSaved').textContent = rows.length ? 'Saved. Rows without a valid phone take messages instead.' : 'Saved. No directory: calls go to your on-call contact.'; render(); }
+  catch (e) { $('dirSaved').textContent = e.message; }
+}
 function settingsView() {
   const s = d.settings || {}, ch = d.channels;
-  return `<div class="panel"><h2>Channels</h2>${['phone', 'chat', 'email', 'sms'].map((k) => `<div style="display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid rgba(11,30,69,0.08);font-size:16px;font-weight:600"><span style="text-transform:capitalize">${k}</span><span class="pill ${ch[k].state === 'live' ? 'ok' : ch[k].state === 'ready' ? 'test' : ''}">${esc(ch[k].label)}</span></div>`).join('')}<div class="acts"><button class="btn small ghost" onclick="location.href='/deploy?t='+encodeURIComponent(token)">Change on the deploy screen</button></div></div>
+  return dirPanel(s) + `<div class="panel"><h2>Channels</h2>${['phone', 'chat', 'email', 'sms'].map((k) => `<div style="display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid rgba(11,30,69,0.08);font-size:16px;font-weight:600"><span style="text-transform:capitalize">${k}</span><span class="pill ${ch[k].state === 'live' ? 'ok' : ch[k].state === 'ready' ? 'test' : ''}">${esc(ch[k].label)}</span></div>`).join('')}<div class="acts"><button class="btn small ghost" onclick="location.href='/deploy?t='+encodeURIComponent(token)">Change on the deploy screen</button></div></div>
     <div class="panel"><h2>On-call and business hours</h2><div class="row2 field"><div><label>On-call name</label><input id="s_name" value="${esc(s.on_call_name || '')}"></div><div><label>On-call phone</label><input id="s_phone" value="${esc(s.on_call_phone || '')}"></div><div><label>Email for message alerts</label><input id="s_email" value="${esc(s.notify_email || '')}"></div><div><label>Business hours</label><input id="s_hours" value="${esc(s.hours || '')}"></div></div><div class="field"><label>Outside business hours</label><select id="s_after"><option value="answer" ${s.after_hours !== 'message' ? 'selected' : ''}>Answer questions and take messages</option><option value="message" ${s.after_hours === 'message' ? 'selected' : ''}>Take messages only</option></select></div><div class="acts"><button class="btn small" onclick="saveSettings()">Save</button><span id="saved" style="color:var(--green);font-weight:700;align-self:center"></span></div></div>
     <div class="panel"><h2>Plan</h2><p style="font-size:17px;color:var(--slate);font-weight:500;line-height:1.55">${d.plan.active ? `${esc(d.plan.name)} · ${d.plan.minutes.toLocaleString()} voice minutes and web chat, prepaid through ${new Date(d.plan.periodEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}.` : 'No paid plan is active.'} Squadron is prepaid and never bills after the fact. When a period's prepaid amount is used, your team pauses and we email you a top-up invoice. Manage it on the <a href="/billing" style="color:var(--signal)">Billing page</a>. There is no automatic upgrade.</p></div>`;
 }
@@ -250,7 +265,7 @@ function render() {
 }
 (async () => {
   if (!token) { const me = await fetch('/api/auth', { credentials: 'same-origin' }).then((r) => r.json()).catch(() => ({})); const b = me.businesses && me.businesses[0]; location.href = b ? location.pathname + '?t=' + encodeURIComponent(b.token) + location.search.replace(/^\?/, '&') : '/account'; return; }
-  try { d = await api('/api/hq?token=' + encodeURIComponent(token)); stats(); render(); rating(); } catch (e) { err(e.message); }
+  try { d = await api('/api/hq?token=' + encodeURIComponent(token)); const bn = { frontdesk: 'Frontdesk', switchboard: 'Switchboard' }[(d.settings || {}).brand] || 'Squadron'; $('hqName').textContent = bn + ' HQ'; document.title = bn + ' HQ'; stats(); render(); rating(); } catch (e) { err(e.message); }
 })();
 </script>
 <script>async function rating() {

@@ -187,9 +187,10 @@
       if (!j) return;
       info = j; mode = j.mode || 'ai_first'; person = j.person || null; greeting = j.greeting || null; starters = j.starters || [];
       if (j.agent && !agent) showAgent(j.agent);
+      if (j.brand && j.brand !== 'Squadron') { var ft = box.querySelector('#sqw-foot'); if (ft) ft.textContent = ft.textContent.replace('Squadron', j.brand); }
       if (mode !== 'ai_only') personBtn.hidden = false;
       if (mode === 'person_first') box.querySelector('#sqw-sub').textContent = 'AI receptionist \u00b7 a person will contact you';
-      if (mode === 'ai_only') box.querySelector('#sqw-foot').textContent = 'Powered by Squadron. You are chatting with an AI agent, and it can take a message for the business.';
+      if (mode === 'ai_only') box.querySelector('#sqw-foot').textContent = 'Powered by ' + (j.brand || 'Squadron') + '. You are chatting with an AI agent, and it can take a message for the business.';
     })
     .catch(function () {});
 

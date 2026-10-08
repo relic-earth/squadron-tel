@@ -58,7 +58,10 @@ export function listen(state, inner) {
 
 export function twiml(inner) { return `<?xml version="1.0" encoding="UTF-8"?><Response>${inner}</Response>`; }
 
-export function canTransfer(settings) { return humanMode(settings) !== 'ai_only' && !!(settings && settings.on_call_phone); }
+// A transfer goes to the directory entry the team picked (Switchboard), or
+// to the single on-call number (Frontdesk).
+export function transferTarget(settings, entry) { return (entry && entry.phone) || (settings && settings.on_call_phone) || ''; }
+export function canTransfer(settings, entry) { return humanMode(settings) !== 'ai_only' && !!transferTarget(settings, entry); }
 
 // mu-law (8 kHz) to a 16-bit PCM WAV that Twilio's <Play> accepts.
 export function mulawToWav(mu) {

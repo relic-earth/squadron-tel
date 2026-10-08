@@ -4,9 +4,9 @@
 import { sql, loadProfile, loadTeam } from '../_lib/db.js';
 import { applyCorrections } from '../_lib/profile.js';
 import { answer } from '../_lib/answer.js';
-import { notifyOwner } from '../_lib/email.js';
+import { notifyOwner, sendEmail } from '../_lib/email.js';
 import { recordSpend, textCostCents } from '../_lib/ledger.js';
-import { formParams, validTwilio, unsign, twiml, listen, speak, xml, canTransfer, PUBLIC, SPEECH_CENTS_PER_TURN, TTS_CENTS_PER_CHAR, TWILIO_VOICE } from '../_lib/phone.js';
+import { formParams, validTwilio, unsign, twiml, listen, speak, xml, canTransfer, transferTarget, PUBLIC, SPEECH_CENTS_PER_TURN, TTS_CENTS_PER_CHAR, TWILIO_VOICE } from '../_lib/phone.js';
 
 async function startRecording(callSid, businessId) {
   const sid = process.env.TWILIO_ACCOUNT_SID, tok = process.env.TWILIO_AUTH_TOKEN;
@@ -51,16 +51,24 @@ export default async function handler(req, res) {
     const agentName = `${out.agent.persona} · ${out.agent.title}`;
     history.push({ role: 'customer', text: said.slice(0, 2000), at: now });
     history.push({ role: 'agent', agent_id: out.agent.id, agent_name: agentName, text: spoken, type: out.replyType, citations: out.citations.map((c) => c.id), at: now });
-    const transfer = out.replyType === 'transfer' && canTransfer(settings) && !st.d;
+    const transfer = out.replyType === 'transfer' && canTransfer(settings, out.transferTo) && !st.d;
     const outcome = out.replyType === 'transfer' ? 'transferred' : out.replyType === 'take_message' ? 'message taken' : out.replyType === 'refusal' ? 'unanswered question' : 'answered';
     await sql().query('UPDATE conversations SET transcript = $2, sources = $3, agent_id = $4, agent_name = $5, outcome = $6, escalated = escalated OR $7, summary = COALESCE(summary, $8) WHERE id = $1',
       [st.c, JSON.stringify(history), JSON.stringify((convo.sources || []).concat(out.citations.map((c) => ({ id: c.id, text: c.text, source: c.source })))), out.agent.id, agentName, outcome, out.replyType === 'transfer', said.slice(0, 140)]);
     if (out.gapQuestion && ['refusal', 'take_message', 'transfer'].includes(out.replyType)) await sql().query('INSERT INTO knowledge_gaps (business_id, conversation_id, question) VALUES ($1, $2, $3)', [biz.id, st.c, out.gapQuestion.slice(0, 500)]);
     if (!st.d && ['take_message', 'transfer'].includes(out.replyType) && out.messageForOwner) {
       const recent = history.slice(-12).map((h) => `${h.role === 'customer' ? 'Caller' : (h.agent_name || 'AI team')}: ${h.text}`).join('\n');
-      notifyOwner(biz.id, { subject: transfer ? 'A caller was transferred to you' : 'A caller left a message', text: `${out.messageForOwner}\n\nThe call so far:\n${recent}\n\nIt is in Squadron HQ.` }).catch((e) => console.error('[bridge/turn notify]', e.message));
+      const to = out.transferTo ? ` for ${out.transferTo.name}` : '';
+      if (out.transferTo && out.transferTo.email) sendEmail({ to: out.transferTo.email, subject: transfer ? `A caller was put through to ${out.transferTo.name}` : `A caller left a message for ${out.transferTo.name}`, text: `${out.messageForOwner}\n\nThe call so far:\n${recent}` }).catch((e) => console.error('[bridge/turn directory email]', e.message));
+      notifyOwner(biz.id, { subject: transfer ? `A caller was transferred${to}` : `A caller left a message${to}`, text: `${out.messageForOwner}\n\nThe call so far:\n${recent}\n\nIt is in Squadron HQ.` }).catch((e) => console.error('[bridge/turn notify]', e.message));
     }
-    if (transfer) return send(`${speak(spoken, settings)}<Dial>${xml(settings.on_call_phone)}</Dial>`);
+    if (transfer) return send(`${speak(spoken, settings)}<Dial>${xml(transferTarget(settings, out.transferTo))}</Dial>`);
+    // The team chose to put the caller through, but there is no line to dial:
+    // say so plainly and take a message instead of leaving them hanging.
+    if (out.replyType === 'transfer' && !st.d) {
+      const who = out.transferTo ? out.transferTo.name : 'someone';
+      return send(listen({ ...st, n: 0 }, speak(`I'm sorry, ${who} can't take calls directly right now, so I'll take a message for them. What's your name, and the best number to reach you?`, settings)));
+    }
     return send(listen({ ...st, n: 0 }, speak(spoken, settings)));
   } catch (e) {
     console.error('[bridge/turn]', e);

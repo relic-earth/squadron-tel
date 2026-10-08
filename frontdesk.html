@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frontdesk: an AI receptionist for your business</title>
+<meta name="description" content="Frontdesk reads your website and becomes your receptionist: it answers calls and chats day and night, books visits, takes messages, and puts callers through to you when they need a person.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{--a:#0F7B5F;--a2:#0B5E48;--pale:#E7F4EF;--ink:#0B1E45;--ink-2:#44536F;--line:#DCE4EF;--bg:#F7F8FA}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,system-ui,sans-serif;color:var(--ink);background:var(--bg);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--a)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+nav{display:flex;justify-content:space-between;align-items:center;height:72px}
+.logo{font-family:'Inter Tight',sans-serif;font-weight:700;font-size:22px;letter-spacing:-.02em;color:var(--ink);text-decoration:none;display:flex;align-items:center;gap:10px}
+.logo i{width:28px;height:28px;border-radius:8px;background:var(--a);display:inline-block}
+.cta{background:var(--ink);color:#fff;text-decoration:none;padding:11px 20px;border-radius:999px;font-weight:600;font-size:15px}
+.cta:hover{background:var(--a)}
+.hero{padding:72px 0 56px;max-width:760px}
+h1{font-family:'Inter Tight',sans-serif;font-size:clamp(42px,6vw,72px);line-height:1.02;letter-spacing:-.035em;font-weight:600}
+h1 em{font-style:normal;color:var(--a)}
+.sub{font-size:20px;color:var(--ink-2);margin-top:20px;max-width:640px}
+form.start{display:flex;gap:10px;margin-top:30px;max-width:560px;flex-wrap:wrap}
+form.start input{flex:1;min-width:220px;font:inherit;font-size:18px;padding:16px 18px;border-radius:14px;border:1.5px solid var(--line);background:#fff;outline:none}
+form.start input:focus{border-color:var(--a)}
+form.start button{font:inherit;font-weight:600;font-size:17px;border:none;border-radius:999px;padding:16px 26px;background:var(--a);color:#fff;cursor:pointer}
+form.start button:hover{background:var(--a2)}
+.note{font-size:14px;color:var(--ink-2);margin-top:10px}
+section{padding:48px 0}
+h2{font-family:'Inter Tight',sans-serif;font-size:clamp(30px,4vw,44px);letter-spacing:-.03em;font-weight:600;line-height:1.08;margin-bottom:24px}
+.feats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.feat{background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px}
+.feat h3{font-family:'Inter Tight',sans-serif;font-size:21px;font-weight:600;margin-bottom:6px}
+.feat p{color:var(--ink-2)}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;counter-reset:s}
+.step{background:var(--pale);border-radius:18px;padding:22px;counter-increment:s}
+.step::before{content:counter(s);display:flex;width:32px;height:32px;border-radius:50%;background:var(--a);color:#fff;align-items:center;justify-content:center;font-weight:700;margin-bottom:12px}
+.step b{display:block;font-size:18px;margin-bottom:4px}
+.step span{color:var(--ink-2);font-size:16px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-weight:500}
+.plans{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.plan{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px}
+.plan b{font-family:'Inter Tight',sans-serif;font-size:19px;font-weight:600}
+.plan .pr{font-family:'Inter Tight',sans-serif;font-size:34px;font-weight:600;margin:6px 0}
+.plan .pr small{font-size:14px;font-family:Inter,sans-serif;color:var(--ink-2);font-weight:500}
+.plan span{font-size:15px;color:var(--ink-2)}
+.honest{font-size:15px;color:var(--ink-2);margin-top:14px}
+details{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin-bottom:10px}
+summary{font-weight:600;cursor:pointer;list-style:none}
+summary::-webkit-details-marker{display:none}
+details p{color:var(--ink-2);margin-top:8px}
+.final{background:var(--ink);color:#fff;border-radius:24px;padding:44px 32px;margin:24px 0 48px}
+.final h2{color:#fff}
+.final form.start input{border-color:transparent}
+footer{border-top:1px solid var(--line);padding:24px 0 40px;font-size:14px;color:var(--ink-2);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+footer a{color:var(--ink-2)}
+@media(max-width:760px){.feats,.steps{grid-template-columns:1fr}.plans{grid-template-columns:1fr 1fr}.hero{padding:40px 0 32px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav><a class="logo" href="/frontdesk"><i></i>Frontdesk</a><a class="cta" href="/start?brand=frontdesk">Get started</a></nav>
+<div class="hero">
+  <h1>Every call answered.<br><em>Every customer helped.</em></h1>
+  <p class="sub">Frontdesk reads your website and becomes your receptionist: it answers calls and chats day and night, books visits, takes messages, and puts callers through to you when they need a person.</p>
+  <form class="start" onsubmit="go(this);return false"><input name="u" type="text" inputmode="url" placeholder="yourbusiness.com" aria-label="Your website"><button>See it with my website</button></form>
+  <p class="note">Free to see what it finds on your site. Plans from $39 for 30 days, nothing renews by itself.</p>
+</div>
+<section><h2>What Frontdesk does</h2><div class="feats"><div class="feat"><h3>Answers in seconds, 24/7</h3><p>Phone and website chat, nights and weekends included. No hold music, no voicemail.</p></div><div class="feat"><h3>Knows your business</h3><p>It learns from your website and the answers you give it, and says so when it doesn’t know, instead of guessing.</p></div><div class="feat"><h3>Books and takes messages</h3><p>Gives customers your booking link, takes their details, and emails you every message right away.</p></div><div class="feat"><h3>Hands off to you</h3><p>When a caller wants a person, it puts them through to your phone, or takes a message if you’re busy.</p></div></div></section>
+<section><h2>Live in minutes</h2><div class="steps"><div class="step"><b>Enter your website</b><span>Frontdesk reads it and shows you what it found.</span></div><div class="step"><b>Answer a few questions</b><span>Where messages go, your hours, anything your site doesn’t say.</span></div><div class="step"><b>Try it, then go live</b><span>Chat with it privately, then turn on your phone number and website chat.</span></div></div></section>
+<section><h2>Made for</h2><div class="chips"><span class="chip">Dental and medical offices</span><span class="chip">Law firms</span><span class="chip">Salons and spas</span><span class="chip">Plumbers and contractors</span><span class="chip">Clinics and studios</span><span class="chip">Shops and services</span></div></section>
+<section><h2>Simple prepaid plans</h2><div class="plans"><div class="plan"><b>Basic</b><div class="pr">$39<small> / 30 days</small></div><span>250 voice minutes · unlimited web chat</span></div><div class="plan"><b>Pro</b><div class="pr">$79<small> / 30 days</small></div><span>650 voice minutes · unlimited web chat</span></div><div class="plan"><b>Command Center</b><div class="pr">$199<small> / 30 days</small></div><span>2,000 voice minutes · unlimited web chat</span></div><div class="plan"><b>Battalion</b><div class="pr">$999<small> / 30 days</small></div><span>10,000 voice minutes · unlimited web chat</span></div></div><p class="honest">Every plan includes the full team, web chat, call recording and transcripts. Prepaid for 30 days; nothing renews by itself. A local phone number is $1.15 a month.</p></section>
+<section><h2>Questions</h2><details><summary>Will callers know it’s AI?</summary><p>Yes. It says so at the start of every conversation, and every call begins with a recording notice.</p></details><details><summary>Can I keep my phone number?</summary><p>Yes. Forward your existing number to your Frontdesk number with your phone carrier.</p></details><details><summary>How long does setup take?</summary><p>About five minutes: enter your website, answer a few questions, try it, and turn it on.</p></details></section>
+<div class="final"><h2>See Frontdesk with your own website.</h2><form class="start" onsubmit="go(this);return false"><input name="u" type="text" inputmode="url" placeholder="yourbusiness.com" aria-label="Your website"><button>Get started</button></form></div>
+<footer><span>Frontdesk is operated by Squadron.</span><span><a href="/terms">Terms</a> · <a href="/privacy">Privacy</a> · <a href="/help">Help</a></span></footer>
+</div>
+<script>function go(f){var u=f.u.value.trim();location.href='/start?brand=frontdesk'+(u?'&url='+encodeURIComponent(u):'');}</script>
+<script src="/funnel.js" data-event="landing" defer></script>
+</body>
+</html>

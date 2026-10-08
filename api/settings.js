@@ -6,6 +6,7 @@ import { sql, loadBusiness, readJson, bad } from './_lib/db.js';
 import { ensureAuthSchema } from './_lib/auth.js';
 import { channelStatus } from './_lib/channels.js';
 import { HUMAN_MODES } from './_lib/human.js';
+import { cleanDirectory, EDITIONS, editionOf } from './_lib/directory.js';
 import { currentAccount } from './_lib/auth.js';
 import { track } from './_lib/events.js';
 import { searchNumbers, buyNumber, NUMBER_CENTS } from './_lib/numbers.js';
@@ -49,6 +50,9 @@ export default async function handler(req, res) {
       if ('notify_email' in s) settings.notify_email = String(s.notify_email || '').slice(0, 200);
       if ('hours' in s) settings.hours = String(s.hours || '').slice(0, 400);
       if ('human_mode' in s) settings.human_mode = HUMAN_MODES[s.human_mode] ? s.human_mode : 'ai_first';
+      if ('directory' in s) settings.directory = cleanDirectory(s.directory);
+      if ('brand' in s) settings.brand = ['squadron', 'frontdesk', 'switchboard'].includes(s.brand) ? s.brand : 'squadron';
+      if ('edition' in s) settings.edition = EDITIONS[s.edition] ? s.edition : undefined;
       if ('after_hours' in s) settings.after_hours = ['message', 'answer'].includes(s.after_hours) ? s.after_hours : 'answer';
       const channels = { ...(biz.channels || {}) };
       if (body.channels && typeof body.channels === 'object') {
@@ -69,7 +73,7 @@ export default async function handler(req, res) {
       suggested = { on_call_phone: prof ? v(prof.contact && prof.contact.phone) : '', notify_email: (acc && acc.email) || (prof ? v(prof.contact && prof.contact.email) : ''), hours: hours.slice(0, 400) };
     } catch (e) { console.error('[settings suggest]', e.message); }
     const { integrations: _hidden, ...safeSettings } = biz.settings || {};
-    return res.status(200).json({ suggested, business: { id: biz.id, status: biz.status, phone_number: biz.phone_number }, settings: safeSettings, channels: biz.channels || {}, status: channelStatus(biz), humanModes: HUMAN_MODES });
+    return res.status(200).json({ edition: editionOf(biz.settings), suggested, business: { id: biz.id, status: biz.status, phone_number: biz.phone_number }, settings: safeSettings, channels: biz.channels || {}, status: channelStatus(biz), humanModes: HUMAN_MODES });
   } catch (e) {
     console.error('[settings]', e);
     return bad(res, 500, e.message);
