@@ -3,7 +3,7 @@
 // turn is stored, and every refusal becomes an entry in the knowledge queue.
 import { ensureSchema, sql, loadBusiness, loadProfile, loadTeam, newId, readJson, bad } from './_lib/db.js';
 import { applyCorrections } from './_lib/profile.js';
-import { answer } from './_lib/answer.js';
+import { answer, openingGreeting } from './_lib/answer.js';
 import { notifyOwner } from './_lib/email.js';
 import { firstRealAnswer } from './_lib/care.js';
 import { requireFunds, recordSpend, textCostCents, HOLD, PaymentRequired } from './_lib/ledger.js';
@@ -55,6 +55,12 @@ export default async function handler(req, res) {
       await sql().query('INSERT INTO conversations (id, business_id, channel, transcript, test) VALUES ($1,$2,$3,$4,$5)', [convo.id, biz.id, channel, '[]', test]);
     }
     const history = convo.transcript || [];
+    // The widget already showed the opening greeting (with the AI disclosure)
+    // on its own; record it as the first line so the reply does not repeat it.
+    if (!history.length && body.greeted === true && !token) {
+      const front = agents[0];
+      history.push({ role: 'agent', agent_id: front.id, agent_name: `${front.persona} · ${front.title}`, text: openingGreeting(front, business), type: 'greeting', citations: [], at: new Date().toISOString() });
+    }
     if (history.length >= 80) return bad(res, 429, 'This conversation has reached its length limit. Please start a new one.');
     const lastAgentId = [...history].reverse().find((h) => h.role === 'agent')?.agent_id || null;
     const out = await answer({ business, agents, profile, history, message: message.slice(0, 2000), channel, lastAgentId, settings: biz.settings || null });

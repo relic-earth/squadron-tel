@@ -6,7 +6,9 @@
 //   called, so a request to reach a person never costs the business credit
 //   and works even when the prepaid balance is used.
 import crypto from 'node:crypto';
-import { ensureSchema, sql, newId, readJson, bad } from './_lib/db.js';
+import { ensureSchema, sql, newId, readJson, bad, loadProfile, loadTeam } from './_lib/db.js';
+import { applyCorrections } from './_lib/profile.js';
+import { openingGreeting, starterQuestions } from './_lib/answer.js';
 import { notifyOwner } from './_lib/email.js';
 import { humanMode, HUMAN_MODES } from './_lib/human.js';
 
@@ -38,7 +40,18 @@ export default async function handler(req, res) {
       if (!biz) return bad(res, 404, 'Chat is not turned on for this business.');
       const st = biz.settings || {};
       const mode = humanMode(st);
-      return res.status(200).json({ mode, label: HUMAN_MODES[mode].label, person: st.on_call_name || null, hours: st.hours || null });
+      // What the widget shows on open, so it can greet instantly without an AI call.
+      let greeting = null, starters = [], agent = null, name = null;
+      try {
+        const [prow, team] = await Promise.all([loadProfile(biz.id), loadTeam(biz.id)]);
+        const profile = prow ? applyCorrections(prow.profile, prow.corrections) : null;
+        name = (profile && profile.company && profile.company.name && profile.company.name.value) || null;
+        const front = team && team.agents.agents.filter((a) => a.enabled !== false)[0];
+        if (front) { greeting = openingGreeting(front, { name: name || biz.input_value }); agent = { persona: front.persona, title: front.title, portrait: front.portrait }; }
+        starters = starterQuestions(profile);
+      } catch (e) { console.error('[handoff greeting]', e.message); }
+      res.setHeader('Cache-Control', 'public, max-age=60');
+      return res.status(200).json({ mode, label: HUMAN_MODES[mode].label, person: st.on_call_name || null, hours: st.hours || null, name, greeting, agent, starters });
     }
     if (req.method !== 'POST') return bad(res, 405, 'GET or POST');
     const body = readJson(req);

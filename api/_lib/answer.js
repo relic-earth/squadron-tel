@@ -146,3 +146,28 @@ export async function answer({ business, agents, profile, history, message, chan
   const cited = citations.map((id) => { const c = chunks.find((x) => x.id === id); return { id, text: c.text, source: c.source }; });
   return { agent, reply, replyType, citations: cited, gapQuestion: data.gap_question, messageForOwner: data.message_for_owner, handoff: !!data.handoff, followUp, model, usage };
 }
+
+// The greeting the chat widget shows the moment a customer opens it, before
+// any AI call: the front agent's own greeting with the AI disclosure. The
+// conversation is seeded with this same text, so the first real reply does
+// not greet again and the transcript shows the disclosure was made.
+export function openingGreeting(agent, business) {
+  const name = (business && business.name) || 'this business';
+  const raw = (agent && agent.greeting) || '';
+  let greet = raw.replace(/\s+/g, ' ').trim();
+  if (!/\bAI\b/.test(greet)) greet = `Hi, I'm ${(agent && agent.persona) || 'an assistant'}, an AI agent for ${name}.`;
+  if (!/\?\s*$/.test(greet)) greet += ' How can I help?';
+  return greet;
+}
+
+// Up to three questions a customer can tap: the business's own short FAQs
+// first, then the questions customers ask most when the profile answers them.
+export function starterQuestions(profile) {
+  const v = (f) => (f && f.value ? String(f.value).trim() : '');
+  const out = [];
+  for (const f of (profile && profile.faqs) || []) { const q = v(f.question); if (q && q.length <= 60 && /\?$/.test(q)) out.push(q); if (out.length >= 2) break; }
+  if (profile && (profile.hours || []).some((h) => v(h.days) || v(h.open))) out.push('What are your hours?');
+  if (profile && ((profile.pricing || []).length || (profile.services || []).some((x) => v(x.price)) || (profile.products || []).some((x) => v(x.price)))) out.push('How much does it cost?');
+  if (profile && (profile.locations || []).some((l) => v(l.address))) out.push('Where are you located?');
+  return [...new Set(out)].slice(0, 3);
+}
