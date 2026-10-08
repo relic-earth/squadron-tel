@@ -86,6 +86,10 @@ export function businessKind(text) {
     if (score > best.score) best = { key: k.key, label: k.label, score };
   }
   if (best.score < 3) return { key: 'general', label: 'Business', score: best.score };
+  // Some kinds contain others: hotels run restaurants and bars, and a dental
+  // office uses medical words. Words only the larger kind uses settle it.
+  if (best.key === 'restaurant' && count(text, /\b(hotel|rooms?|suites?|check-?in|check-?out|nightly|overnight|book (a|your) (room|stay))\b/gi) >= 5) return { key: 'hotel', label: 'Hotel', score: best.score };
+  if (best.key === 'medical' && count(text, KINDS[0].re) >= 5) return { key: 'dental', label: 'Dental practice', score: best.score };
   return best;
 }
 
